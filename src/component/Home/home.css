@@ -1,0 +1,66 @@
+.header__navbar {
+    background-color: var(--primary-color) !important;
+    height: 50px;
+}
+
+.header__navbar-list {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header__navbar-title {
+    color: var(--text-white-color);
+    font-weight: 700;
+    font-size: 18px;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+.header__navbar-user {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    display: block;
+    width: 100px;
+}
+
+.header__navbar-user a {
+    color: var(--text-white-color);
+    font-weight: 700;
+    font-size: 18px !important;
+}
+
+.header__navbar-user-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+}
+
+.modal-header {
+    padding-left: 3em;
+}
+
+.modal-body {
+    padding-left: 3em;
+}
+
+.modal-body button {
+    margin-right: 1em;
+}
+
+.modal-header-logout {
+    background-color: #fafcfc;
+    color: #cf2338;
+}
+
+.btn-cancel-logout {
+    background-color: white;
+    color: black;
+}
+
+.btn-cancel-logout:hover {
+    background-color: white;
+    color: black;
+}

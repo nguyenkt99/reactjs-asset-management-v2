@@ -1,0 +1,132 @@
+:root {
+  --primary-color: #cf2338;
+  --white-color: #fff;
+  --black-color: #000;
+  --text-white-color: #efefef;
+  --text-black-color: #333;
+  --border-color: #dbdbdb;
+
+  --header-height: 120px;
+  --navbar-height: 32px;
+  --header-with-search-height: calc(var( --header-height) - var(--navbar-height))
+}
+
+* {
+  box-sizing: inherit;
+}
+
+html {
+  font-size: 62.5%;
+  line-height: 1.6rem;
+  box-sizing: border-box;
+}
+
+.grid {
+  width: 1200px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.grid__full-width {
+  width: 100%;
+}
+
+.grid__row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -5px;
+  margin-right: -5px;
+}
+
+.app-content {
+  padding: 48px 0 0 8px
+}
+
+.content-title {
+  margin: 0 0 16px 0;
+  padding: 0;
+  font-size: 1.9rem;
+  color: var(--primary-color);
+}
+
+.content-table {
+  font-size: 1.4rem;
+  margin-top: 16px !important;
+}
+
+.content-table th {
+  cursor: pointer;
+}
+
+.btn {
+  font-size: 1.4rem !important;
+}
+
+/* .content-pagination {
+  position: absolute;
+  right: 370px;
+  top: 540px;
+} */
+
+.page-link {
+  font-size: 1.4rem !important;
+}
+
+
+/* Date Picker */
+.datepicker{
+  position: relative;
+  width: 100%;
+}
+
+.icon-date{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 15px;
+  cursor: pointer;
+  color: rgb(88, 87, 87);
+}
+
+.react-datepicker {
+  font-size: 1.3rem !important;
+}
+
+.react-datepicker__current-month {
+  font-size: 1.5rem !important;
+}
+
+.react-datepicker__header {
+  padding-top: 6px !important;
+}
+
+.react-datepicker__navigation {
+  top: 13px !important;
+}
+
+.react-datepicker__day-name, .react-datepicker__day {
+  margin: 0.5rem !important;
+}
+
+.react-datepicker__month-dropdown {
+  width: 112px !important;
+}
+
+/* Form */
+.content-form,
+.content-form input,
+.content-form select {
+  font-size: 1.4rem;
+}
+
+
+/* Modal */
+.modal-body,
+.modal-body input {
+  font-size: 1.4rem;
+}
+
+.modal-title {
+  color: var(--primary-color);
+  font-size: 2.0rem !important;
+}

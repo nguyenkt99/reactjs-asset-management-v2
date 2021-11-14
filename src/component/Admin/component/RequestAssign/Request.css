@@ -1,0 +1,152 @@
+/* #modal-complete-option .modal-content .modal-footer{
+  border-top: none;
+}
+
+.w-7 {
+  width: 7% !important;
+}
+
+.w-14 {
+  width: 14% !important;
+}
+
+.w-16 {
+  width: 16% !important;
+}
+
+.w-28 {
+  width: 28% !important;
+}
+
+.user_asset_area {
+  display: flex;
+}
+  
+.input_field {
+  width: 100%;
+  margin-bottom: 15px;
+}
+  
+.border_search_info {
+  position: relative;
+  height: 32px;
+  border-radius: 5px;
+  border: #ced4da solid 1px;
+  line-height: 1.5;
+  cursor: pointer;
+  padding: 5px;
+}
+  
+.fa-search {
+  position: absolute;
+  right: 15px;
+  top: 7px;
+  font-size: 17px;
+}
+  
+.header_select {
+  display: flex;
+  justify-content: space-between;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.search_select {
+  position: relative;
+  height: 28px;
+}
+
+.search_select input {
+  outline: none;
+  height: 100%;
+  border: 1px solid black;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.fa-header {
+  height: 26.5px;
+  top: 1px;
+  right: 14px;
+  padding: 0px 5px;
+  border-left: solid black 1px;
+  position: absolute;
+  background: white;
+}
+
+.user_area {
+  position: relative;
+}
+
+.asset_area {
+  position: relative;
+}
+
+.dialog {
+  z-index: 1;
+  position: absolute;
+  width: 340px;
+  left: 12px;
+  top: 0;
+  margin: 0;
+}
+
+.list_select {
+  padding: 10px 10px 0px 10px;
+}
+
+.reset {
+  padding: 0 12px;
+}
+
+.c-red {
+  color: #cf2338;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.table_ua {
+  padding: 10px 10px 0px 10px;
+  position: relative;
+}
+
+.fix_width {
+  display: table;
+  width: 100%;
+  text-align: left;
+}
+
+.table-content {
+  display: block;
+  max-height: 220px;
+  overflow: auto;
+  table-layout: fixed;
+}
+
+.button-group {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.radio_custom {
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #dc3545 !important;
+  appearance: none;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  transition: all ease-in 0.2s;
+}
+
+.radio_custom:checked {
+  background-color: #dc3545 !important;
+}
+
+.fix_width th {
+  cursor: pointer;
+}
+ */

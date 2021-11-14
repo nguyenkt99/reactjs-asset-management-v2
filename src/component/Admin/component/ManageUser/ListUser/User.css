@@ -1,0 +1,64 @@
+.dropdown-button {
+    font-size: 1.4rem;
+    color: rgb(102, 101, 101) !important;
+    background-color: aliceblue !important;
+    border-color: black !important;
+    border-right: 0px;
+    border-radius: 5px 0px 0px 5px;
+}
+
+.dropdown-button-filter {
+    font-size: 1.4rem;
+    color: rgb(102, 101, 101) !important;
+    background-color: aliceblue !important;
+    border-color: black;
+    border-radius: 0px 5px 5px 0px;
+}
+
+.dropdown-item {
+    font-size: 1.4rem;
+}
+
+#dropdown-basic::after {
+    border: 0px;
+}
+
+.search-input,
+.date-picker-input {
+    font-size: 1.4rem;
+}
+
+.float-end .pagination .active .page-link{
+    background-color: red !important;
+    border-color: red !important;
+}
+
+.float-end .pagination .page-item a{
+    color: red;
+}
+
+.float-end .pagination .active span{
+    color: white !important;
+}
+
+.modal-detail-user,
+#detail-dialog {
+    font-size: 1.4rem;
+}
+
+#detail-dialog .modal-content{
+    width: 400px !important;
+}
+
+#disable-user {
+    margin-top: 12px;
+}
+
+#disable-user-btn {
+    background-color: #E30C18;
+}
+
+#cancel-btn {
+    background-color: #FAFCFC;
+    color: black;
+}
