@@ -1,0 +1,64 @@
+#drop-show-assignment {
+  width: 220px;
+}
+#undo-assignment {
+  color: #455eeb;
+}
+#assignment-date-picker {
+  background-color: #f5faff;
+}
+
+#toast-error-assignment {
+  padding-top: 80px !important;
+}
+
+.assigned-date{
+  display: flex;
+  position: relative;
+}
+
+#date-icon {
+  position: absolute;
+  top: 20%;
+  right: 6%;
+}
+
+
+/* Assignment details table */
+/* .assignment-detail-table {
+  width:400px;
+} */
+
+
+.assignment-detail-table__body {
+  display:block;
+  height: 200px;
+  overflow:auto;
+}
+
+.assignment-detail-table__head, .assignment-detail-table__body tr {
+  display:table;
+  width:100%;
+  table-layout:fixed;/* even columns width , fix width of table too*/
+}
+
+.asset-name-list {
+  height: 33px;
+  /* margin: 10px 10px 6px; */
+  overflow: hidden;
+  /* display: block; */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+/* Tooltip specficication */
+.asset-name__icon {
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 130% !important;
+}
+
+.tooltip-text {
+  font-size: 1.3rem;
+}

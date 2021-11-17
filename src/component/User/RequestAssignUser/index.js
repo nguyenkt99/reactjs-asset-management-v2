@@ -138,85 +138,16 @@ export default function RequestAssignUser() {
 
     return (
         <>
-            <h5 style={{ color: '#CF2338' }}>Request for Assigning List</h5>
+            <h3 className="content-title">Request for Assigning List</h3>
             <Row>
-                {/* <Col sm={2}>
-                    <Dropdown autoClose="outside" className="drop-filter">
-                        <Button className="dropdown-button col-md-6 col-sm-12" disabled text={STATE.ALL}>
-                            State
-                        </Button>
-                        <Dropdown.Toggle
-                            className="dropdown-button-filter btn btn-primary"
-                            id="dropdown-basic">
-                            <HiFilter />
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu id="drop-show-assignment">
-                            <div className="checkbox px-3" onClick={() => {
-                                handleStateClick(STATE.ALL)
-                            }}>
-                                <FormCheck label={STATEtoLowcase[STATE.ALL]} checked={stateChecked.includes(STATE.ALL) ? 'checked' : ''} />
-                            </div>
-                            <div className="checkbox px-3" onClick={() => {
-                                handleStateClick(STATE.WAITING_FOR_ASSIGNING)
-                            }}>
-                                <FormCheck label={STATEtoLowcase[STATE.WAITING_FOR_ASSIGNING]} checked={stateChecked.includes(STATE.WAITING_FOR_ASSIGNING) ? 'checked' : ''} />
-                            </div>
-                            <div className="checkbox px-3" onClick={() => {
-                                handleStateClick(STATE.ACCEPTED)
-                            }}>
-                                <FormCheck label={STATEtoLowcase[STATE.ACCEPTED]} checked={stateChecked.includes(STATE.ACCEPTED) ? 'checked' : ''} />
-                            </div>
-                            <div className="checkbox px-3" onClick={() => {
-                                handleStateClick(STATE.DECLINED)
-                            }}>
-                                <FormCheck label={STATEtoLowcase[STATE.DECLINED]} checked={stateChecked.includes(STATE.DECLINED) ? 'checked' : ''} />
-                            </div>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </Col>
-                <Col md={3}>
-                    <div className="datepicker">
-                        <DatePicker className="form-control"
-                            dateFormat="dd/MM/yyyy" showMonthDropdown showYearDropdown scrollableYearDropdown yearDropdownItemNumber={50}
-                            onKeyDown={(e) => e.preventDefault()}
-                            selected={requestedDate && new Date(requestedDate)}
-                            onChange={(date) => setRequestedDate(moment(date).format('YYYY-MM-DD'))}
-                            placeholderText="Requested Date"
-                            onClickOutside={openDatePicker}
-                            onSelect={openDatePicker}
-                            onFocus={openDatePicker}
-                            open={isOpenDatePicker}
-                        />
-                        <FaCalendarAlt className="icon-date" onClick={openDatePicker} />
-                    </div>
-                </Col>
-                <Col>
-                    <div className="float-end">
-                        <div className="input-group">
-                            <div className="form-outline">
-                                <input
-                                    value={keySearch}
-                                    onChange={(e) => setKeySearch(e.target.value)}
-                                    type="search"
-                                    id="keySearch"
-                                    className="form-control"
-                                    placeholder="Search" />
-                            </div>
-                            <button type="button" className="btn btn-primary" disabled={true}>
-                                <BsSearch style={{}} />
-                            </button>
-                        </div>
-                    </div>
-                </Col> */}
                 <Col>
                     <Link className="btn btn-danger float-end" to="/create-request-assign">
                         Create request for assigning
                     </Link>
                 </Col>
             </Row>
-            <br />
             <Row>
-                <Table responsive>
+                <Table className="content-table" responsive>
                     <thead>
                         <tr>
                             <th className="table-thead w-7" onClick={() => handleSort(SORT_BY.Id)} >
@@ -271,27 +202,7 @@ export default function RequestAssignUser() {
                     </tbody>
                 </Table>
             </Row>
-            <br />
-            {/* <Col className="float-end">
-                <Pagination size="sm">
-                    <Pagination.Prev disabled={currentPage < 2} onClick={() => setCurrentPage(currentPage - 1)}>Previous</Pagination.Prev>
-                    <Pagination.Item
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        style={{ display: currentPage < 2 && 'none' }}
-                    >{currentPage - 1}</Pagination.Item>
-                    <Pagination.Item active>{currentPage}</Pagination.Item>
-                    <Pagination.Item
-                        hidden={currentPage >= Math.ceil((requestAssigns.length / elementPerPage))}
-                        disabled={currentPage === Math.ceil((requestAssigns.length / elementPerPage))}
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                    >{currentPage + 1}</Pagination.Item>
-                    <Pagination.Next
-                        disabled={currentPage >= Math.ceil((requestAssigns.length / elementPerPage))}
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                    >Next
-                    </Pagination.Next>
-                </Pagination>
-            </Col> */}
+
             <Toast onClose={() => setShowToast(false)} show={showToast} delay={1000} autohide position="top-end">
                 <Toast.Header>
                     <strong className="me-auto">Notification!</strong>

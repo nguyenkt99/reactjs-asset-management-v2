@@ -1,11 +1,28 @@
-.__conNAV_LOGIN {
+.navbar-login {
     position: fixed;
-    height: 4em;
+    height: 50px;
     background-color: #cf2338;
-    /* display:flex; */
     width: 100%;
 }
-.logincard {
+
+.navbar-login__brand {
+    display: flex;
+    align-items: flex-end;
+}
+
+.navbar-login__logo {
+    height: 50px;
+}
+
+.navbar-login__title {
+    font-size: 1.8rem;
+    color: var(--white-color);
+    font-weight: 700;
+    padding: 8px;
+    vertical-align: bottom;
+}
+
+.login-card {
     background-color: white !important;
     /* padding: 20px 25px 30px; */
     margin: 0 auto 25px;
@@ -32,6 +49,7 @@
     border: solid 1.5px;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
+    font-size: 1.4rem;
 }
 .cardLogin {
     background-color: #f7f7f7;
@@ -42,6 +60,7 @@
     border: solid 1.5px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
+    font-size: 1.4rem;
 }
 .login {
     padding-left: 2.5em;

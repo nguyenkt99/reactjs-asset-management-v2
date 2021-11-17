@@ -1,44 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Col,
-  Row,
-  Table,
-  Modal,
-  Toast,
-  Form,
-  Dropdown,
-  Button,
-  Pagination,
-  FormCheck,
-  FormGroup,
-  ToastContainer,
-} from 'react-bootstrap';
+import React, { useEffect, useState } from 'react'
+import { Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination, FormCheck, FormGroup, ToastContainer, OverlayTrigger, Tooltip } from 'react-bootstrap'
 
-import { HiFilter } from 'react-icons/hi';
-import { GrEditCus } from '../../../../icon/GrEditCus';
-import { FaUndo } from 'react-icons/fa';
-import { CgCloseO } from 'react-icons/cg';
-import { get, del, post } from '../../../../../httpHelper';
-import { BsFillCaretDownFill, BsSearch } from "react-icons/bs";
+import { HiFilter } from 'react-icons/hi'
+import { GrEditCus } from '../../../../icon/GrEditCus'
+import { FaUndo } from 'react-icons/fa'
+import { CgCloseO } from 'react-icons/cg'
+import { HiInformationCircle } from 'react-icons/hi'
+import { get, del, post } from '../../../../../httpHelper'
+import { BsFillCaretDownFill, BsSearch } from "react-icons/bs"
 import { Link, useHistory } from 'react-router-dom'
-import moment from "moment";
-import DatePicker from "react-datepicker";
+import moment from "moment"
+import DatePicker from "react-datepicker"
 import { FaCalendarAlt } from "react-icons/fa"
 
-import './ManagerAssignment.css'
+import './ListAssignment.css'
 
-const elementPerPage = 10;
+const elementPerPage = 10
 let assignmentCode = 0
 
-export default function User() {
+export default function ListAssignment() {
   let history = useHistory();
 
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [showToastError, setShowToastError] = useState(false);
   const [showModalRequest, setShowModalRequest] = useState(false);
-  const [Assignmentelect, setAssignmentelect] = useState('');
   const [errMessage, setErrMessage] = useState('');
-
   const [assignments, setAssignments] = useState([]);
   const [showAssignment, setShowAssignment] = useState(false);
   const [assignmentInformation, setAssignmentInformation] = useState();
@@ -55,7 +41,6 @@ export default function User() {
   const [stateASC, setStateASC] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState([]);
-  // const [stateChecked, setStateChecked] = useState([STATE.All]);
   const [stateChecked, setStateChecked] = useState([STATE.WAITING_FOR_ACCEPTANCE, STATE.ACCEPTED]);
   const [isOpenDatePicker, setIsOpenDatePicker] = useState(false);
 
@@ -63,23 +48,37 @@ export default function User() {
     fetchAssignments()
   }, [])
 
+  useEffect(() => {
+    let result = [...data];
+    var datepick = assignedDate ? moment(assignedDate).format('DD/MM/YYYY') : null
+
+    result = filterSort(data.filter(d => (stateChecked.includes(d.state) || stateChecked.includes('ALL')) &&
+      (d.assignedDate === datepick || datepick === null)), keySearch)
+
+    setAssignments(result);
+    setCurrentPage(1);
+  }, [stateChecked, assignedDate, keySearch])
+
   const fetchAssignments = () => {
     get('/assignment')
       .then((response) => {
         if (response.status === 200) {
           let data = response.data;
           if (history.location.state) {
-            data.unshift(
-              data.splice(
-                data.findIndex(
-                  (item) => item.id === history.location.state.id
-                ),
-                1
-              )[0]
-            );
+            data.unshift(data.splice(data.findIndex((item) => item.id === history.location.state.id), 1)[0]);
           }
-          setData(data);
-          setAssignments(data.filter(u => stateChecked.includes(u.state)));
+
+          const dataWithStrAssets = data.map(u => {
+            let strAssets = '';
+            u.assignmentDetails.forEach(ad => {
+              strAssets += `${ad.assetCode}, `;
+            })
+            return { ...u, strAssets: strAssets }
+          })
+
+          setData(dataWithStrAssets);
+          setAssignments(dataWithStrAssets.filter(u => stateChecked.includes(u.state)));
+
           history.replace();
         } else {
           toastMessage('Something wrong!');
@@ -105,85 +104,35 @@ export default function User() {
     if (key === SORT_BY.id) {
       reverse = idASC ? -1 : 1;
       setIDASC(!idASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          a.id > b.id
-            ? 1 * reverse
-            : b.id > a.id
-              ? -1 * reverse
-              : 0
-        );
+      list = assignments.slice().sort((a, b) => a.id > b.id ? 1 * reverse : b.id > a.id ? -1 * reverse : 0)
     } else if (key === SORT_BY.AssetCode) {
       reverse = assetCodeASC ? -1 : 1;
       setAssetCodeASC(!assetCodeASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          a.assetCode > b.assetCode
-            ? 1 * reverse
-            : b.assetCode > a.assetCode
-              ? -1 * reverse
-              : 0
-        );
+      list = assignments.slice().sort((a, b) => a.assetCode > b.assetCode ? 1 * reverse : b.assetCode > a.assetCode ? -1 * reverse : 0)
     } else if (key === SORT_BY.AssetName) {
       reverse = assetNameASC ? -1 : 1;
       setAssetNameASC(!assetNameASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          a.assetName > b.assetName
-            ? 1 * reverse
-            : b.assetName > a.assetName
-              ? -1 * reverse
-              : 0
-        );
+      list = assignments.slice().sort((a, b) => a.assetName > b.assetName ? 1 * reverse : b.assetName > a.assetName ? -1 * reverse : 0)
     } else if (key === SORT_BY.AssignedTo) {
       reverse = assignedToASC ? -1 : 1;
       setAssignedToASC(!assignedToASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          a.assignedTo > b.assignedTo
-            ? 1 * reverse
-            : b.assignedTo > a.assignedTo
-              ? -1 * reverse
-              : 0
-        );
+      list = assignments.slice().sort((a, b) => a.assignedTo > b.assignedTo ? 1 * reverse : b.assignedTo > a.assignedTo ? -1 * reverse : 0)
     } else if (key === SORT_BY.AssignedBy) {
       reverse = assignedByASC ? -1 : 1;
       setAssignedByASC(!assignedByASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          a.assignedBy > b.assignedBy
-            ? 1 * reverse
-            : b.assignedBy > a.assignedBy
-              ? -1 * reverse
-              : 0
-        );
+      list = assignments.slice().sort((a, b) => a.assignedBy > b.assignedBy ? 1 * reverse : b.assignedBy > a.assignedBy ? -1 * reverse : 0)
     } else if (key === SORT_BY.AssignedDate) {
       reverse = assignedDateASC ? -1 : 1;
       setAssignedDateASC(!assignedDateASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          moment(a.assignedDate, "DD/MM/YYYY").toDate().getTime() >
-            moment(b.assignedDate, "DD/MM/YYYY").toDate().getTime()
-            ? 1 * reverse
-            : moment(b.assignedDate, "DD/MM/YYYY").toDate().getTime() >
-              moment(a.assignedDate, "DD/MM/YYYY").toDate().getTime()
-              ? -1 * reverse
-              : 0
-        );
+      list = assignments.slice().sort((a, b) =>
+        moment(a.assignedDate, "DD/MM/YYYY").toDate().getTime() > moment(b.assignedDate, "DD/MM/YYYY").toDate().getTime()
+          ? 1 * reverse : moment(b.assignedDate, "DD/MM/YYYY").toDate().getTime() > moment(a.assignedDate, "DD/MM/YYYY").toDate().getTime()
+            ? -1 * reverse : 0
+      )
     } else if (key === SORT_BY.State) {
       reverse = stateASC ? -1 : 1;
       setStateASC(!stateASC);
-      list = assignments
-        .slice()
-        .sort((a, b) =>
-          a.state > b.state ? 1 * reverse : b.state > a.state ? -1 * reverse : 0
-        );
+      list = assignments.slice().sort((a, b) => a.state > b.state ? 1 * reverse : b.state > a.state ? -1 * reverse : 0)
     }
     setAssignments(list);
   };
@@ -193,26 +142,22 @@ export default function User() {
   };
 
   const filterSort = (data, keySearch) => {
-    return data.filter(
-      (e) =>
-        e.id.toString() === keySearch ||
-        e.assetCode.toLowerCase().includes(keySearch.toLowerCase()) ||
-        e.assetName.toLowerCase().includes(keySearch.toLowerCase()) ||
-        e.assignedTo.toLowerCase().includes(keySearch.toLowerCase()) ||
-        e.assignedBy.toLowerCase().includes(keySearch.toLowerCase())
-    );
+    return data.filter((d) => (
+      d.id.toString() === keySearch ||
+      d.strAssets.toLowerCase().includes(keySearch.toLowerCase()) ||
+      // d.assetName.toLowerCase().includes(keySearch.toLowerCase()) ||
+      d.assignedTo.toLowerCase().includes(keySearch.toLowerCase()) ||
+      d.assignedBy.toLowerCase().includes(keySearch.toLowerCase())
+    ));
   };
 
-  const handleStateClick = async (e) => {
-    if (e === STATE.All) setStateChecked([e]);
+  const handleStateClick = (e) => {
+    if (e === STATE.ALL) setStateChecked([e]);
     else {
       if (stateChecked.includes(e))
         setStateChecked([...stateChecked.filter((item) => item !== e)]);
       else
-        setStateChecked([
-          ...stateChecked.filter((item) => item !== STATE.All),
-          e,
-        ]);
+        setStateChecked([...stateChecked.filter((item) => item !== STATE.ALL), e]);
     }
     setCurrentPage(1);
   };
@@ -220,7 +165,7 @@ export default function User() {
 
 
   const handleDeleteClick = (item) => {
-    if (item.state === STATE.WAITING_FOR_ACCEPTANCE || item.state === STATE.CANCELED_ASSIGN) {
+    if (item.state === STATE.WAITING_FOR_ACCEPTANCE || item.state === STATE.DECLINED) {
       assignmentCode = item.id
       setShowModalDelete(true)
     }
@@ -283,17 +228,6 @@ export default function User() {
     setIsOpenDatePicker(!isOpenDatePicker);
   }
 
-  useEffect(() => {
-    let result = [...data];
-    var datepick = assignedDate ? moment(assignedDate).format('DD/MM/YYYY') : null
-
-    result = filterSort(data.filter(u => (stateChecked.includes(u.state) || stateChecked.includes('All')) &&
-      (u.assignedDate === datepick || datepick === null)), keySearch)
-
-    setAssignments(result);
-    setCurrentPage(1);
-  }, [stateChecked, assignedDate, keySearch]);
-
   return (
     <>
       <h3 className="content-title">Assignment List</h3>
@@ -309,35 +243,35 @@ export default function User() {
               <HiFilter />
             </Dropdown.Toggle>
             <Dropdown.Menu id="drop-show-assignment">
-              <div className="checkbox px-3" onClick={() => {
-                handleStateClick(STATE.All)
+              <div className="dropdown-item checkbox px-3" onClick={() => {
+                handleStateClick(STATE.ALL)
               }}>
-                <FormCheck label='ALL' checked={stateChecked.includes(STATE.All) ? 'checked' : ''} />
+                <FormCheck label='ALL' checked={stateChecked.includes(STATE.ALL)} />
               </div>
-              <div className="checkbox px-3" onClick={() => {
+              <div className="dropdown-item checkbox px-3" onClick={() => {
                 handleStateClick(STATE.ACCEPTED)
               }}>
-                <FormCheck label='Accepted' checked={stateChecked.includes(STATE.ACCEPTED) ? 'checked' : ''} />
+                <FormCheck label='Accepted' checked={stateChecked.includes(STATE.ACCEPTED)} />
               </div>
-              <div className="checkbox px-3" onClick={() => {
+              <div className="dropdown-item checkbox px-3" onClick={() => {
                 handleStateClick(STATE.WAITING_FOR_ACCEPTANCE)
               }}>
-                <FormCheck label='Waiting for acceptance' checked={stateChecked.includes(STATE.WAITING_FOR_ACCEPTANCE) ? 'checked' : ''} />
+                <FormCheck label='Waiting for acceptance' checked={stateChecked.includes(STATE.WAITING_FOR_ACCEPTANCE)} />
               </div>
-              <div className="checkbox px-3" onClick={() => {
-                handleStateClick(STATE.CANCELED_ASSIGN)
+              <div className="dropdown-item checkbox px-3" onClick={() => {
+                handleStateClick(STATE.DECLINED)
               }}>
-                <FormCheck label='Declined' checked={stateChecked.includes(STATE.CANCELED_ASSIGN) ? 'checked' : ''} />
+                <FormCheck label='Declined' checked={stateChecked.includes(STATE.DECLINED)} />
               </div>
-              <div className="checkbox px-3" onClick={() => {
+              <div className="dropdown-item checkbox px-3" onClick={() => {
                 handleStateClick(STATE.WAITING_FOR_RETURNING)
               }}>
-                <FormCheck label='Waiting for returning' checked={stateChecked.includes(STATE.WAITING_FOR_RETURNING) ? 'checked' : ''} />
+                <FormCheck label='Waiting for returning' checked={stateChecked.includes(STATE.WAITING_FOR_RETURNING)} />
               </div>
-              <div className="checkbox px-3" onClick={() => {
+              <div className="dropdown-item checkbox px-3" onClick={() => {
                 handleStateClick(STATE.COMPLETED)
               }}>
-                <FormCheck label='Completed' checked={stateChecked.includes(STATE.COMPLETED) ? 'checked' : ''} />
+                <FormCheck label='Completed' checked={stateChecked.includes(STATE.COMPLETED)} />
               </div>
             </Dropdown.Menu>
           </Dropdown>
@@ -388,16 +322,20 @@ export default function User() {
         <Table className="content-table" responsive>
           <thead>
             <tr>
-              <th className="table-thead" onClick={() => handleSort(SORT_BY.id)}>
+              <th className="table-thead" style={{ width: "50px" }} onClick={() => handleSort(SORT_BY.id)}>
                 No.
                 <BsFillCaretDownFill />
               </th>
-              <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetCode)}>
+              {/* <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetCode)}>
                 Asset Code
                 <BsFillCaretDownFill />
               </th>
               <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetName)}>
                 Asset Name
+                <BsFillCaretDownFill />
+              </th> */}
+              <th className="table-thead" style={{ width: "300px" }} onClick={() => handleSort(SORT_BY.AssetCode)}>
+                Asset
                 <BsFillCaretDownFill />
               </th>
               <th className="table-thead" onClick={() => handleSort(SORT_BY.AssignedTo)}>
@@ -427,11 +365,14 @@ export default function User() {
                     <td onClick={() => handleRowClick(a.id)}>
                       {a.id}
                     </td>
-                    <td onClick={() => handleRowClick(a.id)}>
+                    {/* <td onClick={() => handleRowClick(a.id)}>
                       {a.assetCode}
                     </td>
                     <td onClick={() => handleRowClick(a.id)}>
                       {a.assetName}
+                    </td> */}
+                    <td className="asset-name-list" onClick={() => handleRowClick(a.id)}>
+                      {a.strAssets}
                     </td>
                     <td onClick={() => handleRowClick(a.id)}>
                       {a.assignedTo}
@@ -446,7 +387,7 @@ export default function User() {
                       {StateToLowCase[a.state]}
                     </td>
                     <td>
-                      <div className='d-flex justify-content-evenly'>
+                      <div className='d-flex justify-content-evenly align-items-center'>
                         {a.state === 'WAITING_FOR_ACCEPTANCE' ? (
                           <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-assignment/' + a.id}>
                             <GrEditCus />
@@ -457,8 +398,8 @@ export default function User() {
                         <CgCloseO
                           style={{
                             fontSize: '130%',
-                            color: `${(a.state === STATE.WAITING_FOR_ACCEPTANCE || a.state === STATE.CANCELED_ASSIGN) ? 'red' : '#ccc'}`,
-                            cursor: `${(a.state === STATE.WAITING_FOR_ACCEPTANCE || a.state === STATE.CANCELED_ASSIGN) && 'pointer'}`
+                            color: `${(a.state === STATE.WAITING_FOR_ACCEPTANCE || a.state === STATE.DECLINED) ? 'red' : '#ccc'}`,
+                            cursor: `${(a.state === STATE.WAITING_FOR_ACCEPTANCE || a.state === STATE.DECLINED) && 'pointer'}`
                           }}
                           onClick={() => handleDeleteClick(a)}
                         />
@@ -501,7 +442,7 @@ export default function User() {
           </Pagination.Next>
         </Pagination>
       </Col>
-      <Modal show={showAssignment} onHide={() => setShowAssignment(false)} centered>
+      <Modal size="md" show={showAssignment} onHide={() => setShowAssignment(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title style={{ color: '#CF2338', backgroundColor: '#FAFCFC' }}>
             Detailed Assignment Information
@@ -509,43 +450,7 @@ export default function User() {
         </Modal.Header>
         <Modal.Body style={{ backgroundColor: '#FAFCFC' }}>
           <Form className='modal-detail-asset'>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
-              <Form.Label column sm='4' className='pr-0'>
-                Asset Code
-              </Form.Label>
-              <Col sm='8'>
-                <Form.Control
-                  plaintext
-                  readOnly
-                  defaultValue={assignmentInformation && assignmentInformation.assetCode}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
-              <Form.Label column sm='4' className='pr-0'>
-                Asset Name
-              </Form.Label>
-              <Col sm='8'>
-                <Form.Control
-                  plaintext
-                  readOnly
-                  defaultValue={assignmentInformation && assignmentInformation.assetName}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
-              <Form.Label column sm='4' className='pr-0'>
-                Specfication
-              </Form.Label>
-              <Col sm='8'>
-                <Form.Control
-                  plaintext
-                  readOnly
-                  defaultValue={assignmentInformation && assignmentInformation.specfication}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
                 Assigned To
               </Form.Label>
@@ -557,7 +462,7 @@ export default function User() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
                 Assigned By
               </Form.Label>
@@ -569,7 +474,7 @@ export default function User() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
                 Assigned Date
               </Form.Label>
@@ -581,7 +486,7 @@ export default function User() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
                 State
               </Form.Label>
@@ -593,18 +498,56 @@ export default function User() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
                 Note
               </Form.Label>
               <Col sm='8'>
                 <Form.Control
+                  as="textarea"
                   plaintext
                   readOnly
                   defaultValue={assignmentInformation && assignmentInformation.note}
                 />
               </Col>
             </Form.Group>
+
+            {/* Assignment details */}
+            <Row>
+              <Table >
+                <thead className="fix_width">
+                  <tr className="fix_width">
+                    <th style={{ width: "100px" }}>Asset Code</th>
+                    <th style={{ width: "170px" }}>
+                      Asset Name
+                    </th>
+                    <th>State</th>
+                  </tr>
+                </thead>
+                <tbody className="table-content fix_width">
+                  {assignmentInformation && assignmentInformation.assignmentDetails.map(ad => (
+                    <tr key={ad.assetCode} className="fix_width">
+                      <td style={{ width: "100px" }}>{ad.assetCode}</td>
+                      <td style={{ width: "170px" }}>
+                        <span>{ad.assetName}</span>
+                        <OverlayTrigger
+                          key={ad.assetCode}
+                          placement="bottom"
+                          overlay={
+                            <Tooltip className="tooltip-text">
+                              {ad.specs}
+                            </Tooltip>
+                          }
+                        >
+                          <span className="asset-name__icon"><HiInformationCircle /></span>
+                        </OverlayTrigger>
+                      </td>
+                      <td>{StateToLowCase[ad.state]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Row>
           </Form>
         </Modal.Body>
       </Modal>
@@ -671,17 +614,17 @@ const SORT_BY = {
   State: 'State',
 };
 const STATE = {
-  All: 'All',
+  ALL: 'ALL',
   ACCEPTED: 'ACCEPTED',
   WAITING_FOR_ACCEPTANCE: 'WAITING_FOR_ACCEPTANCE',
-  CANCELED_ASSIGN: 'CANCELED_ASSIGN',
+  DECLINED: 'DECLINED',
   WAITING_FOR_RETURNING: 'WAITING_FOR_RETURNING',
   COMPLETED: 'COMPLETED'
 };
 const StateToLowCase = {
   ACCEPTED: 'Accepted',
   WAITING_FOR_ACCEPTANCE: 'Waiting for acceptance',
-  CANCELED_ASSIGN: 'Declined',
+  DECLINED: 'Declined',
   WAITING_FOR_RETURNING: 'Waiting for returning',
   COMPLETED: 'Completed'
 };

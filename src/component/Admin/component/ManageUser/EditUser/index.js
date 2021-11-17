@@ -6,7 +6,6 @@ import './EditUser.css'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment";
-import '../CreateUser/CreateUser.css'
 import { FaCalendarAlt } from 'react-icons/fa'
 
 function EditUser(props) {
@@ -66,7 +65,7 @@ function EditUser(props) {
 
     const staffCode = props.match.params.staffCode;
     const fetchUser = () => {
-        get(`/users/${staffCode}`)
+        get(`/user/${staffCode}`)
             .then((res) => {
                 let dOB = res.data.dateOfBirth.split("/").reverse().join("-")
                 let joinedDate = res.data.joinedDate.split("/").reverse().join("-")
@@ -75,9 +74,8 @@ function EditUser(props) {
                     firstName: res.data.firstName,
                     lastName: res.data.lastName,
                     email: res.data.email,
-                    // dateOfBirth: dOB,
                     gender: res.data.gender,
-                    // joinedDate: joinedDate,
+                    deptCode: res.data.deptCode,
                     type: res.data.type
                 }
                 setInputs(object)
@@ -201,7 +199,7 @@ function EditUser(props) {
         }
         // console.log(formData);
         setIsSaving(true);
-        put(`/users/${staffCode}`, formData)
+        put(`/user/${staffCode}`, formData)
             .then((res) => {
                 console.log(res.data);
                 history.push({
@@ -355,7 +353,7 @@ function EditUser(props) {
                                 }
                             </Col>
                         </Form.Group>
-                        <Form.Group as={Row} className="mb-4" controlId="id">
+                        <Form.Group as={Row} className="mb-4">
                             <Form.Label column sm="3">Department</Form.Label>
                             <Col>
                                 <Form.Select name="deptCode" type="text" required as="select" aria-label="Default select example" onChange={handleOnChange}>
@@ -363,6 +361,7 @@ function EditUser(props) {
                                     {departments.map((department) =>
                                         <option key={department.id}
                                             value={department.deptCode}
+                                            selected={department.deptCode === inputs.deptCode}
                                         >
                                             {department.name}
                                         </option>
@@ -370,7 +369,7 @@ function EditUser(props) {
                                 </Form.Select>
                             </Col>
                         </Form.Group>
-                        <Form.Group as={Row} className="mb-4" controlId="id">
+                        <Form.Group as={Row} className="mb-4">
                             <Form.Label column sm={3}>Type</Form.Label>
                             <Col>
                                 <Form.Select className="select" name="type" type="text" required as="select" aria-label="Default select example" onChange={handleOnChange} >

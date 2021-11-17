@@ -14,7 +14,7 @@ export default function CreateAssignment() {
     const [usersData, setUsersData] = useState([])
     const [assets, setAssets] = useState([])
     const [assetsData, setAssetsData] = useState([])
-    const [user, setUser] = useState({ fullName: '', staffCode: '' })
+    const [selectedUser, setSelectedUser] = useState()
     const [selectedAssets, setSelectedAssets] = useState([])
     const [userDisplay, setUserDisplay] = useState(false)
     const [assetDisplay, setAssetDisplay] = useState(false)
@@ -26,7 +26,7 @@ export default function CreateAssignment() {
     const [typeASC, setTypeASC] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     // check ok or cancel 
-    const [userCurrent, setUserCurrent] = useState(null)
+    const [selectingUser, setSelectingUser] = useState(null)
     const [selectingAssets, setSelectingAssets] = useState([])
     // state
     const [note, setNote] = useState('')
@@ -34,7 +34,8 @@ export default function CreateAssignment() {
     const [returnedDate, setReturnedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
-    let history = useHistory()
+
+    const history = useHistory()
 
     useEffect(() => {
         fetchUsers()
@@ -49,35 +50,14 @@ export default function CreateAssignment() {
         setAssetsData(assets)
     }, [users, assets])
 
-    const fetchUsers = () => {
-        get('/users').then(response => {
-            if (response.status === 200) {
-                setUsers(response.data.filter(u => u.state !== 'Disabled'))
-            } else {
-                alert('Something wrong!')
-            }
-        }).catch(error => console.log(error.response))
-    }
-
-    const fetchAssets = () => {
-        get(`/asset/available?startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
-            if (response.status === 200) {
-                setAssets(response.data)
-            } else {
-                alert('Something wrong!')
-            }
-        }).catch(error => console.log(error.response))
-        // handleSortAsset(ASSET_SORT_BY.FullName)
-    }
-
     const handleSubmit = (e) => {
         e.preventDefault()
         const formData = {
-            assignedTo: user.username,
+            assignedTo: selectedUser.username,
             note: e.target.note.value,
             assignedDate: assignedDate.split("-").reverse().join("/"),
             intendedReturnDate: returnedDate.split("-").reverse().join("/"),
-            assignmentDetails:  selectedAssets.map(a => ({assetCode: a.assetCode}))
+            assignmentDetails: selectedAssets.map(a => ({ assetCode: a.assetCode }))
         }
 
         setIsSaving(true)
@@ -96,6 +76,26 @@ export default function CreateAssignment() {
             })
     }
 
+    const fetchUsers = () => {
+        get('/user').then(response => {
+            if (response.status === 200) {
+                setUsers(response.data.filter(u => u.state !== 'Disabled'))
+            } else {
+                alert('Something wrong!')
+            }
+        }).catch(error => console.log(error.response))
+    }
+
+    const fetchAssets = () => {
+        get(`/asset/available?startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
+            if (response.status === 200) {
+                setAssets(response.data)
+            } else {
+                alert('Something wrong!')
+            }
+        }).catch(error => console.log(error.response))
+    }
+
     const handleUserDisplay = () => {
         if (assetDisplay === true) setAssetDisplay(false)
         if (userDisplay === false) setUserDisplay(true)
@@ -107,34 +107,37 @@ export default function CreateAssignment() {
     }
 
     const handleCancel = () => {
-        setUserDisplay(false)
-        setAssetDisplay(false)
-        // setUserCurrent(null)
-        // setSelectingAssets([])
-        //user
-        if (document.getElementById(user.staffCode) !== null)
-            document.getElementById(user.staffCode).checked = true;
-        else
-            users.map((u) => {
-                if (document.getElementById(user.staffCode))
+        // uncheck radio selecting user
+        if (selectedUser) {
+            document.getElementById(selectedUser.staffCode).checked = true;
+        }
+        else {
+            users.forEach((u) => {
+                if (document.getElementById(u.staffCode))
                     document.getElementById(u.staffCode).checked = false;
             })
-        //asset
-        // if (selectedAssets.length > 0) {
-        //     selectedAssets.forEach((a) => {
-        //         document.getElementById(a.assetCode).checked = true;
-        //     })
-        // } else
-        //     assets.map((u) => {
-        //         if (document.getElementById(user.staffCode))
-        //             document.getElementById(u.assetCode).checked = false;
-        //     })
+        }
 
+        // uncheck checkbox assets
+        selectedAssets.forEach((a) => {
+            document.getElementById(a.assetCode).checked = true;
+        })
+
+        selectingAssets.forEach((a) => {
+            if (document.getElementById(a.assetCode))
+                document.getElementById(a.assetCode).checked = false;
+        })
+
+
+        setUserDisplay(false)
+        setAssetDisplay(false)
+        setSelectingUser(null)
+        setSelectingAssets([])
     }
 
     const handleOk = () => {
-        if (userCurrent !== null) setUser(userCurrent)
-        if (selectingAssets !== null) setSelectedAssets(selectingAssets)
+        if (selectingUser) setSelectedUser(selectingUser)
+        if (selectingAssets) setSelectedAssets(selectingAssets)
         setUserDisplay(false)
         setAssetDisplay(false)
     }
@@ -142,11 +145,9 @@ export default function CreateAssignment() {
     //on change radio 
     const userChange = (e) => {
         let staffCode = e.target.value;
-        let u = users.filter((u) => {
-            return u.staffCode === staffCode
-        })
-        document.getElementById(staffCode).checked = true;
-        setUserCurrent(u[0])
+        let u = users.find(u => u.staffCode === staffCode)
+        // document.getElementById(staffCode).checked = true
+        setSelectingUser(u)
     }
 
     //on change radio
@@ -188,7 +189,7 @@ export default function CreateAssignment() {
     const saveButton = () => {
         if (isSaving)
             return <Button variant="danger" type="submit" disabled><Spinner animation="border" size="sm" variant="light" />Save</Button>
-        else if (selectedAssets.length !== 0 && user.fullName !== '')
+        else if (selectedAssets.length > 0 && selectedUser)
             return <Button variant="danger" type="submit">Save</Button>
         return <Button variant="danger" type="submit" disabled>Save</Button>;
     }
@@ -269,11 +270,11 @@ export default function CreateAssignment() {
             <Col className="user_area" onClick={handleUserDisplay}>
                 <div className="input_field">
                     <div className="border_search_info">
-                        {user.fullName}
+                        {selectedUser && selectedUser.fullName}
                         <FaSearch className="fa-search" />
                     </div>
                 </div>
-                <Modal.Dialog className="dialog" style={{ display: userDisplay ? 'block' : 'none' }}>
+                <Modal.Dialog className="dialog-select" style={{ display: userDisplay ? 'block' : 'none' }}>
                     <Modal.Body style={{ padding: "0px" }}>
                         <div className="list_select">
                             <Row className="header_select">
@@ -319,7 +320,7 @@ export default function CreateAssignment() {
                                                             style={{ cursor: "pointer" }}
                                                             onClick={userChange}
                                                             className="radio_custom"
-                                                        // defaultChecked = {u.staffCode === user.staffCode}
+                                                        // defaultChecked = {u.staffCode === selectedUser.staffCode}
                                                         ></input>
                                                     </td>
                                                     <td style={{ width: "115px" }} >{u.staffCode}</td>
@@ -329,18 +330,18 @@ export default function CreateAssignment() {
                                             </tr>
                                         })}
                                     </tbody>
-                                    <Col className="button-group">
-                                        <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
-                                            Save
-                                        </Button>
-                                        <Button variant="outline-secondary"
-                                            style={{ marginLeft: '20px' }}
-                                            onClick={handleCancel}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Col>
                                 </Table>
+                                <Col className="button-group">
+                                    <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
+                                        Save
+                                    </Button>
+                                    <Button variant="outline-secondary"
+                                        style={{ marginLeft: '20px' }}
+                                        onClick={handleCancel}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Col>
                             </Row>
                         </div>
                     </Modal.Body>
@@ -363,7 +364,7 @@ export default function CreateAssignment() {
                         <FaSearch className="fa-search" />
                     </div>
                 </div>
-                <Modal.Dialog className="dialog" style={{ display: assetDisplay ? 'block' : 'none' }}>
+                <Modal.Dialog className="dialog-select" style={{ display: assetDisplay ? 'block' : 'none' }}>
                     <Modal.Body style={{ padding: "0px" }}>
                         <div className="list_select">
                             <Row className="header_select">
@@ -401,7 +402,6 @@ export default function CreateAssignment() {
                                                     <input
                                                         id={a.assetCode}
                                                         type="checkbox"
-                                                        // id = {u.staffCode} 
                                                         name="assetCheckbox"
                                                         value={a.assetCode}
                                                         style={{ cursor: "pointer" }}
@@ -415,18 +415,19 @@ export default function CreateAssignment() {
                                             </tr>
                                         })}
                                     </tbody>
-                                    <Col className="button-group">
-                                        <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
-                                            Save
-                                        </Button>
-                                        <Button variant="outline-secondary"
-                                            style={{ marginLeft: '20px' }}
-                                            onClick={handleCancel}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Col>
                                 </Table>
+
+                                <Col className="button-group">
+                                    <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
+                                        Save
+                                    </Button>
+                                    <Button variant="outline-secondary"
+                                        style={{ marginLeft: '20px' }}
+                                        onClick={handleCancel}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Col>
                             </Row>
                         </div>
                     </Modal.Body>
@@ -498,7 +499,7 @@ export default function CreateAssignment() {
                             {selectedAssets.map((a) =>
                                 <div className="asset-item" key={a.assetCode}>
                                     <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
-                                    <CgCloseO className="asset-icon-remove"/>
+                                    <CgCloseO className="asset-icon-remove" />
                                 </div>
                             )}
                         </Col>
@@ -512,9 +513,9 @@ export default function CreateAssignment() {
                                 name='note'
                                 as='textarea'
                                 maxLength={100}
-                            // minLength={20}
+                                // minLength={20}
                                 value={note}
-                            onChange={(e) => setNote(e.target.value)}
+                                onChange={(e) => setNote(e.target.value)}
                             />
                         </Col>
                     </Form.Group>

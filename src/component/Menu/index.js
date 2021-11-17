@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 function Menu({ tableTab }) {
   const [selected, setSelected] = useState(null);
   const user = authService.getCurrentUser() ? authService.getCurrentUser() : ''
+  
   function setSelectedItem(index) {
     setSelected(index)
     tableTab(index)

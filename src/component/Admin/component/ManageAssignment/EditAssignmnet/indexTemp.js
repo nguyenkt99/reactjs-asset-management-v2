@@ -1,42 +1,43 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Row, Col, Form, Button, Spinner, Modal, Table } from 'react-bootstrap'
-import { Link, useHistory, withRouter } from 'react-router-dom'
+import { Link, useHistory, withRouter } from 'react-router-dom';
 import { get, put } from '../../../../../httpHelper'
-import { FaSearch, FaAngleDown, FaCalendarAlt } from 'react-icons/fa'
-import { CgCloseO } from 'react-icons/cg'
-import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css"
-import moment from "moment"
+import { FaSearch, FaAngleDown, FaCalendarAlt } from 'react-icons/fa';
+import { CgCloseO } from 'react-icons/cg';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import moment from "moment";
 
 function EditAssignment(props) {
-    const [users, setUsers] = useState([])
-    const [userDisplay, setUserDisplay] = useState(false)
-    const [selectedUser, setSelectedUser] = useState()
-    const [assets, setAssets] = useState([])
-    const [availableAssets, setAvailableAssets] = useState([])
-    const [assetDisplay, setAssetDisplay] = useState(false)
+    const [users, setusers] = useState([])
+    const [userDisplay, setuserDisplay] = useState(false)
+    const [user, setuser] = useState({ fullName: '', staffCode: '' })
+    const [assetDisplay, setassetDisplay] = useState(false)
     const [selectedAssets, setSelectedAssets] = useState([])
-    const [assetCodeASC, setAssetCodeASC] = useState(true)
-    const [assetNameASC, setAssetNameASC] = useState(false)
-    const [categoryASC, setCategoryASC] = useState(false)
+    const [assets, setAssets] = useState([]);
+    const [availableAssets, setAvailableAssets] = useState([]);
+    const [isSaving, setIsSaving] = useState(false);
+    const [assetCodeASC, setAssetCodeASC] = useState(true);
+    const [assetNameASC, setAssetNameASC] = useState(false);
+    const [categoryASC, setCategoryASC] = useState(false);
     const [staffCodeASC, setStaffCodeASC] = useState(false)
     const [fullNameASC, setFullNameASC] = useState(true)
     const [typeASC, setTypeASC] = useState(false)
-    const [usersData, setUsersData] = useState([])
+    const [usersData, setusersData] = useState([])
     const [availableAssetsData, setAvailableAssetsData] = useState([])
     // check ok or cancel 
-    const [selectingUser, setSelectingUser] = useState()
+    const [selectingUser, setSelectingUser] = useState([])
     const [selectingAssets, setSelectingAssets] = useState([])
     // state
-    const [note, setNote] = useState('')
     const [assignedDate, setAssignedDate] = useState()
     const [returnedDate, setReturnedDate] = useState()
-    const [assignment, setAssignment] = useState()
-    const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
+    const [assignment, setAssignment] = useState({ assignedDate: '' })
+    const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false);
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
 
-    const history = useHistory()
+    //note
+    const [note, setNote] = useState('')
+    let history = useHistory()
 
     useEffect(() => {
         fetchAssets()
@@ -48,39 +49,48 @@ function EditAssignment(props) {
     }, [assignedDate, returnedDate])
 
     //useeffect after setAssignment
-    const isMounted = useRef(true)
+    const isInitialMount = useRef(true)
     useEffect(() => {
-        if (isMounted.current) {
-            isMounted.current = false
+        if (isInitialMount.current) {
+            isInitialMount.current = false
         } else {
             fetchUsers()
-            let oldAssets = []
+            // fetchAvailableAssets()
+            let assignedDate = assignment.assignedDate.split("/").reverse().join("-")
+            let intendedReturnDate = assignment.intendedReturnDate.split("/").reverse().join("-")
+            setAssignedDate(assignedDate)
+            setReturnedDate(intendedReturnDate)
+            setNote(assignment.note)
+            let oldAssets = [];
             assignment.assignmentDetails.forEach(ad => {
-                const asset = assets.find(a => a.assetCode === ad.assetCode)
-                if (asset) {
-                    oldAssets.push(asset)
+                const foundAsset = assets.find(a => a.assetCode === ad.assetCode)
+                if (foundAsset) {
+                    oldAssets.push(foundAsset)
                 }
             })
-            setNote(assignment.note)
             setSelectingAssets(oldAssets)
             setSelectedAssets(oldAssets)
-            setAssignedDate(assignment.assignedDate.split("/").reverse().join("-"))
-            setReturnedDate(assignment.intendedReturnDate.split("/").reverse().join("-"))
         }
     }, [assignment])
 
-    // useEffect(() => {
-    //     selectedAssets.forEach(a => {
-    //         if (document.getElementById(a.assetCode) !== null)
-    //             document.getElementById(a.assetCode).checked = true;
-    //     })
-    // }, [selectedAssets])
+    useEffect(() => {
+        selectedAssets.forEach(a => {
+            if (document.getElementById(a.assetCode) !== null)
+                document.getElementById(a.assetCode).checked = true;
+        })
+    }, [selectedAssets])
+
+    //useeffect use for sort and search
+    useEffect(() => {
+        setusersData(users)
+        setAvailableAssetsData(assets)
+    }, [users, assets])
 
     const handleSubmit = (e) => {
         e.preventDefault()
         const formData = {
-            assignedTo: selectedUser.username,
-            note: note,
+            assignedTo: user.username,
+            note: e.target.note.value,
             assignedDate: assignedDate.split("-").reverse().join("/"),
             intendedReturnDate: returnedDate.split("-").reverse().join("/"),
             assignmentDetails: selectedAssets.map(a => ({ assetCode: a.assetCode }))
@@ -103,32 +113,52 @@ function EditAssignment(props) {
     }
 
     const fetchUsers = () => {
-        get('/user').then(res => {
-            if (res.status === 200) {
-                const user = res.data.find((u) => u.username === assignment.assignedTo)
-                setSelectingUser(user)
-                setSelectedUser(user)
-                setUsers(res.data)
-                setUsersData(res.data)
+        get('/users').then(response => {
+            if (response.status === 200) {
+                setusers(response.data)
+                let currentUser = response.data.filter((data) => {
+                    return data.username === assignment.assignedTo
+                })
+                setuser(currentUser[0])
+                setSelectingUser(currentUser[0])
             } else {
                 alert('Something wrong!')
             }
-        }).catch(error => console.log(error))
+        }).catch(error => console.log(error.response))
     }
 
     const id = props.match.params.assignmentId
     const fetchAssigment = () => {
         get(`/assignment/${id}`)
             .then((res) => {
-                if (res.data.state !== "WAITING_FOR_ACCEPTANCE") {
+                if (res.data.state !== "WAITING_FOR_ACCEPTANCE")
                     history.push('/manage_assignment')
-                }
+
                 setAssignment(res.data)
             })
             .catch((err) => {
                 console.log(err.response)
             })
     }
+
+    // const fetchAvailableAssets = () => {
+    //     get('/asset').then(response => {
+    //         if (response.status === 200) {
+    //             let available = response.data.filter((data) => {
+    //                 return data.state === "AVAILABLE" || data.assetCode === assignment.assetCode;
+    //             })
+    //             setAvailableAssets(available)
+    //             let currentAsset = response.data.filter((data) => {
+    //                 return data.assetCode === assignment.assetCode;
+    //             })
+    //             setasset(currentAsset[0]);
+    //             setSelectingAssets(currentAsset[0]);
+    //         } else {
+    //             alert('Something wrong!')
+    //         }
+    //     }).catch(error => console.log(error.response))
+    //     // handleSortAsset(ASSET_SORT_BY.FullName)
+    // }
 
     const fetchAssets = () => {
         get(`/asset`).then(response => {
@@ -144,7 +174,6 @@ function EditAssignment(props) {
         get(`/asset/available?assignmentId=${id}&startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
                 setAvailableAssets(response.data)
-                setAvailableAssetsData(response.data)
             } else {
                 alert('Something wrong!')
             }
@@ -152,60 +181,56 @@ function EditAssignment(props) {
     }
 
     const handleUserDisplay = () => {
-        if (assetDisplay === true) setAssetDisplay(false)
-        if (userDisplay === false) setUserDisplay(true);
+        if (assetDisplay === true) setassetDisplay(false)
+        if (userDisplay === false) setuserDisplay(true);
     }
 
     const handleAssetDisplay = () => {
-        if (userDisplay === true) setUserDisplay(false);
-        if (assetDisplay === false) setAssetDisplay(true);
+        if (userDisplay === true) setuserDisplay(false);
+        if (assetDisplay === false) setassetDisplay(true);
     }
 
     const handleCancel = () => {
-        setUserDisplay(false);
-        setAssetDisplay(false);
-        setSelectingAssets(selectedAssets);
-        setSelectingUser(selectedUser);
-
+        setuserDisplay(false);
+        setassetDisplay(false);
+        // setSelectingAssets(null);
+        // setSelectingUser(null);
         //user
-        if (document.getElementById(selectedUser.staffCode))
-            document.getElementById(selectedUser.staffCode).checked = true;
+        if (document.getElementById(user.staffCode))
+            document.getElementById(user.staffCode).checked = true;
         else
             users.forEach((u) => {
                 if (document.getElementById(u.staffCode))
                     document.getElementById(u.staffCode).checked = false;
             })
-
         //asset
-        // if (document.getElementById(asset.assetCode))
+        // if (document.getElementById(asset.assetCode) !== null)
         //     document.getElementById(asset.assetCode).checked = true;
         // else
         //     assets.forEach((u) => {
         //         if (document.getElementById(u.assetCode))
         //             document.getElementById(u.assetCode).checked = false;
         //     })
-
-        availableAssets.forEach((a) => {
-            if (document.getElementById(a.assetCode) && selectedAssets.find(selectedAsset => selectedAsset.assetCode === a.assetCode))
-                document.getElementById(a.assetCode).checked = true;
-            else 
-                document.getElementById(a.assetCode).checked = false;
-        })
     }
 
     const handleOk = () => {
-        if (selectingUser !== null) setSelectedUser(selectingUser);
+        if (selectingUser !== null) setuser(selectingUser);
         if (selectingAssets !== null) setSelectedAssets(selectingAssets)
-        setUserDisplay(false);
-        setAssetDisplay(false);
+
+        if (selectingAssets !== null) setSelectedAssets(selectingAssets);
+        setuserDisplay(false);
+        setassetDisplay(false);
     }
 
     //on change radio 
     const userChange = (e) => {
         let staffCode = e.target.value;
-        let u = users.find(u => u.staffCode === staffCode)
-        // document.getElementById(staffCode).checked = true
-        setSelectingUser(u)
+        let u = users.filter((u) => {
+            return u.staffCode === staffCode
+        })
+        console.log(staffCode);
+        document.getElementById(staffCode).checked = true;
+        setSelectingUser(u[0]);
     }
 
     //on change radio
@@ -224,7 +249,7 @@ function EditAssignment(props) {
         let newData = users.filter(e => (
             e.staffCode.toLowerCase().includes(keySearch.toLowerCase())
             || e.fullName.toLowerCase().includes(keySearch.toLowerCase())))
-        setUsersData(newData);
+        setusersData(newData);
     }
 
     const handleSearchChangeAsset = (e) => {
@@ -247,7 +272,7 @@ function EditAssignment(props) {
     const saveButton = () => {
         if (isSaving)
             return <Button variant="danger" type="submit" disabled><Spinner animation="border" size="sm" variant="light" />Save</Button>
-        else if (selectedAssets.length !== 0 && selectedUser)
+        else if (selectedAssets.length !== 0 && user.fullName !== '')
             return <Button variant="danger" type="submit">Save</Button>
         return <Button variant="danger" type="submit" disabled>Save</Button>;
     }
@@ -313,8 +338,13 @@ function EditAssignment(props) {
             setTypeASC(!typeASC)
             list = usersData.slice().sort((a, b) => (a.type > b.type) ? 1 * reverse : ((b.type > a.type) ? -1 * reverse : 0))
         }
-        setUsersData(list);
+        setusersData(list);
     }
+
+    // const getMinDate = (assignedDate) => {
+    //     const currentDate = new Date();
+    //     return assignedDate > currentDate ? currentDate : assignedDate;
+    // }
 
     let userJsx =
         <Row>
@@ -328,7 +358,7 @@ function EditAssignment(props) {
             <Col className="user_area" onClick={handleUserDisplay}>
                 <div className="input_field">
                     <div className="border_search_info">
-                        {selectedUser && selectedUser.fullName}
+                        {user.fullName}
                         <FaSearch className="fa-search" />
                     </div>
                 </div>
@@ -380,7 +410,7 @@ function EditAssignment(props) {
                                                         style={{ cursor: "pointer" }}
                                                         onClick={userChange}
                                                         className="radio_custom"
-                                                        defaultChecked={u.username === selectedUser.username}
+                                                        defaultChecked={u.username === user.username}
                                                     ></input>
                                                 </td>
                                                 <td style={{ width: "115px" }} >{u.staffCode}</td>
@@ -470,7 +500,7 @@ function EditAssignment(props) {
                                                         value={a.assetCode}
                                                         style={{ cursor: "pointer" }}
                                                         onClick={assetChange}
-                                                        defaultChecked={selectedAssets.find(selectedAsset => selectedAsset.assetCode === a.assetCode)}
+                                                        defaultChecked={a.assetCode === assignment.assetCode}
                                                     // className="radio_custom"
                                                     ></input>
                                                 </td>
@@ -572,7 +602,8 @@ function EditAssignment(props) {
                                 name='note'
                                 as='textarea'
                                 maxLength={100}
-                                defaultValue={assignment && assignment.note}
+                                defaultValue={assignment.note}
+                                // minLength={20}
                                 value={note}
                                 onChange={(e) => { setNote(e.target.value) }}
                             />

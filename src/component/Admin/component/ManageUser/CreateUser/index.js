@@ -197,7 +197,7 @@ export default function CreateUser() {
         console.log(formData);
 
         setIsSaving(true);
-        post('/users', formData)
+        post('/user', formData)
             .then((res) => {
                 history.push({
                     pathname: './manage_user',

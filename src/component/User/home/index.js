@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Col, Row, Table, Modal, Form, Button } from "react-bootstrap";
+import { Col, Row, Table, Modal, Form, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import "./UserAssignment.css";
 import { FaUndo } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { get, put, post } from '../../../httpHelper';
 import { BsFillCaretDownFill } from "react-icons/bs";
+import { HiInformationCircle } from "react-icons/hi";
 
 let assignmentCode = 0
 
@@ -36,8 +37,16 @@ export default function UserAssignment() {
       .then((response) => {
         if (response.status === 200) {
           let data = response.data;
-          setData(data);
-          setAssignments(data);
+          const dataWithStrAssets = data.map(u => {
+            let strAssets = '';
+            u.assignmentDetails.forEach(ad => {
+              strAssets += `${ad.assetCode}, `;
+            })
+            return { ...u, strAssets: strAssets }
+          })
+
+          setData(dataWithStrAssets);
+          setAssignments(dataWithStrAssets);
         } else {
           toastMessage("Something wrong!");
         }
@@ -160,7 +169,7 @@ export default function UserAssignment() {
   }
 
   const handleDeclined = () => {
-    put(`/assignment/staff/${assignmentCode}`, {state: "CANCELED_ASSIGN", note: note})
+    put(`/assignment/staff/${assignmentCode}`, { state: "CANCELED_ASSIGN", note: note })
       .then((res) => {
         // setData(data.filter(e => e.id !== assignmentCode))
         // setAssignments(assignments.filter(e => e.id !== assignmentCode))
@@ -224,40 +233,21 @@ export default function UserAssignment() {
   return (
     <div>
       <h5 className="content-title">My Assignment</h5>
-      <br />
       <Row>
         <Table className="content-table" responsive>
           <thead>
             <tr>
-              <th>
-                Asset Code
-                <BsFillCaretDownFill
-                  onClick={() => handleSort(SORT_BY.AssetCode)}
-                />
+              <th style={{ width: "300px" }}>
+                Asset
+                <BsFillCaretDownFill />
               </th>
-              <th>
-                Asset Name
-                <BsFillCaretDownFill
-                  onClick={() => handleSort(SORT_BY.AssetName)}
-                />
-              </th>
-              <th>
-                Category
-                <BsFillCaretDownFill
-                  onClick={() => handleSort(SORT_BY.Category)}
-                />
-              </th>
-              <th>
+              <th onClick={() => handleSort(SORT_BY.AssignedDate)}>
                 Assigned Date
-                <BsFillCaretDownFill
-                  onClick={() => handleSort(SORT_BY.AssignedDate)}
-                />
+                <BsFillCaretDownFill />
               </th>
-              <th>
+              <th onClick={() => handleSort(SORT_BY.State)}>
                 State
-                <BsFillCaretDownFill
-                  onClick={() => handleSort(SORT_BY.State)}
-                />
+                <BsFillCaretDownFill />
               </th>
               <th className="w-14"></th>
             </tr>
@@ -267,9 +257,9 @@ export default function UserAssignment() {
               assignments
                 .map((a) => (
                   <tr key={a.id}>
-                    <td onClick={() => handleRowClick(a.id)}>{a.assetCode}</td>
-                    <td onClick={() => handleRowClick(a.id)}>{a.assetName}</td>
-                    <td onClick={() => handleRowClick(a.id)}>{a.category}</td>
+                    <td className="asset-name-list" onClick={() => handleRowClick(a.id)}>
+                      {a.strAssets}
+                    </td>
                     <td onClick={() => handleRowClick(a.id)}>
                       {a.assignedDate}
                     </td>
@@ -401,12 +391,48 @@ export default function UserAssignment() {
               </Form.Label>
               <Col sm='8'>
                 <Form.Control
+                  as="textarea"
                   plaintext
                   readOnly
                   defaultValue={assignmentInformation && assignmentInformation.note}
                 />
               </Col>
             </Form.Group>
+
+            {/* Assignment details */}
+            <Row>
+              <Table >
+                <thead className="fix_width">
+                  <tr className="fix_width">
+                    <th style={{ width: "100px" }}>Asset Code</th>
+                    <th style={{ width: "170px" }}>Asset Name</th>
+                    <th>State</th>
+                  </tr>
+                </thead>
+                <tbody className="table-content fix_width">
+                  {assignmentInformation && assignmentInformation.assignmentDetails.map(ad => (
+                    <tr key={ad.assetCode} className="fix_width">
+                      <td style={{ width: "100px" }}>{ad.assetCode}</td>
+                      <td style={{ width: "170px" }}>
+                        <span>{ad.assetName}</span>
+                        <OverlayTrigger
+                          key={ad.assetCode}
+                          placement="bottom"
+                          overlay={
+                            <Tooltip className="tooltip-text">
+                              {ad.specs}
+                            </Tooltip>
+                          }
+                        >
+                          <span className="asset-name__icon"><HiInformationCircle /></span>
+                        </OverlayTrigger>
+                      </td>
+                      <td>{StateToLowCase[ad.state]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Row>
           </Form>
         </Modal.Body>
       </Modal>

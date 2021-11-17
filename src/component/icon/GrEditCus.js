@@ -12,7 +12,7 @@ export const GrEditCus = ({ color, size, title, className }) => {
         height='1em'
         width='1em'
         style={{ color }}
-        font-size='130%'
+        fontSize='130%'
         className={className ? className : ''}>
         {title ? <title>{title}</title> : null}
         <path

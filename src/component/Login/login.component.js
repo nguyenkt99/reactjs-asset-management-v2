@@ -105,21 +105,21 @@ export default class Login extends Component {
     const { username, password } = this.state;
     const isEnabled = username.length > 0 && password.length > 0;
     return (
-      <div id='Login'>
-        <nav className='__conNAV_LOGIN navbar-expand'>
-          <div className=' container'>
-            <div id='Logo_mjv'>
-              <div id='Online_Asset_Management_mjw'>
+      <>
+        <nav className='navbar-login navbar-expand'>
+          <div className='container'>
+            <div className='navbar-login__brand'>
+              <img className='navbar-login__logo' src={logo} alt="Logo login" />
+              <div className='navbar-login__title'>
                 <span>Online Asset Management</span>
               </div>
-              <img id='Logo_mjx' src={logo} alt="Logo login" />
             </div>
           </div>
         </nav>
         <div className='container'>
           <div className='row'>
             <div className='col-12 col-md-12'>
-              <div className='logincard'>
+              <div className='login-card'>
                 <div className='cardTitle card-container'>
                   <div className='title'>
                     <h4 className='logintitle'>
@@ -162,6 +162,7 @@ export default class Login extends Component {
                         <span className='star'> *</span>
                       </label>
                       <Input
+                        style={{fontSize: "1.4rem"}}
                         type='text'
                         className='login lguser form-control'
                         name='username'
@@ -176,6 +177,7 @@ export default class Login extends Component {
                         <span className='star'> *</span>
                       </label>
                       <Input
+                        style={{fontSize: "1.4rem"}}
                         id='standard-adornment-password'
                         className='login lguser form-control'
                         type={this.state.showPassword ? 'text' : 'password'}
@@ -234,7 +236,7 @@ export default class Login extends Component {
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 }

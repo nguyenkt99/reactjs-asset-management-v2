@@ -31,7 +31,7 @@ export default function ListAsset() {
   const [data, setData] = useState([]);
   const [stateChecked, setStateChecked] = useState([]);
   const [categoryChecked, setCategoryChecked] = useState([CATEGORY.All]);
-  const [categoryname, setCategoryname] = useState([]);
+  const [categoryName, setCategoryName] = useState(['All']);
   const history = useHistory();
 
   useEffect(() => {
@@ -73,12 +73,9 @@ export default function ListAsset() {
 
   const fetchCatagoryName = () => {
     get('/category')
-      .then((response) => {
-        let repon = ['All'];
-        if (response.status === 200) {
-          response.data.map((category) => {
-            repon.push(category.name);
-          }, setCategoryname(repon));
+      .then((res) => {
+        if (res.status === 200) {
+          setCategoryName([...categoryName, res.data.map((category) => category.name)]);
         } else {
           toastMessage('Something wrong!');
         }
@@ -103,47 +100,19 @@ export default function ListAsset() {
     if (key === SORT_BY.AssetCode) {
       reverse = assetCodeASC ? -1 : 1;
       setAssetCodeASC(!assetCodeASC);
-      list = assets
-        .slice()
-        .sort((a, b) =>
-          a.assetCode > b.assetCode
-            ? 1 * reverse
-            : b.assetCode > a.assetCode
-              ? -1 * reverse
-              : 0
-        );
+      list = assets.slice().sort((a, b) => a.assetCode > b.assetCode ? 1 * reverse : b.assetCode > a.assetCode ? -1 * reverse : 0);
     } else if (key === SORT_BY.AssetName) {
       reverse = assetNameASC ? -1 : 1;
       setAssetNameASC(!assetNameASC);
-      list = assets
-        .slice()
-        .sort((a, b) =>
-          a.assetName > b.assetName
-            ? 1 * reverse
-            : b.assetName > a.assetName
-              ? -1 * reverse
-              : 0
-        );
+      list = assets.slice().sort((a, b) => a.assetName > b.assetName ? 1 * reverse : b.assetName > a.assetName ? -1 * reverse : 0);
     } else if (key === SORT_BY.Category) {
       reverse = categoryASC ? -1 : 1;
       setCategoryASC(!categoryASC);
-      list = assets
-        .slice()
-        .sort((a, b) =>
-          a.categoryName > b.categoryName
-            ? 1 * reverse
-            : b.categoryName > a.categoryName
-              ? -1 * reverse
-              : 0
-        );
+      list = assets.slice().sort((a, b) => a.categoryName > b.categoryName ? 1 * reverse : b.categoryName > a.categoryName ? -1 * reverse : 0);
     } else if (key === SORT_BY.State) {
       reverse = stateASC ? -1 : 1;
       setStateASC(!stateASC);
-      list = assets
-        .slice()
-        .sort((a, b) =>
-          a.state > b.state ? 1 * reverse : b.state > a.state ? -1 * reverse : 0
-        );
+      list = assets.slice().sort((a, b) => a.state > b.state ? 1 * reverse : b.state > a.state ? -1 * reverse : 0);
     }
     setAssets(list);
   };
@@ -162,13 +131,9 @@ export default function ListAsset() {
   const handleStateClick = async (e) => {
     if (e === STATE.All) setStateChecked([e]);
     else {
-      if (stateChecked.includes(e))
-        setStateChecked([...stateChecked.filter((item) => item !== e)]);
-      else
-        setStateChecked([
-          ...stateChecked.filter((item) => item !== STATE.All),
-          e,
-        ]);
+      stateChecked.includes(e)
+        ? setStateChecked([...stateChecked.filter((item) => item !== e)])
+        : setStateChecked([...stateChecked.filter((item) => item !== STATE.All), e]);
     }
     setCurrentPage(1);
   };
@@ -178,24 +143,15 @@ export default function ListAsset() {
     else {
       categoryChecked.includes(e)
         ? setCategoryChecked([...categoryChecked.filter((item) => item !== e)])
-        : setCategoryChecked([
-          ...categoryChecked.filter((item) => item !== 'All'),
-          e,
-        ]);
+        : setCategoryChecked([...categoryChecked.filter((item) => item !== 'All'), e]);
     }
   };
 
   useEffect(() => {
     let result = [...data];
-
-    result = filterByAssetCodeOrAssetName(
-      data.filter(
-        (u) =>
-          (stateChecked.includes(u.state) || stateChecked.includes('All')) &&
-          (categoryChecked.includes(u.categoryName) ||
-            categoryChecked.includes('All'))
-      ),
-      keySearch
+    result = filterByAssetCodeOrAssetName(data.filter(d =>
+      (stateChecked.includes(d.state) || stateChecked.includes('All')) &&
+      (categoryChecked.includes(d.categoryName) || categoryChecked.includes('All'))), keySearch
     );
 
     setAssets(result);
@@ -321,13 +277,13 @@ export default function ListAsset() {
               <HiFilter />
             </Dropdown.Toggle>
             <Dropdown.Menu id='drop-show-asset'>
-              <div className="checkbox px-3" onClick={() => {
+              <div className="dropdown-item checkbox px-3" onClick={() => {
                 handleStateClick(STATE.All)
               }}>
                 <FormCheck label='All' checked={stateChecked.includes(STATE.All) ? 'checked' : ''} />
               </div>
               <div
-                className='checkbox px-3'
+                className='dropdown-item checkbox px-3'
                 onClick={() => {
                   handleStateClick(STATE.Assigned);
                 }}>
@@ -337,7 +293,7 @@ export default function ListAsset() {
                 />
               </div>
               <div
-                className='checkbox px-3'
+                className='dropdown-item checkbox px-3'
                 onClick={() => {
                   handleStateClick(STATE.Available);
                 }}>
@@ -349,7 +305,7 @@ export default function ListAsset() {
                 />
               </div>
               <div
-                className='checkbox px-3'
+                className='dropdown-item checkbox px-3'
                 onClick={() => {
                   handleStateClick(STATE.Not_available);
                 }}>
@@ -361,7 +317,7 @@ export default function ListAsset() {
                 />
               </div>
               <div
-                className='checkbox px-3'
+                className='dropdown-item checkbox px-3'
                 onClick={() => {
                   handleStateClick(STATE.Waiting_for_recycling);
                 }}>
@@ -375,7 +331,7 @@ export default function ListAsset() {
                 />
               </div>
               <div
-                className='checkbox px-3'
+                className='dropdown-item checkbox px-3'
                 onClick={() => {
                   handleStateClick(STATE.Recycled);
                 }}>
@@ -401,18 +357,11 @@ export default function ListAsset() {
               <HiFilter />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {categoryname.map((category) => (
-                <div
-                  className='checkbox px-3'
-                  onClick={() => {
-                    handleCategoryClick(category);
-                  }}>
-                  <FormCheck
-                    label={category}
-                    checked={categoryChecked.includes(category) ? 'checked' : ''}
-                  />
+              {categoryName.map((category, index) =>
+                <div key={index} className='dropdown-item checkbox px-3' onClick={() => { handleCategoryClick(category) }}>
+                  <FormCheck label={category} checked={categoryChecked.includes(category) ? 'checked' : ''} />
                 </div>
-              ))}
+              )}
             </Dropdown.Menu>
           </Dropdown>
         </Col>

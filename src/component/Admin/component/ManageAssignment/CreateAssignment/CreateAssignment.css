@@ -62,11 +62,11 @@
   position: relative;
 }
 
-.dialog {
+.dialog-select {
   z-index: 1;
   position: absolute;
-  width: 100%;
-  left: 0;
+  width: 120%;
+  left: -20%;
   top: 0;
   margin: 0;
 }
@@ -88,7 +88,7 @@
 }
 
 .table_ua {
-  padding: 10px 10px 0px 10px;
+  padding: 4px;
   position: relative;
 }
 
@@ -100,7 +100,7 @@
 
 .table-content {
   display: block;
-  max-height: 220px;
+  max-height: 216px;
   overflow: auto;
   table-layout: fixed;
 }
@@ -108,7 +108,6 @@
 .button-group {
   display: flex;
   justify-content: flex-end;
-  padding-top: 20px;
 }
 
 .radio_custom {

@@ -23,8 +23,6 @@ function EditAsset(props) {
     categoryPrefix: ''
   });
 
-  /*assetCode assetName  state specification installedDate location categoryPrefix */
-
   useEffect(() => {
     fetchAsset();
   }, []);
@@ -33,7 +31,6 @@ function EditAsset(props) {
   const fetchAsset = () => {
     get(`/asset/${assetCode}`)
       .then((res) => {
-        console.log(res.data)
         let installedDate = res.data.installedDate.split("/").reverse().join("-")
         let object = {
           assetName: res.data.assetName,
@@ -85,7 +82,6 @@ function EditAsset(props) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(inputs);
     setErrorNameAsset('');
     setErrorSpeAsset('');
     let check = true;
@@ -139,11 +135,11 @@ function EditAsset(props) {
   }
 
   return (
-    <div className='p-4'>
-      <h5 className='mb-4' style={{ color: '#CF2338' }}> Edit asset</h5>
-      <Col xs={12} sm={12} md={7}>
-        <Form onSubmit={handleSubmit}>
-          <Form.Group as={Row} className='mb-3' controlId='firstName' >
+    <>
+      <h5 className="content-title">Create asset</h5>
+      <Col xs={6}>
+        <Form onSubmit={handleSubmit} className="content-form">
+          <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={3}>
               Name
             </Form.Label>
@@ -176,12 +172,13 @@ function EditAsset(props) {
             </Col>
           </Row>
 
-          <Form.Group as={Row} className='mb-3' controlId='firstName'>
+          <Form.Group as={Row} className='mb-3'>
             <Form.Label column sm={3}>
               Specification
             </Form.Label>
             <Col>
               <Form.Control
+                className="textarea-input"
                 name='specification'
                 as='textarea'
                 required
@@ -284,7 +281,7 @@ function EditAsset(props) {
           </Form.Group>
         </Form>
       </Col>
-    </div>
+    </>
   );
 }
 export default withRouter(EditAsset);

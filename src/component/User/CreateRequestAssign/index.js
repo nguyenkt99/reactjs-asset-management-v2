@@ -62,10 +62,10 @@ export default function CreateRequestAssign() {
     }
 
     return (
-        <div className="p-5">
-            <h5 className="mb-4" style={{ color: "#CF2338" }}>Create request for assigning</h5>
-            <Col xs={12} sm={12} md={7}>
-                <Form onSubmit={handleSubmit}>
+        <>
+        <h3 className="content-title">Create request for assigning</h3>
+            <Col xs={6}>
+                <Form className="content-form" onSubmit={handleSubmit}>
                     <Form.Group as={Row} className="mb-3" controlId="id">
                         <Form.Label column sm={3}>Category</Form.Label>
                         <Col>
@@ -95,7 +95,7 @@ export default function CreateRequestAssign() {
                     </Form.Group>
                 </Form>
             </Col>
-        </div>
+        </>
     )
 }
 

@@ -55,7 +55,7 @@ export default function User() {
     }, [typeChecked, stateChecked, keySearch])
 
     const fetchUsers = () => {
-        get('/users').then(response => {
+        get('/user').then(response => {
             if (response.status === 200) {
                 let newUsers = response.data
                 if (history.location.state) {
@@ -78,8 +78,8 @@ export default function User() {
 
     const handleRowClick = (staffCode) => {
         //release
-        // const url = `/users/?staffCode=${staffCode}`;
-        const url = `/users/${staffCode}`;
+        // const url = `/user/?staffCode=${staffCode}`;
+        const url = `/user/${staffCode}`;
         get(url).then(response => {
             if (response.status === 200) {
                 //release
@@ -187,7 +187,7 @@ export default function User() {
         setIsDeleteYourself(false);
 
         // check valid delete user
-        const endpoint = '/users/disable/' + StaffCode
+        const endpoint = '/user/disable/' + StaffCode
         get(endpoint)
             .then(response => {
                 if (response.status === 200) {
@@ -216,7 +216,7 @@ export default function User() {
 
     const DisableUser = () => {
         //Disable user
-        const endpoint = '/users/disable/' + staffCodeDelete
+        const endpoint = '/user/disable/' + staffCodeDelete
         put(endpoint)
             .then(response => {
                 if (response.status === 200) {
@@ -577,7 +577,7 @@ export default function User() {
 const SORT_BY = { StaffCode: 'staffCode', FullName: 'fullName', Username: 'username', JoinedDate: 'joinedDate', Department: 'deptCode', Type: 'type', State: 'state' }
 const TYPE = { ALL: 'ALL', STAFF: 'ROLE_STAFF', ADMIN: 'ROLE_ADMIN' }
 const ROLEtoLowcase = { ALL: 'All', ROLE_ADMIN: 'Admin', ROLE_STAFF: 'Staff' }
-const STATE = { ALL: 'ALL', DISABLED: 'Disabled', ENABLED: 'Enable' }
+const STATE = { ALL: 'ALL', DISABLED: 'DISABLED', ENABLED: 'ENABLED' }
 const STATEtoLowCase = { ALL: 'All', Disabled: 'Break', Enable: 'Working' }
 
 const deleteIconStyle = {
