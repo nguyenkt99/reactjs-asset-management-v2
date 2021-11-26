@@ -90,7 +90,7 @@ function EditAssignment(props) {
         put(`/assignment/${assignment.id}`, formData)
             .then((res) => {
                 history.push({
-                    pathname: '/manage_assignment',
+                    pathname: '/manage-assignment',
                     state: {
                         id: res.data.id
                     }
@@ -121,7 +121,7 @@ function EditAssignment(props) {
         get(`/assignment/${id}`)
             .then((res) => {
                 if (res.data.state !== "WAITING_FOR_ACCEPTANCE") {
-                    history.push('/manage_assignment')
+                    history.push('/manage-assignment')
                 }
                 setAssignment(res.data)
             })
@@ -581,7 +581,7 @@ function EditAssignment(props) {
                     <Form.Group as={Row} className="float-end mb-3">
                         <Col>
                             {saveButton()}
-                            <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/manage_assignment">Cancel</Link>
+                            <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/manage-assignment">Cancel</Link>
                         </Col>
                     </Form.Group>
                 </Form>

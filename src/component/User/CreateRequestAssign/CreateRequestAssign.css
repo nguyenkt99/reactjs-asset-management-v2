@@ -1,0 +1,29 @@
+.form-select {
+    font-size: 1.4rem;
+}
+
+.icon-remove {
+    color: red;
+    font-size: 130%;
+    cursor: pointer;
+}
+
+.icon-remove:hover {
+    color: #fc5656
+}
+
+.btn-add {
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 30px;
+    margin: auto;
+}
+
+.request-assign-list {
+    padding: 8px;
+    border: 2px dashed #666;
+    border-radius: 4px;
+}

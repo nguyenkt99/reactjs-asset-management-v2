@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Col, Row, Table, Modal, Toast, Button, ToastContainer } from 'react-bootstrap'
-import { del, get, put } from '../../../httpHelper'
-// import './Request.css'
+import './RequestAssignUser.css'
+import { Col, Row, Table, Modal, Toast, Button, ToastContainer, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { del, get } from '../../../httpHelper'
+import { GrEditCus } from '../../icon/GrEditCus'
 import { BsFillCaretDownFill } from "react-icons/bs";
+import { HiInformationCircle } from "react-icons/hi";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import "react-datepicker/dist/react-datepicker.css";
@@ -25,7 +27,7 @@ export default function RequestAssignUser() {
     const [requestedByASC, setRequestedBy] = useState(false)
     const [stateASC, setStateASC] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
-    const [data, setData] = useState([])
+    const [dataRequestAssigns, setDataRequestAssigns] = useState([])
     const [stateChecked, setStateChecked] = useState([STATE.ALL])
     const [requestedDate, setRequestedDate] = useState()
     const [isOpenDatePicker, setIsOpenDatePicker] = useState(false);
@@ -42,12 +44,21 @@ export default function RequestAssignUser() {
     const fetchRequestAssigns = () => {
         get('/request-assign').then(response => {
             if (response.status === 200) {
-                let newRequestAssigns = response.data
+                let data = response.data
                 if (history.location.state) {
-                    newRequestAssigns.unshift(newRequestAssigns.splice(newRequestAssigns.findIndex(item => item.id === history.location.state.id), 1)[0])
+                    data.unshift(data.splice(data.findIndex(item => item.id === history.location.state.id), 1)[0])
                 }
-                setData(newRequestAssigns)
-                setRequestAssigns(newRequestAssigns)
+
+                const dataWithStrCategories = data.map(r => {
+                    let strCategories = '';
+                    r.requestAssignDetails.forEach(rad => {
+                        strCategories += `${rad.categoryName} (${rad.quantity}), `;
+                    })
+                    return { ...r, strCategories: strCategories }
+                })
+
+                setDataRequestAssigns(dataWithStrCategories)
+                setRequestAssigns(dataWithStrCategories)
                 history.replace(); // delete id in history to reload page...
             } else {
                 toastMessage('Something wrong!')
@@ -60,7 +71,7 @@ export default function RequestAssignUser() {
             .then((response) => {
                 if (response.status === 204) {
                     setRequestAssigns(requestAssigns.filter((r) => r.id !== requestId))
-                    setData(data.filter((r) => r.id !== requestId))
+                    setDataRequestAssigns(dataRequestAssigns.filter((r) => r.id !== requestId))
                 }
             })
             .catch((error) => {
@@ -117,8 +128,8 @@ export default function RequestAssignUser() {
         setShowModalDeleteRequest(true);
     }
 
-    const filterSort = (data, keySearch) => {
-        return data.filter((e) => (
+    const filterSort = (dataRequestAssigns, keySearch) => {
+        return dataRequestAssigns.filter((e) => (
             e.id.toString() === keySearch ||
             e.note.toLowerCase().includes(keySearch.toLowerCase()) ||
             e.requestedBy.toLowerCase().includes(keySearch.toLowerCase())
@@ -126,10 +137,10 @@ export default function RequestAssignUser() {
     };
 
     useEffect(() => {
-        let result = [...data];
+        let result = [...dataRequestAssigns];
         let date = requestedDate ? moment(new Date(requestedDate)).format("DD/MM/YYYY") : null
 
-        result = filterSort(data.filter(u => (stateChecked.includes(u.state) || stateChecked.includes(STATE.ALL)) &&
+        result = filterSort(dataRequestAssigns.filter(u => (stateChecked.includes(u.state) || stateChecked.includes(STATE.ALL)) &&
             (u.requestedDate === date || date === null)), keySearch)
 
         setRequestAssigns(result);
@@ -150,32 +161,23 @@ export default function RequestAssignUser() {
                 <Table className="content-table" responsive>
                     <thead>
                         <tr>
-                            <th className="table-thead w-7" onClick={() => handleSort(SORT_BY.Id)} >
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.Id)} >
                                 No.
                                 <BsFillCaretDownFill />
                             </th>
-                            <th className="table-thead w-28" onClick={() => handleSort(SORT_BY.Note)} >
-                                Note
-                                <BsFillCaretDownFill />
-                            </th>
-                            <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.Category)} >
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.Category)} >
                                 Category
                                 <BsFillCaretDownFill />
                             </th>
-
-                            <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.RequestedDate)} >
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.RequestedDate)} >
                                 Requested Date
                                 <BsFillCaretDownFill />
                             </th>
-                            {/* <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.RequestedBy)} >
-                                Requested by
-                                <BsFillCaretDownFill />
-                            </th> */}
-                            <th className="table-thead w-16" onClick={() => handleSort(SORT_BY.State)} >
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.State)} >
                                 State
                                 <BsFillCaretDownFill />
                             </th>
-                            <th className="table-thead w-7"></th>
+                            <th className="table-thead"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -183,17 +185,35 @@ export default function RequestAssignUser() {
                             .map(r => (
                                 <tr key={r.id}>
                                     <td>{r.id}</td>
-                                    <td>{r.note}</td>
-                                    <td>{r.category}</td>
+                                    <td className="category-quantity-list">
+                                        <span>{r.strCategories}</span>
+                                        <OverlayTrigger
+                                            key={r.id}
+                                            placement="bottom"
+                                            overlay={
+                                                <Tooltip className="tooltip-text">
+                                                    {r.note}
+                                                </Tooltip>
+                                            }
+                                        >
+                                            <span className="asset-name__icon"><HiInformationCircle /></span>
+                                        </OverlayTrigger>
+                                    </td>
                                     <td>{r.requestedDate}</td>
-                                    {/* <td>{r.requestedBy}</td> */}
                                     <td>{STATEtoLowcase[r.state]}</td>
                                     <td>
                                         <div className="d-flex justify-content-evenly">
                                             {r.state === STATE.WAITING_FOR_ASSIGNING ?
-                                                <FontAwesomeIcon style={{ cursor: "pointer" }} size="lg" icon={faTimes} onClick={() => onClickDeleteRequest(r.id)} />
+                                                <>
+                                                    <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-request-assign/' + r.id}>
+                                                        <GrEditCus />
+                                                    </Link>
+                                                    <FontAwesomeIcon style={{ cursor: "pointer" }} size="lg" icon={faTimes} onClick={() => onClickDeleteRequest(r.id)} />
+                                                </>
                                                 :
-                                                <FontAwesomeIcon color="#ccc" size="lg" icon={faTimes} />
+                                                <>
+                                                    <FontAwesomeIcon color="#ccc" size="lg" icon={faTimes} />
+                                                </>
                                             }
                                         </div>
                                     </td>

@@ -200,7 +200,7 @@ export default function CreateUser() {
         post('/user', formData)
             .then((res) => {
                 history.push({
-                    pathname: './manage_user',
+                    pathname: './manage-user',
                     state: {
                         staffCode: res.data.staffCode
                     }
@@ -384,7 +384,7 @@ export default function CreateUser() {
                         <Form.Group as={Row} className="mb-4 float-end">
                             <Col >
                                 {saveButton()}
-                                <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="./manage_user">Cancel</Link>
+                                <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="./manage-user">Cancel</Link>
                             </Col>
                         </Form.Group>
                     </Form>

@@ -44,10 +44,18 @@ export default function Request() {
     }, []);
 
     const fetchRequests = () => {
-        get('/request').then(response => {
-            if (response.status === 200) {
-                setData(response.data)
-                setRequests(response.data)
+        get('/request-return').then(res => {
+            if (res.status === 200) {
+                const dataWithStrAssets = res.data.map(u => {
+                    let strAssets = ''
+                    u.assignmentDetails.forEach(ad => {
+                        strAssets += `${ad.assetCode}, `
+                    })
+                    return { ...u, strAssets: strAssets }
+                })
+
+                setData(dataWithStrAssets)
+                setRequests(dataWithStrAssets)
             } else {
                 toastMessage('Something wrong!')
             }
@@ -55,9 +63,9 @@ export default function Request() {
     }
 
     const handleCancelRequest = (requestId) => {
-        del(`/request/${requestId}`)
-            .then((response) => {
-                if (response.status === 204) {
+        del(`/request-return/${requestId}`)
+            .then((res) => {
+                if (res.status === 204) {
                     setRequests(requests.filter((r) => r.id !== requestId))
                     setData(data.filter((r) => r.id !== requestId))
                 }
@@ -76,7 +84,7 @@ export default function Request() {
     }
 
     const handleAcceptRequest = (requestId) => {
-        put(`/request/${requestId}`).then(response => {
+        put(`/request-return/${requestId}`).then(response => {
             if (response.status === 200) {
                 setData(data.map(e => {
                     if (e.id === requestId) {
@@ -86,6 +94,7 @@ export default function Request() {
                     }
                     return e
                 }))
+
                 setRequests(data.map(e => {
                     if (e.id === requestId) {
                         e.state = response.data.state
@@ -272,35 +281,31 @@ export default function Request() {
                         <tr>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.Id)} >
                                 No.
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetCode)} >
                                 Asset Code
-                                <BsFillCaretDownFill/>
-                            </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetName)} >
-                                Asset Name
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.RequestBy)} >
                                 Requested by
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.AssignedDate)} >
                                 Assigned Date
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.AcceptedBy)} >
                                 Accepted by
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.ReturnedDate)} >
                                 Returned Date
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.State)} >
                                 State
-                                <BsFillCaretDownFill/>
+                                <BsFillCaretDownFill />
                             </th>
                             <th></th>
                         </tr>
@@ -310,8 +315,7 @@ export default function Request() {
                             .map(r => (
                                 <tr key={r.id}>
                                     <td>{r.id}</td>
-                                    <td>{r.assetCode}</td>
-                                    <td>{r.assetName}</td>
+                                    <td>{r.strAssets}</td>
                                     <td>{r.requestBy}</td>
                                     <td>{r.assignedDate}</td>
                                     <td>{r.acceptBy}</td>

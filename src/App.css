@@ -130,3 +130,8 @@ html {
   color: var(--primary-color);
   font-size: 2.0rem !important;
 }
+
+/* Text area */
+.text-area-input {
+  font-size: 1.4rem !important;
+}

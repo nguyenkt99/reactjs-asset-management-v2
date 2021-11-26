@@ -64,3 +64,156 @@
     background-color: white;
     color: black;
 }
+
+
+/* Header notifications */
+.header__navbar-right {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-item--has-notify {
+    position: relative;
+}
+
+.nav-item--has-notify:hover .navbar__notify {
+    display: block;
+    cursor: pointer;
+}
+
+.header__navbar-notify-icon {
+    font-size: 2.2rem;
+    color: #fff;
+    margin-right: 16px;
+    cursor: pointer;
+}
+
+.navbar__notify {
+    position: absolute;
+    z-index: 3;
+    width: 404px;
+    top: 140%;
+    right: -10px;
+    background-color: var(--white-color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    box-shadow: 0 1px 3.125rem rgba(0, 0, 0, 0.2);
+    cursor: default;
+    user-select: none;
+    animation: headerNotifyGrowth ease-in 0.2s;
+    will-change: opacity transform;
+    transform-origin: calc(100% - 32px) top;
+    display: none;
+}
+
+.navbar__notify::before {
+    content: "";
+    position: absolute;
+    border-width: 22px 36px;
+    border-style: solid;
+    border-color: transparent transparent var(--white-color) transparent;
+    top: -32px;
+    right: 0;
+}
+
+/* .navbar__notify::after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 90px;
+    height: 20px;
+    top: -20px;
+    right: 0;
+} */
+
+@keyframes headerNotifyGrowth {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.navbar__notify-header {
+    height: 40px;
+}
+
+.navbar__notify-header h3 {
+    font-size: 1.4rem;
+    color: #999;
+    font-weight: 400;
+    margin: 0 0 0 12px;
+    line-height: 40px;
+    user-select: none;
+}
+
+.navbar__notify-list {
+    padding-left: 0;
+    list-style-type: none;
+    height: 56vh;
+    overflow-y: auto;
+}
+
+.navbar__notify-item {
+    /* display: flex; */
+}
+
+.navbar__notify-item:hover {
+    background-color: #f7f7f7;
+}
+
+.navbar__notify-item--unviewed {
+    background-color: rgba(238, 77, 45, 0.1);
+}
+
+.navbar__notify-link {
+    display: flex;
+    padding: 12px;
+    text-decoration: none;
+    width: 100%;
+}
+
+.navbar__notify-img {
+    width: 48px;
+    object-fit: contain;
+}
+
+.navbar__notify-info {
+    margin-left: 12px;
+
+}
+
+.navbar__notify-name {
+    display: block;
+    font-size: 1.4rem;
+    color: #333;
+    font-weight: 500;
+    line-height: 1.8rem;
+}
+
+.navbar__notify-description {
+    display: block;
+    font-size: 1.2rem;
+    color: #756f6e;
+    font-weight: 400;
+    line-height: 1.6rem;
+    margin-top: 4px;
+}
+
+.navbar__notify-footer {
+    /* display: flex; */
+}
+
+.navbar__notify-footer-btn {
+    display: block;
+    text-decoration: none;
+    font-size: 1.4rem;
+    color: var(--text-color);
+    padding: 8px 32px;
+    width: 100%;
+    text-align: center;
+}

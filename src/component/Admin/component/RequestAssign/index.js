@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import { Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination, FormCheck, ToastContainer, Spinner } from 'react-bootstrap'
+import {
+    Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination,
+    FormCheck, ToastContainer, Spinner, OverlayTrigger, Tooltip
+} from 'react-bootstrap'
 import { HiFilter } from 'react-icons/hi'
-import { del, get, post, put } from '../../../../httpHelper'
+import { get, post, put } from '../../../../httpHelper'
 import './Request.css'
-import { BsFillCaretDownFill, BsSearch } from "react-icons/bs";
-import { FaSearch, FaAngleDown, FaCalendarAlt } from 'react-icons/fa';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import '../ManageUser/CreateUser/CreateUser.css'
-import moment from "moment";
 
-const elementPerPage = 10;
-let requestId;
+import { CgCloseO } from 'react-icons/cg'
+import { HiInformationCircle } from 'react-icons/hi'
+import { BsFillCaretDownFill, BsSearch } from "react-icons/bs"
+import { FaSearch, FaAngleDown, FaCalendarAlt } from 'react-icons/fa'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
+import '../ManageUser/CreateUser/CreateUser.css'
+import moment from "moment"
+
+const elementPerPage = 10
+let requestId
 
 export default function RequestForAssigning() {
 
@@ -29,7 +35,7 @@ export default function RequestForAssigning() {
     const [requestedByASC, setRequestedBy] = useState(false)
     const [stateASC, setStateASC] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
-    const [stateChecked, setStateChecked] = useState([STATE.ALL])
+    const [stateChecked, setStateChecked] = useState([STATE.WAITING_FOR_ASSIGNING])
     const [requestedDate, setRequestedDate] = useState()
     const [isOpenDatePicker, setIsOpenDatePicker] = useState(false)
     const [showModalDeclineRequest, setShowModalDeclineRequest] = useState(false)
@@ -38,29 +44,52 @@ export default function RequestForAssigning() {
     const [note, setNote] = useState('')
     const [showToastError, setShowToastError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
-    const [assignedDate, setAssignedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
-    const [isOpenDatePickerAssigned, setIsOpenDatePickerAssigned] = useState(false)
+    const [assignedDate, setAssignedDate] = useState()
+    const [returnedDate, setReturnedDate] = useState()
+    const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
+    const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
 
-    const [assets, setAssets] = useState([]);
+    const [assets, setAssets] = useState([])
     const [assetsData, setAssetsData] = useState([])
-    const [assetCodeASC, setAssetCodeASC] = useState(true);
-    const [assetNameASC, setAssetNameASC] = useState(false);
+    const [assetCodeASC, setAssetCodeASC] = useState(true)
+    const [assetNameASC, setAssetNameASC] = useState(false)
     const [assetDisplay, setAssetDisplay] = useState(false)
     // const [asset, setAsset] = useState({ assetName: '' })
-    const [assetSelected, setAssetSelected] = useState()
-    const [assetCurrent, setAssetCurrent] = useState(null)
-    const [isSaving, setIsSaving] = useState(false);
+    const [selectingAssets, setSelectingAssets] = useState([])
+    const [selectedAssets, setSelectedAssets] = useState([])
+    const [isSaving, setIsSaving] = useState(false)
 
     useEffect(() => {
-        fetchRequestAssigns();
-        fetchAssets();
-    }, []);
+        fetchRequestAssigns()
+    }, [])
+
+    useEffect(() => {
+        fetchAssets()
+    }, [assignedDate, returnedDate])
+
+    useEffect(() => {
+        let result = [...data];
+        let date = requestedDate ? moment(new Date(requestedDate)).format("DD/MM/YYYY") : null
+
+        result = filterSort(data.filter(u => (stateChecked.includes(u.state) || stateChecked.includes(STATE.ALL)) &&
+            (u.requestedDate === date || date === null)), keySearch)
+
+        setRequestAssigns(result);
+        setCurrentPage(1);
+    }, [stateChecked, requestedDate, keySearch]);
 
     const fetchRequestAssigns = () => {
         get('/request-assign').then(response => {
             if (response.status === 200) {
-                setData(response.data)
-                setRequestAssigns(response.data)
+                const dataWithStrCategories = response.data.map(r => {
+                    let strCategories = '';
+                    r.requestAssignDetails.forEach(rad => {
+                        strCategories += `${rad.categoryName} (${rad.quantity}), `;
+                    })
+                    return { ...r, strCategories: strCategories }
+                })
+                setData(dataWithStrCategories)
+                setRequestAssigns(dataWithStrCategories.filter(r => stateChecked.includes(r.state)))
             } else {
                 toastMessage('Something wrong!')
             }
@@ -68,14 +97,10 @@ export default function RequestForAssigning() {
     }
 
     const fetchAssets = () => {
-        get('/asset').then(response => {
+        get(`/asset/available?startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
-                setAssets(response.data.filter((item) => {
-                    return (item.state === "AVAILABLE" && item.categoryPrefix === requestAssignInfo.prefix);
-                }))
-                setAssetsData(response.data.filter((item) => {
-                    return (item.state === "AVAILABLE" && item.categoryPrefix === requestAssignInfo.prefix);
-                }))
+                setAssets(response.data)
+                setAssetsData(response.data)
             } else {
                 alert('Something wrong!')
             }
@@ -83,82 +108,57 @@ export default function RequestForAssigning() {
     }
 
     const handleDeclineRequest = (id) => {
-        let formData = {
-            state: "DECLINED",
-            note: note
-        }
-        put(`/request-assign/${id}`, formData)
+        put(`/request-assign/${id}/decline`, note)
             .then((response) => {
                 if (response.status === 200) {
-                    setData(data.map(item => item.id === id ? response.data : item));
-                    setRequestAssigns(data.map(item => item.id === id ? response.data : item));
-                    setShowModalDeclineRequest(false);
+                    let newData = [...data]
+                    const indexInData = data.findIndex(r => r.id === id)
+                    newData[indexInData].state = 'DECLINED'
+                    setData(newData)
+
+                    let newRequestAssigns = [...requestAssigns]
+                    const indexInRequests = requestAssigns.findIndex(r => r.id === id)
+                    newData[indexInRequests].state = 'DECLINED'
+                    setRequestAssigns(newRequestAssigns)
+                    setShowModalDeclineRequest(false)
                 }
             })
             .catch((error) => {
-                setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
-                setShowToastError(true);
+                // setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
+                setShowToastError(true)
             })
     }
 
-    // const handleAcceptRequest = (requestId) => {
-    //     put(`/request/${requestId}`).then(response => {
-    //         if (response.status === 200) {
-    //             setData(data.map(e => {
-    //                 if (e.id === requestId) {
-    //                     e.state = response.data.state
-    //                     e.acceptBy = response.data.acceptBy
-    //                     e.returnedDate = response.data.returnedDate
-    //                 }
-    //                 return e
-    //             }))
-    //             setRequestAssigns(data.map(e => {
-    //                 if (e.id === requestId) {
-    //                     e.state = response.data.state
-    //                     e.acceptBy = response.data.acceptBy
-    //                     e.returnedDate = response.data.returnedDate
-    //                 }
-    //                 return e
-    //             }))
-    //         } else {
-    //             toastMessage('Server not return successfully!')
-    //         }
-    //     }).catch((error) => {
-    //         if (error.response) {
-    //             if (error.response.status === 401) {
-    //                 toastMessage(error.response.data.errorCode)
-    //             }
-    //         } else {
-    //             toastMessage('Connection Error!')
-    //         }
-    //     })
-    //     .finally(() => setShowModalCreateAssignment(false));
-    // }
-
     const handleAcceptRequest = () => {
         const formData = {
-            assetCode: assetSelected.assetCode,
-            note: note,
+            requestAssignId: requestAssignInfo.id,
             assignedTo: requestAssignInfo.requestedBy,
-            assignedDate: assignedDate.split("-").reverse().join("/")
+            note: note,
+            assignedDate: assignedDate.split("-").reverse().join("/"),
+            intendedReturnDate: returnedDate.split("-").reverse().join("/"),
+            assignmentDetails: selectedAssets.map(a => ({ assetCode: a.assetCode }))
         }
-        console.log(formData);
-        setIsSaving(true);
+
+        setIsSaving(true)
         post('/assignment', formData)
             .then((res) => {
+                const newData = data.map(item => {
+                    if (item.id !== requestAssignInfo.id)
+                        return item
+                    return { ...item, state: "ACCEPTED" }
+                })
+
+                const newRequestAssigns = requestAssigns.map(item => {
+                    if (item.id !== requestAssignInfo.id)
+                        return item
+                    return { ...item, state: "ACCEPTED" }
+                })
+                setData(newData);
+                setRequestAssigns(newRequestAssigns);
                 setShowModalCreateAssignment(false);
-                put(`/request-assign/${requestAssignInfo.id}`, { state: "ACCEPTED" })
-                    .then((resAccepted) => {
-                        setData(data.filter(item => item.id !== requestAssignInfo.id));
-                        setRequestAssigns(requestAssigns.filter(item => item.id !== requestAssignInfo.id));
-                    })
-                    .catch((error) => {
-                        setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
-                        setShowToastError(true);
-                    })
             })
             .catch((error) => {
-                setIsSaving(false);
+                setIsSaving(false)
                 setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
                 setShowToastError(true);
             })
@@ -200,6 +200,17 @@ export default function RequestForAssigning() {
         setRequestAssigns(list)
     }
 
+    const onClickAcceptRequest = (id) => {
+        requestId = id
+        let requestAssign = data.find(item => item.id === requestId)
+        setRequestAssignInfo(requestAssign)
+        setAssignedDate(requestAssign.intendedAssignDate.split('/').reverse().join('-'))
+        setReturnedDate(requestAssign.intendedReturnDate.split('/').reverse().join('-'))
+        setNote('')
+        setShowModalCreateAssignment(true)
+        // fetchAssets()
+    }
+
     const handleStateClick = (e) => {
         if (e === STATE.ALL) setStateChecked([e]);
         else {
@@ -213,28 +224,29 @@ export default function RequestForAssigning() {
 
     const onClickDeclineRequest = (id) => {
         requestId = id;
+        console.log(requestId)
         // show modal input decline reason
         let requestAssign = data.find(item => item.id === requestId);
+        let strCategories = '';
+        requestAssign.requestAssignDetails.forEach(rad => {
+            strCategories += `${rad.categoryName} (${rad.quantity}), `;
+        })
+        requestAssign = { ...requestAssign, strCategories: strCategories }
         setNote(requestAssign.note);
         setRequestAssignInfo(requestAssign);
         setShowModalDeclineRequest(true);
-    }
-
-    const onClickAcceptRequest = (id) => {
-        requestId = id;
-        let requestAssign = data.find(item => item.id === requestId);
-        setRequestAssignInfo(requestAssign);
-        setNote('');
-        setShowModalCreateAssignment(true);
-        // fetchAssets();
     }
 
     const openDatePicker = () => {
         setIsOpenDatePicker(!isOpenDatePicker);
     }
 
-    const openDatePickerAssigned = () => {
-        setIsOpenDatePickerAssigned(!isOpenDatePickerAssigned);
+    const openDatePickerAd = () => {
+        setIsOpenDatePickerAd(!isOpenDatePickerAd);
+    }
+
+    const openDatePickerRd = () => {
+        setIsOpenDatePickerRd(!isOpenDatePickerRd);
     }
 
     const filterSort = (data, keySearch) => {
@@ -261,36 +273,63 @@ export default function RequestForAssigning() {
         setAssets(newData);
     }
 
+    // const assetChange = (e) => {
+    //     let assetCode = e.target.value;
+    //     let a = assets.filter((a) => {
+    //         return a.assetCode === assetCode;
+    //     })
+    //     document.getElementById(assetCode).checked = true;
+    //     setAssetCurrent(a[0]);
+    // }
+
     const assetChange = (e) => {
-        let assetCode = e.target.value;
-        let a = assets.filter((a) => {
-            return a.assetCode === assetCode;
+        const assetCode = e.target.value;
+        const asset = assets.find(a => a.assetCode === assetCode)
+        if (selectingAssets.find(a => a.assetCode === assetCode)) {
+            setSelectingAssets([...selectingAssets.filter(a => a.assetCode !== assetCode)])
+        } else {
+            setSelectingAssets([...selectingAssets, asset])
+        }
+    }
+
+    // const handleSelectAsset = () => {
+    //     if (assetCurrent !== null) {
+    //         setSelectedAssets(assetCurrent);
+    //         setAssetDisplay(false);
+    //     }
+    // }
+
+    const handleOk = () => {
+        if (selectingAssets) setSelectedAssets(selectingAssets)
+        setAssetDisplay(false)
+    }
+
+    const handleCancel = () => {
+        // setAssetDisplay(false);
+        // setAssetCurrent(null);
+        // setSelectedAssets(null);
+        // //asset
+        // if (selectedAssets) {
+        //     if (document.getElementById(selectedAssets.assetCode) !== null)
+        //         document.getElementById(selectedAssets.assetCode).checked = true;
+        // }
+
+        selectedAssets.forEach((a) => {
+            document.getElementById(a.assetCode).checked = true;
         })
-        document.getElementById(assetCode).checked = true;
-        setAssetCurrent(a[0]);
-    }
 
-    const handleSelectAsset = () => {
-        if (assetCurrent !== null) {
-            setAssetSelected(assetCurrent);
-            setAssetDisplay(false);
-        }
-    }
+        selectingAssets.forEach((a) => {
+            if (document.getElementById(a.assetCode))
+                document.getElementById(a.assetCode).checked = false;
+        })
 
-    const handleCancelAssetSelected = () => {
-        setAssetDisplay(false);
-        setAssetCurrent(null);
-        setAssetSelected(null);
-        //asset
-        if (assetSelected) {
-            if (document.getElementById(assetSelected.assetCode) !== null)
-                document.getElementById(assetSelected.assetCode).checked = true;
-        }
+        setAssetDisplay(false)
+        setSelectingAssets([])
     }
 
     const handleCancelCreateAssignment = () => {
         setShowModalCreateAssignment(false);
-        handleCancelAssetSelected();
+        handleCancel();
     }
 
     const handleSortAsset = (key) => {
@@ -325,21 +364,10 @@ export default function RequestForAssigning() {
         setAssetsData(list);
     };
 
-    useEffect(() => {
-        let result = [...data];
-        let date = requestedDate ? moment(new Date(requestedDate)).format("DD/MM/YYYY") : null
-
-        result = filterSort(data.filter(u => (stateChecked.includes(u.state) || stateChecked.includes(STATE.ALL)) &&
-            (u.requestedDate === date || date === null)), keySearch)
-
-        setRequestAssigns(result);
-        setCurrentPage(1);
-    }, [stateChecked, requestedDate, keySearch]);
-
     // const saveButton = () => {
     //     if (isSaving)
     //         return <Button variant="danger" type="submit" disabled><Spinner animation="border" size="sm" variant="light" />Save</Button>
-    //     else if (assetSelected && requestAssignInfo && assignedDate)
+    //     else if (selectedAssets && requestAssignInfo && assignedDate)
     //         return <Button variant="danger" type="submit">Save</Button>
     //     return <Button variant="danger" type="submit" disabled>Save</Button>;
     // }
@@ -358,23 +386,23 @@ export default function RequestForAssigning() {
                             id="dropdown-basic">
                             <HiFilter />
                         </Dropdown.Toggle>
-                        <Dropdown.Menu id="drop-show-assignment">
-                            <div className="checkbox px-3" onClick={() => {
+                        <Dropdown.Menu id="dropdown-menu">
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.ALL)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.ALL]} checked={stateChecked.includes(STATE.ALL) ? 'checked' : ''} />
                             </div>
-                            <div className="checkbox px-3" onClick={() => {
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.WAITING_FOR_ASSIGNING)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.WAITING_FOR_ASSIGNING]} checked={stateChecked.includes(STATE.WAITING_FOR_ASSIGNING) ? 'checked' : ''} />
                             </div>
-                            {/* <div className="checkbox px-3" onClick={() => {
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.ACCEPTED)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.ACCEPTED]} checked={stateChecked.includes(STATE.ACCEPTED) ? 'checked' : ''} />
-                            </div> */}
-                            <div className="checkbox px-3" onClick={() => {
+                            </div>
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.DECLINED)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.DECLINED]} checked={stateChecked.includes(STATE.DECLINED) ? 'checked' : ''} />
@@ -425,10 +453,6 @@ export default function RequestForAssigning() {
                                 No.
                                 <BsFillCaretDownFill />
                             </th>
-                            <th className="table-thead w-28" onClick={() => handleSort(SORT_BY.Note)} >
-                                Note
-                                <BsFillCaretDownFill />
-                            </th>
                             <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.Category)} >
                                 Category
                                 <BsFillCaretDownFill />
@@ -453,8 +477,20 @@ export default function RequestForAssigning() {
                             .map(r => (
                                 <tr key={r.id}>
                                     <td>{r.id}</td>
-                                    <td>{r.note}</td>
-                                    <td>{r.category}</td>
+                                    <td className="category-quantity-list">
+                                        <span>{r.strCategories}</span>
+                                        <OverlayTrigger
+                                            key={r.id}
+                                            placement="bottom"
+                                            overlay={
+                                                <Tooltip className="tooltip-text">
+                                                    {r.note}
+                                                </Tooltip>
+                                            }
+                                        >
+                                            <span className="asset-name__icon"><HiInformationCircle /></span>
+                                        </OverlayTrigger>
+                                    </td>
                                     <td>{r.requestedDate}</td>
                                     <td>{r.requestedBy}</td>
                                     <td>{STATEtoLowcase[r.state]}</td>
@@ -514,6 +550,8 @@ export default function RequestForAssigning() {
                     <Toast.Body>{errorMessage}</Toast.Body>
                 </Toast>
             </ToastContainer>
+
+            {/* Modal decline */}
             <Modal centered show={showModalDeclineRequest}>
                 <Modal.Header>
                     <Modal.Title style={{ color: '#dc3545' }}>Decline request for assigning?</Modal.Title>
@@ -526,7 +564,7 @@ export default function RequestForAssigning() {
                             </Form.Label>
                             <Col sm='8'>
                                 <Form.Control readOnly
-                                    defaultValue={requestAssignInfo && requestAssignInfo.category}
+                                    defaultValue={requestAssignInfo && requestAssignInfo.strCategories}
                                 />
                             </Col>
                         </Form.Group>
@@ -536,7 +574,9 @@ export default function RequestForAssigning() {
                             </Form.Label>
                             <Col sm='8'>
                                 <Form.Control
+                                    className="textarea-input"
                                     as="textarea"
+                                    // value={note}
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
                                 />
@@ -544,15 +584,22 @@ export default function RequestForAssigning() {
                         </Form.Group>
                     </Form>
                 </Modal.Body>
-                <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
-                    <Button variant='danger' onClick={() => handleDeclineRequest(requestId)}>
-                        Decline
-                    </Button>
-                    <Button variant='secondary' onClick={() => setShowModalDeclineRequest(false)}>
-                        Cancel
-                    </Button>
+                <Modal.Footer>
+                    <Form.Group as={Row} className="float-end">
+                        <Col>
+                            <Button variant='danger' onClick={() => handleDeclineRequest(requestId)}>
+                                Decline
+                            </Button>
+                            <Button variant='secondary' style={{ marginLeft: "20px" }} onClick={() => setShowModalDeclineRequest(false)}>
+                                Cancel
+                            </Button>
+                        </Col>
+                    </Form.Group>
+
                 </Modal.Footer>
             </Modal>
+
+            {/* Modal create assignment */}
             <Modal show={showModalCreateAssignment}>
                 <Modal.Header>
                     <Modal.Title style={{ color: '#dc3545' }}>Create assignment</Modal.Title>
@@ -569,90 +616,7 @@ export default function RequestForAssigning() {
                             />
                         </Col>
                     </Form.Group>
-                    {/* {assetJsx} */}
-                    <Row>
-                        <Col sm={3}>
-                            <div className='user_asset_area'>
-                                <div className='label_asset'>
-                                    <span>Asset</span>
-                                </div>
-                            </div>
-                        </Col>
-                        <Col className="asset_area" onClick={handleAssetDisplay}>
-                            <div className="input_field">
-                                <div className="border_search_info">
-                                    {assetSelected && assetSelected.assetName}
-                                    <FaSearch className="fa-search" />
-                                </div>
-                            </div>
-                            <Modal.Dialog className="dialog" style={{ display: assetDisplay ? 'block' : 'none' }}>
-                                <Modal.Body style={{ padding: "0px" }}>
-                                    <div className="list_select">
-                                        <Row className="header_select">
-                                            <Col className="label_select reset"><span className="c-red title">Select Asset</span></Col>
-                                            <Col className="search_select reset">
-                                                <input onChange={handleSearchChangeAsset}>
-                                                </input>
-                                                <div className="fa-header">
-                                                    <FaSearch className=""></FaSearch>
-                                                </div>
 
-                                            </Col>
-                                        </Row>
-                                        <Row className="table_ua" >
-                                            <Table >
-                                                <thead className="fix_width">
-                                                    <tr className="fix_width">
-                                                        <th>
-                                                        </th>
-                                                        <th style={{ width: "115px" }} onClick={() => handleSortAsset(ASSET_SORT_BY.AssetCode)}>
-                                                            Asset Code
-                                                            <FaAngleDown />
-                                                        </th>
-                                                        <th onClick={() => handleSortAsset(ASSET_SORT_BY.AssetName)}>
-                                                            Asset Name
-                                                            <FaAngleDown />
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="table-content fix_width">
-                                                    {assets.map((a) => {
-                                                        return <tr key={a.assetCode} className="fix_width">
-                                                            <td style={{ width: "20px" }} >
-                                                                <input
-                                                                    id={a.assetCode}
-                                                                    type="radio"
-                                                                    // id = {u.staffCode} 
-                                                                    name="asset_radio"
-                                                                    value={a.assetCode}
-                                                                    style={{ cursor: "pointer" }}
-                                                                    onClick={assetChange}
-                                                                    className="radio_custom"
-                                                                ></input>
-                                                            </td>
-                                                            <td style={{ width: "115px" }} >{a.assetCode}</td>
-                                                            <td style={{ width: "170px" }} >{a.assetName}</td>
-                                                        </tr>
-                                                    })}
-                                                </tbody>
-                                                <Col className="button-group">
-                                                    <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleSelectAsset} >
-                                                        Save
-                                                    </Button>
-                                                    <Button variant="outline-secondary"
-                                                        style={{ marginLeft: '20px' }}
-                                                        onClick={handleCancelAssetSelected}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </Col>
-                                            </Table>
-                                        </Row>
-                                    </div>
-                                </Modal.Body>
-                            </Modal.Dialog>
-                        </Col>
-                    </Row>
                     <Form.Group
                         as={Row}
                         className='mb-3'
@@ -668,15 +632,141 @@ export default function RequestForAssigning() {
                                     onKeyDown={(e) => e.preventDefault()}
                                     selected={assignedDate && new Date(assignedDate)}
                                     onChange={(date) => setAssignedDate(moment(date).format('YYYY-MM-DD'))}
-                                    onClickOutside={openDatePickerAssigned}
-                                    onSelect={openDatePickerAssigned}
-                                    onFocus={openDatePickerAssigned}
-                                    open={isOpenDatePickerAssigned}
+                                    onClickOutside={openDatePickerAd}
+                                    onSelect={openDatePickerAd}
+                                    onFocus={openDatePickerAd}
+                                    open={isOpenDatePickerAd}
                                 />
-                                <FaCalendarAlt className="icon-date" onClick={openDatePickerAssigned} />
+                                <FaCalendarAlt className="icon-date" onClick={openDatePickerAd} />
                             </div>
                         </Col>
                     </Form.Group>
+
+                    <Form.Group
+                        as={Row}
+                        className='mb-3'
+                        required
+                        controlId='installedDate'>
+                        <Form.Label column sm={3}>
+                            Returned Date
+                        </Form.Label>
+                        <Col>
+                            <div className="datepicker">
+                                <DatePicker className="form-control"
+                                    dateFormat="dd/MM/yyyy" showMonthDropdown showYearDropdown scrollableYearDropdown yearDropdownItemNumber={50}
+                                    onKeyDown={(e) => e.preventDefault()}
+                                    selected={returnedDate && new Date(returnedDate)}
+                                    onChange={(date) => setReturnedDate(moment(date).format('YYYY-MM-DD'))}
+                                    minDate={new Date()}
+                                    onClickOutside={openDatePickerRd}
+                                    onSelect={openDatePickerRd}
+                                    onFocus={openDatePickerRd}
+                                    open={isOpenDatePickerRd}
+                                />
+                                <FaCalendarAlt className="icon-date" onClick={openDatePickerRd} />
+                            </div>
+                        </Col>
+                    </Form.Group>
+
+                    {/* {assetJsx} */}
+                    <Row>
+                        <Col sm={3}>
+                            <div className='user_asset_area'>
+                                <div className='label_asset'>
+                                    <span>Asset</span>
+                                </div>
+                            </div>
+                        </Col>
+                        <Col className="asset_area" onClick={handleAssetDisplay}>
+                            <div className="input_field">
+                                <div className="border_search_info">
+                                    <FaSearch className="fa-search" />
+                                </div>
+                            </div>
+                            <Modal.Dialog className="dialog-select" style={{ display: assetDisplay ? 'block' : 'none' }}>
+                                <Modal.Body style={{ padding: "0px" }}>
+                                    <div className="list_select">
+                                        <Row className="header_select">
+                                            <Col className="label_select reset"><span className="c-red title">Select Asset</span></Col>
+                                            <Col className="search_select reset">
+                                                <input onChange={handleSearchChangeAsset} />
+                                                <div className="fa-header">
+                                                    <FaSearch className=""></FaSearch>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                        <Row className="table_ua" >
+                                            <Table >
+                                                <thead className="fix_width">
+                                                    <tr className="fix_width">
+                                                        <th></th>
+                                                        <th style={{ width: "100px" }} onClick={() => handleSortAsset(ASSET_SORT_BY.AssetCode)}>
+                                                            Asset Code
+                                                            <FaAngleDown />
+                                                        </th>
+                                                        <th style={{ width: "170px" }} onClick={() => handleSortAsset(ASSET_SORT_BY.AssetName)}>
+                                                            Asset Name
+                                                            <FaAngleDown />
+                                                        </th>
+                                                        <th onClick={() => handleSortAsset(ASSET_SORT_BY.Category)}>
+                                                            Category
+                                                            <FaAngleDown />
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="table-content fix_width">
+                                                    {assetsData.map((a) => {
+                                                        return <tr key={a.assetCode} className="fix_width">
+                                                            <td style={{ width: "20px" }} >
+                                                                <input
+                                                                    id={a.assetCode}
+                                                                    type="checkbox"
+                                                                    name="assetCheckbox"
+                                                                    value={a.assetCode}
+                                                                    style={{ cursor: "pointer" }}
+                                                                    onClick={assetChange}
+                                                                // className="radio_custom"
+                                                                ></input>
+                                                            </td>
+                                                            <td style={{ width: "92px" }} >{a.assetCode}</td>
+                                                            <td style={{ width: "170px" }} >{a.assetName}</td>
+                                                            <td>{a.categoryName}</td>
+                                                        </tr>
+                                                    })}
+                                                </tbody>
+                                            </Table>
+
+                                            <Col className="button-group">
+                                                <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
+                                                    OK
+                                                </Button>
+                                                <Button variant="outline-secondary"
+                                                    style={{ marginLeft: '20px' }}
+                                                    onClick={handleCancel}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                </Modal.Body>
+                            </Modal.Dialog>
+                        </Col>
+                    </Row>
+
+                    <Form.Group as={Row} className='mb-3'>
+                        <Form.Label column sm={3}>
+                        </Form.Label>
+                        <Col>
+                            {selectedAssets.map((a) =>
+                                <div className="asset-item" key={a.assetCode}>
+                                    <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
+                                    <CgCloseO className="asset-icon-remove" />
+                                </div>
+                            )}
+                        </Col>
+                    </Form.Group>
+
                     <Form.Group as={Row} className='mb-1' controlId='firstName'>
                         <Form.Label column sm={3}>
                             Note
@@ -694,13 +784,10 @@ export default function RequestForAssigning() {
                 <Modal.Footer>
                     <Form.Group as={Row} className="float-end">
                         <Col>
-                            {/* <Button variant='danger' onClick={() => handleAcceptRequest(requestId)}>
-                                Save
-                            </Button> */}
                             {isSaving ?
                                 <Button variant="danger" disabled><Spinner animation="border" size="sm" variant="light" />Save</Button>
                                 :
-                                (assetSelected && requestAssignInfo && assignedDate) ?
+                                (selectedAssets && requestAssignInfo && assignedDate) ?
                                     <Button variant="danger" onClick={() => handleAcceptRequest()}>Save</Button>
                                     :
                                     <Button variant="danger" disabled>Save</Button>

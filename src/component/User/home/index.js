@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Col, Row, Table, Modal, Form, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import "./UserAssignment.css";
 import { FaUndo } from 'react-icons/fa';
@@ -8,9 +8,8 @@ import { get, put, post } from '../../../httpHelper';
 import { BsFillCaretDownFill } from "react-icons/bs";
 import { HiInformationCircle } from "react-icons/hi";
 
-let assignmentCode = 0
-
 export default function UserAssignment() {
+  const assignmentIdRef = useRef()
   const [assignments, setAssignments] = useState([]);
   const [showAssignment, setShowAssignment] = useState(false);
   const [assignmentInformation, setAssignmentInformation] = useState();
@@ -27,6 +26,7 @@ export default function UserAssignment() {
   const [showModalDeclined, setShowModalDeclined] = useState(false);
   const [showModalRequest, setShowModalRequest] = useState(false);
   const [note, setNote] = useState('');
+  const [selectingAssets, setSelectingAssets] = useState([])
 
   useEffect(() => {
     fetchUserAssignment();
@@ -143,15 +143,15 @@ export default function UserAssignment() {
   };
 
   const handleAccept = () => {
-    put(`/assignment/staff/${assignmentCode}`, { state: "ACCEPTED" })
+    put(`/assignment/staff/${assignmentIdRef.current}`, { state: "ACCEPTED" })
       .then((res) => {
         setData(data.filter(e => {
-          if (e.id === assignmentCode)
+          if (e.id === assignmentIdRef.current)
             e.state = res.data.state
           return e
         }))
         setAssignments(assignments.filter(e => {
-          if (e.id === assignmentCode)
+          if (e.id === assignmentIdRef.current)
             e.state = res.data.state
           return e
         }))
@@ -169,12 +169,12 @@ export default function UserAssignment() {
   }
 
   const handleDeclined = () => {
-    put(`/assignment/staff/${assignmentCode}`, { state: "CANCELED_ASSIGN", note: note })
+    put(`/assignment/staff/${assignmentIdRef.current}`, { state: "CANCELED_ASSIGN", note: note })
       .then((res) => {
-        // setData(data.filter(e => e.id !== assignmentCode))
-        // setAssignments(assignments.filter(e => e.id !== assignmentCode))
+        // setData(data.filter(e => e.id !== assignmentIdRef.current))
+        // setAssignments(assignments.filter(e => e.id !== assignmentIdRef.current))
 
-        const index = assignments.findIndex(item => item.id === assignmentCode);
+        const index = assignments.findIndex(item => item.id === assignmentIdRef.current);
         let newAssignments = assignments;
         let item = { ...newAssignments[index] };
         item.state = STATE.CANCELED_ASSIGN;
@@ -195,20 +195,62 @@ export default function UserAssignment() {
       }).finally(() => setShowModalDeclined(false));
   }
 
-  const handleRequestForReturning = (assignmentId) => {
-    post(`/request`, { assignmentId: assignmentId })
+  // const handleRequestForReturning = (assignmentId) => {
+  //   post(`/request`, { assignmentId: assignmentId })
+  //     .then((response) => {
+  //       console.log(response);
+  //       // fetchAssignments();
+  //       const index = assignments.findIndex(item => item.id === assignmentId);
+  //       let newAssignments = assignments;
+  //       let item = { ...newAssignments[index] };
+  //       item.isCreatedRequest = true;
+  //       item.state = STATE.WAITING_FOR_RETURNING;
+  //       newAssignments[index] = item;
+  //       setAssignments(newAssignments);
+  //       setData(newAssignments);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     })
+  //     .finally(() => setShowModalRequest(false));
+  // }
+
+  const handleCreateRequestReturn = () => {
+    let formData = {
+      assignmentId: assignmentIdRef.current,
+      assignmentDetails: selectingAssets.map(assetCode => ({ assetCode: assetCode }))
+    }
+
+    post(`/request-return`, formData)
       .then((response) => {
-        console.log(response);
         // fetchAssignments();
-        const index = assignments.findIndex(item => item.id === assignmentId);
-        let newAssignments = assignments;
-        let item = { ...newAssignments[index] };
-        item.isCreatedRequest = true;
-        item.state = STATE.WAITING_FOR_RETURNING;
-        newAssignments[index] = item;
-        setAssignments(newAssignments);
-        setData(newAssignments);
+        let newAssignments = [...assignments]
+        const index = assignments.findIndex(item => item.id === assignmentIdRef.current)
+        get(`/assignment/${assignmentIdRef.current}`)
+          .then(res => {
+            let newAssignment = res.data
+            let strAssets = ''
+            newAssignment.assignmentDetails.forEach(ad => {
+              strAssets += `${ad.assetCode}, `
+            })
+            newAssignments[index] = { ...newAssignment, strAssets }
+            setAssignments(newAssignments)
+            setData(newAssignments)
+          })
+          .catch(error => console.log(error.response))
       })
+      // .catch((error) => {
+      //   if (error.response) {
+      //     if (error.response.status === 404) {
+      //       setErrMessage('Error: ID not found')
+      //     } else if (error.response.status === 409) {
+      //       setErrMessage('Error: Conflict')
+      //     }
+      //   } else {
+      //     setErrMessage('Connection Error!')
+      //   }
+      //   setShowToastError(true)
+      // })
       .catch((error) => {
         console.log(error);
       })
@@ -216,19 +258,30 @@ export default function UserAssignment() {
   }
 
   const handleAcceptClick = (id) => {
-    assignmentCode = id
+    assignmentIdRef.current = id
     setShowModalAccept(true)
   }
 
   const handleDeclineClick = (id) => {
-    assignmentCode = id
+    assignmentIdRef.current = id
     setShowModalDeclined(true)
   }
 
   const onClickRequestForReturning = (id) => {
-    assignmentCode = id;
+    assignmentIdRef.current = id;
+    const assignment = assignments.find((assignment) => assignment.id === id);
+    setAssignmentInformation(assignment);
     setShowModalRequest(true);
   };
+
+  const assetOnChange = (e) => {
+    const assetCode = e.target.value;
+    if (selectingAssets.includes(assetCode)) {
+      setSelectingAssets([...selectingAssets.filter(a => a !== assetCode)])
+    } else {
+      setSelectingAssets([...selectingAssets, assetCode])
+    }
+  }
 
   return (
     <div>
@@ -237,6 +290,10 @@ export default function UserAssignment() {
         <Table className="content-table" responsive>
           <thead>
             <tr>
+              <th>
+                No.
+                <BsFillCaretDownFill />
+              </th>
               <th style={{ width: "300px" }}>
                 Asset
                 <BsFillCaretDownFill />
@@ -257,6 +314,9 @@ export default function UserAssignment() {
               assignments
                 .map((a) => (
                   <tr key={a.id}>
+                    <td>
+                      {a.id}
+                    </td>
                     <td className="asset-name-list" onClick={() => handleRowClick(a.id)}>
                       {a.strAssets}
                     </td>
@@ -301,42 +361,6 @@ export default function UserAssignment() {
         </Modal.Header>
         <Modal.Body style={{ backgroundColor: '#FAFCFC' }}>
           <Form className='modal-detail-asset'>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
-              <Form.Label column sm='4' className='pr-0'>
-                Asset Code
-              </Form.Label>
-              <Col sm='8'>
-                <Form.Control
-                  plaintext
-                  readOnly
-                  defaultValue={assignmentInformation && assignmentInformation.assetCode}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
-              <Form.Label column sm='4' className='pr-0'>
-                Asset Name
-              </Form.Label>
-              <Col sm='8'>
-                <Form.Control
-                  plaintext
-                  readOnly
-                  defaultValue={assignmentInformation && assignmentInformation.assetName}
-                />
-              </Col>
-            </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
-              <Form.Label column sm='4' className='pr-0'>
-                Specfication
-              </Form.Label>
-              <Col sm='8'>
-                <Form.Control
-                  plaintext
-                  readOnly
-                  defaultValue={assignmentInformation && assignmentInformation.specfication}
-                />
-              </Col>
-            </Form.Group>
             <Form.Group as={Row} controlId='formPlaintextEmail'>
               <Form.Label column sm='4' className='pr-0'>
                 Assigned To
@@ -473,17 +497,79 @@ export default function UserAssignment() {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal centered show={showModalRequest}>
-        <Modal.Header>
-          <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
+      {/* <Modal centered show={showModalRequest}>
+      <Modal.Header>
+        <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>Do you want to create a returning for this asset?</Modal.Body>
+      <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+        <Button variant='danger' onClick={() => handleCreateRequestReturn(assignmentIdRef.current)}>
+          Yes
+        </Button>
+        <Button variant='secondary' onClick={() => setShowModalRequest(false)}>
+          No
+        </Button>
+      </Modal.Footer>
+    </Modal> */}
+
+      {/* Modal return */}
+      <Modal show={showModalRequest} onHide={() => setShowModalRequest(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Create request for returning</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Do you want to create a returning for this asset?</Modal.Body>
-        <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
-          <Button variant='danger' onClick={() => handleRequestForReturning(assignmentCode)}>
-            Yes
+        <Modal.Body>
+          <Table >
+            <thead className="fix_width">
+              <tr className="fix_width">
+                <th style={{ width: "22px" }}></th>
+                <th style={{ width: "100px" }}>Asset Code</th>
+                <th style={{ width: "180px" }}>
+                  Asset Name
+                </th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody className="table-content fix_width">
+              {assignmentInformation && assignmentInformation.assignmentDetails.map(ad => (
+                <tr key={ad.assetCode} className="fix_width">
+                  <td style={{ width: "22px" }}>
+                    <input id={ad.assetCode}
+                      disabled={ad.state === STATE.WAITING_FOR_RETURNING || ad.state === STATE.COMPLETED}
+                      type="checkbox"
+                      name="assetCheckbox"
+                      value={ad.assetCode}
+                      style={{ cursor: "pointer" }}
+                      onClick={(e) => assetOnChange(e)} />
+                  </td>
+                  <td style={{ width: "100px" }}>
+                    {ad.assetCode}
+                  </td>
+                  <td style={{ width: "180px" }}>
+                    <span>{ad.assetName}</span>
+                    <OverlayTrigger
+                      key={ad.assetCode}
+                      placement="bottom"
+                      overlay={
+                        <Tooltip className="tooltip-text">
+                          {ad.specs}
+                        </Tooltip>
+                      }
+                    >
+                      <span className="asset-name__icon"><HiInformationCircle /></span>
+                    </OverlayTrigger>
+                  </td>
+                  <td>{StateToLowCase[ad.state]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='danger' onClick={handleCreateRequestReturn}>
+            Save
           </Button>
           <Button variant='secondary' onClick={() => setShowModalRequest(false)}>
-            No
+            Cancel
           </Button>
         </Modal.Footer>
       </Modal>

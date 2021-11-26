@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination, FormCheck, FormGroup, ToastContainer, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import React, { useEffect, useState, useRef } from 'react'
+import {
+  Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination,
+  FormCheck, FormGroup, ToastContainer, OverlayTrigger, Tooltip
+} from 'react-bootstrap'
 
 import { HiFilter } from 'react-icons/hi'
 import { GrEditCus } from '../../../../icon/GrEditCus'
@@ -16,87 +19,87 @@ import { FaCalendarAlt } from "react-icons/fa"
 import './ListAssignment.css'
 
 const elementPerPage = 10
-let assignmentCode = 0
 
 export default function ListAssignment() {
-  let history = useHistory();
-
-  const [showModalDelete, setShowModalDelete] = useState(false);
-  const [showToastError, setShowToastError] = useState(false);
-  const [showModalRequest, setShowModalRequest] = useState(false);
-  const [errMessage, setErrMessage] = useState('');
-  const [assignments, setAssignments] = useState([]);
-  const [showAssignment, setShowAssignment] = useState(false);
-  const [assignmentInformation, setAssignmentInformation] = useState();
-  const [showToast, setShowToast] = useState(false);
-  const [message, setMessage] = useState('');
-  const [keySearch, setKeySearch] = useState('');
-  const [assignedDate, setAssignedDate] = useState();
-  const [idASC, setIDASC] = useState(true);
-  const [assetCodeASC, setAssetCodeASC] = useState(false);
-  const [assetNameASC, setAssetNameASC] = useState(false);
-  const [assignedToASC, setAssignedToASC] = useState(false);
-  const [assignedByASC, setAssignedByASC] = useState(false);
-  const [assignedDateASC, setAssignedDateASC] = useState(false);
-  const [stateASC, setStateASC] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState([]);
-  const [stateChecked, setStateChecked] = useState([STATE.WAITING_FOR_ACCEPTANCE, STATE.ACCEPTED]);
-  const [isOpenDatePicker, setIsOpenDatePicker] = useState(false);
+  const history = useHistory()
+  const assignmentIdRef = useRef()
+  const [showModalDelete, setShowModalDelete] = useState(false)
+  const [showToastError, setShowToastError] = useState(false)
+  const [showModalRequest, setShowModalRequest] = useState(false)
+  const [errMessage, setErrMessage] = useState('')
+  const [assignments, setAssignments] = useState([])
+  const [showAssignment, setShowAssignment] = useState(false)
+  const [assignmentInformation, setAssignmentInformation] = useState()
+  const [showToast, setShowToast] = useState(false)
+  const [message, setMessage] = useState('')
+  const [keySearch, setKeySearch] = useState('')
+  const [assignedDate, setAssignedDate] = useState()
+  const [idASC, setIDASC] = useState(true)
+  const [assetCodeASC, setAssetCodeASC] = useState(false)
+  const [assetNameASC, setAssetNameASC] = useState(false)
+  const [assignedToASC, setAssignedToASC] = useState(false)
+  const [assignedByASC, setAssignedByASC] = useState(false)
+  const [assignedDateASC, setAssignedDateASC] = useState(false)
+  const [stateASC, setStateASC] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [data, setData] = useState([])
+  const [stateChecked, setStateChecked] = useState([STATE.WAITING_FOR_ACCEPTANCE, STATE.ACCEPTED])
+  const [isOpenDatePicker, setIsOpenDatePicker] = useState(false)
+  const [selectingAssets, setSelectingAssets] = useState([])
 
   useEffect(() => {
     fetchAssignments()
   }, [])
 
   useEffect(() => {
-    let result = [...data];
+    let result = [...data]
     var datepick = assignedDate ? moment(assignedDate).format('DD/MM/YYYY') : null
 
     result = filterSort(data.filter(d => (stateChecked.includes(d.state) || stateChecked.includes('ALL')) &&
       (d.assignedDate === datepick || datepick === null)), keySearch)
 
-    setAssignments(result);
-    setCurrentPage(1);
+    setAssignments(result)
+    setCurrentPage(1)
   }, [stateChecked, assignedDate, keySearch])
 
   const fetchAssignments = () => {
     get('/assignment')
       .then((response) => {
         if (response.status === 200) {
-          let data = response.data;
+          let data = response.data
           if (history.location.state) {
-            data.unshift(data.splice(data.findIndex((item) => item.id === history.location.state.id), 1)[0]);
+            data.unshift(data.splice(data.findIndex((item) => item.id === history.location.state.id), 1)[0])
           }
 
           const dataWithStrAssets = data.map(u => {
-            let strAssets = '';
+            let strAssets = ''
             u.assignmentDetails.forEach(ad => {
-              strAssets += `${ad.assetCode}, `;
+              strAssets += `${ad.assetCode}, `
             })
             return { ...u, strAssets: strAssets }
           })
 
-          setData(dataWithStrAssets);
-          setAssignments(dataWithStrAssets.filter(u => stateChecked.includes(u.state)));
+          setData(dataWithStrAssets)
+          setAssignments(dataWithStrAssets.filter(u => stateChecked.includes(u.state)))
 
-          history.replace();
+          history.replace()
         } else {
-          toastMessage('Something wrong!');
+          toastMessage('Something wrong!')
         }
       })
-      .catch((error) => toastMessage('Fail to connect server!'));
-  };
+      .catch((error) => toastMessage('Fail to connect server!'))
+  }
 
   const toastMessage = (message) => {
-    setMessage(message);
-    setShowToast(true);
-  };
+    setMessage(message)
+    setShowToast(true)
+  }
 
-  const handleRowClick = (assignmentID) => {
-    var assignment = assignments.find((assignment) => assignment.id === assignmentID);
-    setAssignmentInformation(assignment);
-    setShowAssignment(true);
-  };
+  const handleRowClick = (assignmentId) => {
+    const assignment = assignments.find((assignment) => assignment.id === assignmentId)
+    setAssignmentInformation(assignment)
+    setShowAssignment(true)
+  }
 
   const handleSort = (key) => {
     let reverse = -1;
@@ -162,25 +165,25 @@ export default function ListAssignment() {
     setCurrentPage(1);
   };
 
-
-
   const handleDeleteClick = (item) => {
     if (item.state === STATE.WAITING_FOR_ACCEPTANCE || item.state === STATE.DECLINED) {
-      assignmentCode = item.id
+      assignmentIdRef.current = item.id
       setShowModalDelete(true)
     }
   };
 
   const onClickRequestForReturning = (assignmentId) => {
-    assignmentCode = assignmentId;
+    assignmentIdRef.current = assignmentId;
+    const assignment = assignments.find((assignment) => assignment.id === assignmentId);
+    setAssignmentInformation(assignment);
     setShowModalRequest(true);
   };
 
   const handleDelete = async () => {
-    del(`/assignment/${assignmentCode}`)
+    del(`/assignment/${assignmentIdRef.current}`)
       .then((res) => {
-        setData(data.filter(e => e.id !== assignmentCode))
-        setAssignments(assignments.filter(e => e.id !== assignmentCode))
+        setData(data.filter(e => e.id !== assignmentIdRef.current))
+        setAssignments(assignments.filter(e => e.id !== assignmentIdRef.current))
       })
       .catch((error) => {
         if (error.response) {
@@ -196,18 +199,29 @@ export default function ListAssignment() {
       }).finally(() => setShowModalDelete(false));
   };
 
-  const handleRequestForReturning = (assignmentId) => {
-    post(`/request`, { assignmentId: assignmentId })
+  const handleCreateRequestReturn = () => {
+    let formData = {
+      assignmentId: assignmentIdRef.current,
+      assignmentDetails: selectingAssets.map(assetCode => ({ assetCode: assetCode }))
+    }
+
+    post(`/request-return`, formData)
       .then((response) => {
         // fetchAssignments();
-        const index = assignments.findIndex(item => item.id === assignmentId);
-        let newAssignments = assignments;
-        let item = { ...newAssignments[index] };
-        item.isCreatedRequest = true;
-        item.state = STATE.WAITING_FOR_RETURNING;
-        newAssignments[index] = item;
-        setAssignments(newAssignments);
-        setData(newAssignments);
+        let newAssignments = [...assignments]
+        const index = assignments.findIndex(item => item.id === assignmentIdRef.current)
+        get(`/assignment/${assignmentIdRef.current}`)
+          .then(res => {
+            let newAssignment = res.data
+            let strAssets = ''
+            newAssignment.assignmentDetails.forEach(ad => {
+              strAssets += `${ad.assetCode}, `
+            })
+            newAssignments[index] = {...newAssignment, strAssets}
+            setAssignments(newAssignments)
+            setData(newAssignments)
+          })
+          .catch(error => console.log(error.response))
       })
       .catch((error) => {
         if (error.response) {
@@ -226,6 +240,15 @@ export default function ListAssignment() {
 
   const openDatePicker = () => {
     setIsOpenDatePicker(!isOpenDatePicker);
+  }
+
+  const assetOnChange = (e) => {
+    const assetCode = e.target.value;
+    if (selectingAssets.includes(assetCode)) {
+      setSelectingAssets([...selectingAssets.filter(a => a !== assetCode)])
+    } else {
+      setSelectingAssets([...selectingAssets, assetCode])
+    }
   }
 
   return (
@@ -326,14 +349,6 @@ export default function ListAssignment() {
                 No.
                 <BsFillCaretDownFill />
               </th>
-              {/* <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetCode)}>
-                Asset Code
-                <BsFillCaretDownFill />
-              </th>
-              <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetName)}>
-                Asset Name
-                <BsFillCaretDownFill />
-              </th> */}
               <th className="table-thead" style={{ width: "300px" }} onClick={() => handleSort(SORT_BY.AssetCode)}>
                 Asset
                 <BsFillCaretDownFill />
@@ -365,12 +380,6 @@ export default function ListAssignment() {
                     <td onClick={() => handleRowClick(a.id)}>
                       {a.id}
                     </td>
-                    {/* <td onClick={() => handleRowClick(a.id)}>
-                      {a.assetCode}
-                    </td>
-                    <td onClick={() => handleRowClick(a.id)}>
-                      {a.assetName}
-                    </td> */}
                     <td className="asset-name-list" onClick={() => handleRowClick(a.id)}>
                       {a.strAssets}
                     </td>
@@ -518,7 +527,7 @@ export default function ListAssignment() {
                 <thead className="fix_width">
                   <tr className="fix_width">
                     <th style={{ width: "100px" }}>Asset Code</th>
-                    <th style={{ width: "170px" }}>
+                    <th style={{ width: "180px" }}>
                       Asset Name
                     </th>
                     <th>State</th>
@@ -528,7 +537,7 @@ export default function ListAssignment() {
                   {assignmentInformation && assignmentInformation.assignmentDetails.map(ad => (
                     <tr key={ad.assetCode} className="fix_width">
                       <td style={{ width: "100px" }}>{ad.assetCode}</td>
-                      <td style={{ width: "170px" }}>
+                      <td style={{ width: "180px" }}>
                         <span>{ad.assetName}</span>
                         <OverlayTrigger
                           key={ad.assetCode}
@@ -577,20 +586,69 @@ export default function ListAssignment() {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal centered show={showModalRequest}>
-        <Modal.Header>
-          <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
+
+      {/* Modal return */}
+      <Modal show={showModalRequest} onHide={() => setShowModalRequest(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Create request for returning</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Do you want to create a returning for this asset?</Modal.Body>
-        <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
-          <Button variant='danger' onClick={() => handleRequestForReturning(assignmentCode)}>
-            Yes
+        <Modal.Body>
+          <Table >
+            <thead className="fix_width">
+              <tr className="fix_width">
+                <th style={{ width: "22px" }}></th>
+                <th style={{ width: "100px" }}>Asset Code</th>
+                <th style={{ width: "180px" }}>
+                  Asset Name
+                </th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody className="table-content fix_width">
+              {assignmentInformation && assignmentInformation.assignmentDetails.map(ad => (
+                <tr key={ad.assetCode} className="fix_width">
+                  <td style={{ width: "22px" }}>
+                    <input id={ad.assetCode}
+                      disabled={ad.state === STATE.WAITING_FOR_RETURNING || ad.state === STATE.COMPLETED}
+                      type="checkbox"
+                      name="assetCheckbox"
+                      value={ad.assetCode}
+                      style={{ cursor: "pointer" }}
+                      onClick={(e) => assetOnChange(e)} />
+                  </td>
+                  <td style={{ width: "100px" }}>
+                    {ad.assetCode}
+                  </td>
+                  <td style={{ width: "180px" }}>
+                    <span>{ad.assetName}</span>
+                    <OverlayTrigger
+                      key={ad.assetCode}
+                      placement="bottom"
+                      overlay={
+                        <Tooltip className="tooltip-text">
+                          {ad.specs}
+                        </Tooltip>
+                      }
+                    >
+                      <span className="asset-name__icon"><HiInformationCircle /></span>
+                    </OverlayTrigger>
+                  </td>
+                  <td>{StateToLowCase[ad.state]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='danger' onClick={handleCreateRequestReturn}>
+            Save
           </Button>
           <Button variant='secondary' onClick={() => setShowModalRequest(false)}>
-            No
+            Cancel
           </Button>
         </Modal.Footer>
       </Modal>
+
       <ToastContainer className="p-3" id='t' position='middle-end'>
         <Toast bg="warning" onClose={() => setShowToastError(false)} show={showToastError} delay={3000} autohide>
           <Toast.Header>
@@ -611,7 +669,7 @@ const SORT_BY = {
   AssignedTo: 'AssignedTo',
   AssignedBy: 'AssignedBy',
   AssignedDate: 'AssignedDate',
-  State: 'State',
+  State: 'State'
 };
 const STATE = {
   ALL: 'ALL',

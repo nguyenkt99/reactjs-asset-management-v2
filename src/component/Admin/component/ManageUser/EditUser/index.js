@@ -86,7 +86,7 @@ function EditUser(props) {
             .catch((error) => {
                 console.log(error)
                 history.push({
-                    pathname: '/manage_user',
+                    pathname: '/manage-user',
                 });
             })
     }
@@ -203,7 +203,7 @@ function EditUser(props) {
             .then((res) => {
                 console.log(res.data);
                 history.push({
-                    pathname: '/manage_user',
+                    pathname: '/manage-user',
                     state: {
                         staffCode: res.data.staffCode
                     }
@@ -387,7 +387,7 @@ function EditUser(props) {
                         <Form.Group as={Row} className="float-end mb-4">
                             <Col>
                                 {saveButton()}
-                                <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/manage_user">Cancel</Link>
+                                <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/manage-user">Cancel</Link>
                             </Col>
                         </Form.Group>
                     </Form>

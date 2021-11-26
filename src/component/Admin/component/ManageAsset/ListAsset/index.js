@@ -31,7 +31,7 @@ export default function ListAsset() {
   const [data, setData] = useState([]);
   const [stateChecked, setStateChecked] = useState([]);
   const [categoryChecked, setCategoryChecked] = useState([CATEGORY.All]);
-  const [categoryName, setCategoryName] = useState(['All']);
+  const [categoryNames, setCategoryNames] = useState(['All']);
   const history = useHistory();
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function ListAsset() {
     get('/category')
       .then((res) => {
         if (res.status === 200) {
-          setCategoryName([...categoryName, res.data.map((category) => category.name)]);
+          setCategoryNames([...categoryNames, ...res.data.map((category) => category.name)]);
         } else {
           toastMessage('Something wrong!');
         }
@@ -357,7 +357,7 @@ export default function ListAsset() {
               <HiFilter />
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              {categoryName.map((category, index) =>
+              {categoryNames.map((category, index) =>
                 <div key={index} className='dropdown-item checkbox px-3' onClick={() => { handleCategoryClick(category) }}>
                   <FormCheck label={category} checked={categoryChecked.includes(category) ? 'checked' : ''} />
                 </div>

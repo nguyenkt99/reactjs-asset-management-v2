@@ -1,9 +1,15 @@
-import './home.css';
+import './Home.css';
+import ReturnImage from '../../assets/return_icon.png'
+import ReturnAssignImage from '../../assets/request_assign_icon.png'
+import AssignmentImage from '../../assets/assignment_icon.png'
 import React, { useEffect, useState } from 'react';
-import { Collapse, Navbar, Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu, 
-  DropdownItem, Input, FormGroup, Label, Row, Col, Button, Modal, ModalHeader, ModalBody } from 'reactstrap';
-  import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
-  import { get } from '../../httpHelper';
+import {
+  Collapse, Navbar, Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu,
+  DropdownItem, Input, FormGroup, Label, Row, Col, Button, Modal, ModalHeader, ModalBody
+} from 'reactstrap';
+import { MdNotifications } from "react-icons/md";
+import { Redirect, Route, Switch, useHistory, Link } from 'react-router-dom';
+import { get } from '../../httpHelper';
 import authService from '../../services/auth.service';
 import { EndPointRedirect } from '../../EndPointRedirect';
 import Menu from '../Menu/index';
@@ -23,6 +29,7 @@ import Report from '../Admin/component/Report';
 import ChangePassword from '../User/ChangePassword'
 import RequestAssignUser from '../User/RequestAssignUser';
 import CreateRequestAssign from '../User/CreateRequestAssign';
+import EditRequestAssign from '../User/EditRequestAssign';
 
 function Home() {
   const history = useHistory();
@@ -41,12 +48,28 @@ function Home() {
   const [modalProfile, setModalProfile] = useState(false);
   const toggleModalProfile = () => setModalProfile(!modalProfile);
   const [profile, setProfile] = useState();
+  const [notifications, setNotifications] = useState([])
+
+  useEffect(() => {
+    EndPointRedirect();
+    fetchNotifications();
+  }, []);
 
   const handleShowProfile = () => {
     get('/users/profile')
       .then((response) => {
         setProfile(response.data);
         toggleModalProfile();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  const fetchNotifications = () => {
+    get('/firebase/notifications')
+      .then(res => {
+        setNotifications(res.data)
       })
       .catch((error) => {
         console.log(error);
@@ -85,10 +108,6 @@ function Home() {
     }
   };
 
-  useEffect(() => {
-    EndPointRedirect();
-  }, []);
-
   let path
   if (location.pathname.split('/')[1] === "edit-user")
     path = navbarName + " > Edit User";
@@ -106,31 +125,65 @@ function Home() {
     path = navbarName + " > Create request for assigning"
   else path = navbarName;
 
+  const handleSeen = () => {
+    console.log('Seen!')
+  }
+
   return (
     <div className="Home">
       <Navbar expand="md" className="header__navbar">
         <div className="grid">
           <Collapse navbar>
             <Nav className="header__navbar-list">
-              <NavItem className="header__navbar-title">
-                {path}
-              </NavItem>
-              <UncontrolledDropdown nav inNavbar className="header__navbar-user">
-                <DropdownToggle nav caret>
-                  {user.username}
-                </DropdownToggle>
-                <DropdownMenu end className="header__navbar-user-menu">
-                  <DropdownItem onClick={handleShowProfile}>Profile</DropdownItem>
-                  <DropdownItem divider />
-                  <DropdownItem onClick={toggleModalpw}>Change password</DropdownItem>
-                  <DropdownItem divider />
-                  <DropdownItem onClick={toggleModal}>Logout</DropdownItem>
-                </DropdownMenu>
-              </UncontrolledDropdown>
+              <div className="header__navbar-left">
+                <NavItem className="header__navbar-title">
+                  {path}
+                </NavItem>
+              </div>
+              <div className="header__navbar-right">
+                <NavItem className="nav-item--has-notify">
+                  <MdNotifications className="header__navbar-notify-icon" />
+                  <div class="navbar__notify">
+                    <header class="navbar__notify-header">
+                      <h3>Notifications</h3>
+                    </header>
+                    <ul class="navbar__notify-list">
+                      {notifications.map(n => (
+                        <li class="navbar__notify-item navbar__notify-item--unviewed">
+                          <Link class="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/request-assign' : '/request-return'} onClick={handleSeen}>
+                            <img src={n.type === 'REQUEST_ASSIGN' ? ReturnAssignImage
+                              : n.type === 'REQUEST_RETURN' ? ReturnImage : AssignmentImage} alt="USB Kingston"
+                              class="navbar__notify-img" />
+                            <div class="navbar__notify-info">
+                              <span class="navbar__notify-name">{n.type}</span>
+                              <span class="navbar__notify-description">{n.title}</span>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <footer class="navbar__notify-footer">
+                      <a href="" class="navbar__notify-footer-btn">View all</a>
+                    </footer>
+                  </div>
+                </NavItem>
+                <UncontrolledDropdown nav inNavbar className="header__navbar-user">
+                  <DropdownToggle nav caret>
+                    {user.username}
+                  </DropdownToggle>
+                  <DropdownMenu end className="header__navbar-user-menu">
+                    <DropdownItem onClick={handleShowProfile}>Profile</DropdownItem>
+                    <DropdownItem divider />
+                    <DropdownItem onClick={toggleModalpw}>Change password</DropdownItem>
+                    <DropdownItem divider />
+                    <DropdownItem onClick={toggleModal}>Logout</DropdownItem>
+                  </DropdownMenu>
+                </UncontrolledDropdown>
+              </div>
             </Nav>
           </Collapse>
         </div>
-      </Navbar>
+      </Navbar >
 
       <div className="grid">
         <Row>
@@ -143,17 +196,17 @@ function Home() {
                 <Route path='/home'>
                   <UserAssignment />
                 </Route>
-                <Route path='/manage_user'>
+                <Route path='/manage-user'>
                   <ListUser />
                 </Route>
                 <Route path="/edit-user/:staffCode" render={() => {
                   if (user.role === "ROLE_ADMIN") return <EditUser />
                 }}>
                 </Route>
-                <Route path="/manage_asset">
+                <Route path="/manage-asset">
                   <ManagerAsset />
                 </Route>
-                <Route path="/manage_assignment">
+                <Route path="/manage-assignment">
                   <ManagerAssignment />
                 </Route>
                 <Route path='/create-user'>
@@ -171,7 +224,7 @@ function Home() {
                 <Route path="/edit-assignment/:assignmentId" render={() => {
                   if (user.role === "ROLE_ADMIN") return <EditAssignment />
                 }} />
-                <Route path="/request_return" render={() => {
+                <Route path="/request-return" render={() => {
                   if (user.role === "ROLE_ADMIN") return <Request />
                   else return <Redirect to="/home" />
                 }} />
@@ -179,13 +232,17 @@ function Home() {
                   if (user.role === "ROLE_ADMIN") return <Report />
                   else return <Redirect to="/home" />
                 }} />
-                <Route path="/request_assign" render={() => {
+                <Route path="/request-assign" render={() => {
                   if (user.role === "ROLE_ADMIN") return <RequestForAssigning />
                   else if (user.role === "ROLE_STAFF") return <RequestAssignUser />
                   else return <Redirect to="/home" />
                 }} />
                 <Route path="/create-request-assign" render={() => {
                   if (user.role === "ROLE_STAFF") return <CreateRequestAssign />
+                  else return <Redirect to="/home" />
+                }} />
+                <Route path="/edit-request-assign/:requestId" render={() => {
+                  if (user.role === "ROLE_STAFF") return <EditRequestAssign />
                   else return <Redirect to="/home" />
                 }} />
               </Switch>
@@ -280,7 +337,7 @@ function Home() {
         </ModalBody>
       </Modal>
 
-    </div>
+    </div >
   );
 };
 export default Home;

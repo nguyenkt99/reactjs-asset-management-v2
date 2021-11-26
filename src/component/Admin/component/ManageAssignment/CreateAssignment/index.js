@@ -54,7 +54,7 @@ export default function CreateAssignment() {
         e.preventDefault()
         const formData = {
             assignedTo: selectedUser.username,
-            note: e.target.note.value,
+            note: note,
             assignedDate: assignedDate.split("-").reverse().join("/"),
             intendedReturnDate: returnedDate.split("-").reverse().join("/"),
             assignmentDetails: selectedAssets.map(a => ({ assetCode: a.assetCode }))
@@ -64,7 +64,7 @@ export default function CreateAssignment() {
         post('/assignment', formData)
             .then((res) => {
                 history.push({
-                    pathname: './manage_assignment',
+                    pathname: './manage-assignment',
                     state: {
                         id: res.data.id
                     }
@@ -127,7 +127,6 @@ export default function CreateAssignment() {
             if (document.getElementById(a.assetCode))
                 document.getElementById(a.assetCode).checked = false;
         })
-
 
         setUserDisplay(false)
         setAssetDisplay(false)
@@ -333,7 +332,7 @@ export default function CreateAssignment() {
                                 </Table>
                                 <Col className="button-group">
                                     <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
-                                        Save
+                                        OK
                                     </Button>
                                     <Button variant="outline-secondary"
                                         style={{ marginLeft: '20px' }}
@@ -522,7 +521,7 @@ export default function CreateAssignment() {
                     <Form.Group as={Row} className="float-end mb-3">
                         <Col>
                             {saveButton()}
-                            <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="./manage_assignment">Cancel</Link>
+                            <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="./manage-assignment">Cancel</Link>
                         </Col>
                     </Form.Group>
                 </Form>

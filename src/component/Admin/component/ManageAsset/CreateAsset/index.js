@@ -167,7 +167,7 @@ export default function AssetCreate() {
     post('/asset', inputs)
       .then((res) => {
         history.push({
-          pathname: './manage_asset',
+          pathname: './manage-asset',
           state: {
             assetCode: res.data.assetCode,
           },

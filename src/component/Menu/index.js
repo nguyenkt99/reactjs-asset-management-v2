@@ -34,7 +34,7 @@ function Menu({ tableTab }) {
         </ListGroupItem>
         {user.role === 'ROLE_STAFF' &&
           <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(8)} active={selected === 8}>
-            <Link to='/request_assign' className="menu-item__link">
+            <Link to='/request-assign' className="menu-item__link">
               Request for Assigning
             </Link>
           </ListGroupItem>
@@ -43,22 +43,22 @@ function Menu({ tableTab }) {
           user.role === 'ROLE_ADMIN' ?
             <>
               <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(2)} active={selected === 2}>
-                <Link to='/manage_user' className="menu-item__link">Manage User</Link>
+                <Link to='/manage-user' className="menu-item__link">Manage User</Link>
               </ListGroupItem>
               <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(3)} active={selected === 3}>
-                <Link to='/manage_asset' className="menu-item__link">Manage Asset</Link>
+                <Link to='/manage-asset' className="menu-item__link">Manage Asset</Link>
+              </ListGroupItem>
+              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(7)} active={selected === 7}>
+                <Link to='/request-assign' className="menu-item__link">Request for Assigning</Link>
               </ListGroupItem>
               <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(4)} active={selected === 4}>
-                <Link to='/manage_assignment' className="menu-item__link">Manage Assignment</Link>
+                <Link to='/manage-assignment' className="menu-item__link">Manage Assignment</Link>
               </ListGroupItem>
               <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(5)} active={selected === 5}>
-                <Link to='/request_return' className="menu-item__link">Request for Returning</Link>
+                <Link to='/request-return' className="menu-item__link">Request for Returning</Link>
               </ListGroupItem>
               <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(6)} active={selected === 6}>
                 <Link to='/report' className="menu-item__link">Report</Link>
-              </ListGroupItem>
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(7)} active={selected === 7}>
-                <Link to='/request_assign' className="menu-item__link">Request for Assigning</Link>
               </ListGroupItem>
             </>
             :

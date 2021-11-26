@@ -46,7 +46,7 @@ function EditAsset(props) {
       .catch(err => {
         console.log(err)
         // history.push({
-        //   pathname: '/manage_asset',
+        //   pathname: '/manage-asset',
         // });
       })
   }
@@ -119,7 +119,7 @@ function EditAsset(props) {
     put(`/asset/${assetCode}`, inputs)
       .then((res) => {
         history.push({
-          pathname: '/manage_asset',
+          pathname: '/manage-asset',
           state: {
             assetCode: res.data.assetCode,
           },
@@ -274,7 +274,7 @@ function EditAsset(props) {
               <Link
                 className='btn btn-outline-secondary'
                 style={{ marginLeft: '40px' }}
-                to='/manage_asset'>
+                to='/manage-asset'>
                 Cancel
               </Link>
             </Col>

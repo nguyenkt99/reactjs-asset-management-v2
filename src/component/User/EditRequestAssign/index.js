@@ -1,18 +1,17 @@
-import './CreateRequestAssign.css'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useParams } from 'react-router-dom'
 import { Row, Col, Form, Button, Spinner, Modal } from 'react-bootstrap'
 import { Link, useHistory } from 'react-router-dom'
-import { get, post } from '../../../httpHelper'
-import "react-datepicker/dist/react-datepicker.css"
+import { get, put } from '../../../httpHelper'
 import { CgCloseO } from 'react-icons/cg'
 import { FaPlus, FaCalendarAlt } from 'react-icons/fa';
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import moment from "moment"
 
-
-export default function CreateRequestAssign() {
+export default function EditRequestAssign(props) {
     let history = useHistory()
+    const [requestAssign, setRequestAssign] = useState()
     const [categories, setCategories] = useState([])
     const [dataCategories, setDataCategories] = useState([])
     const [isSaving, setIsSaving] = useState(false)
@@ -21,14 +20,33 @@ export default function CreateRequestAssign() {
     const [requestAssignDetails, setRequestAssignDetails] = useState([])
     const [showModal, setShowModal] = useState(false)
     const [note, setNote] = useState('')
-    const [assignedDate, setAssignedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
-    const [returnedDate, setReturnedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
+    const [assignedDate, setAssignedDate] = useState('')
+    const [returnedDate, setReturnedDate] = useState('')
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
 
+    const { requestId } = useParams()
+
     useEffect(() => {
         fetchCategories()
+        fetchRequestAssign()
     }, [])
+
+
+    const isMounted = useRef(true)
+    useEffect(() => {
+        if (isMounted.current) {
+            isMounted.current = false
+        } else {
+            const newCategories = []
+                categories.forEach(c => {
+                    if(!requestAssign.requestAssignDetails.find(r => r.categoryId === c.prefix)) {
+                        newCategories.push(c)
+                    }                    
+                })
+            setCategories(newCategories)
+        }
+    }, [requestAssign])
 
     const fetchCategories = () => {
         get('/category')
@@ -38,6 +56,21 @@ export default function CreateRequestAssign() {
             })
             .catch((error) => {
                 console.log(error)
+            })
+    }
+
+    // const id = props.match.params.requestId
+    const fetchRequestAssign = () => {
+        get(`/request-assign/${requestId}`)
+            .then((res) => {
+                if (res.data.state !== 'WAITING_FOR_ASSIGNING') {
+                    history.push('/request-assign')
+                }
+                setRequestAssign(res.data)
+                setNote(res.data.note)
+                setRequestAssignDetails(res.data.requestAssignDetails)
+                setAssignedDate(res.data.intendedAssignDate.split("/").reverse().join("-"))
+                setReturnedDate(res.data.intendedReturnDate.split("/").reverse().join("-"))
             })
     }
 
@@ -51,7 +84,7 @@ export default function CreateRequestAssign() {
         }
 
         setIsSaving(true)
-        post('/request-assign', formData)
+        put(`/request-assign/${requestAssign.id}`, formData)
             .then((res) => {
                 history.push({
                     pathname: '/request-assign',
@@ -59,7 +92,6 @@ export default function CreateRequestAssign() {
                         id: res.data.id
                     }
                 })
-
             })
             .catch((error) => {
                 setIsSaving(false)
@@ -76,7 +108,7 @@ export default function CreateRequestAssign() {
     }
 
     const handleAdd = () => {
-        const categoryName = categories.find(c => c.prefix === categoryId).name
+        let categoryName = categories.find(c => c.prefix === categoryId).name;
         setRequestAssignDetails(prevState => (
             [...prevState, { categoryId: categoryId, quantity: quantity, categoryName: categoryName }]
         ))
@@ -87,17 +119,17 @@ export default function CreateRequestAssign() {
         setShowModal(false)
     }
 
-    const handleRemove = (categoryId) => {
-        setRequestAssignDetails([...requestAssignDetails.filter(r => r.categoryId !== categoryId)])
-        setCategories([...categories, dataCategories.find(c => c.prefix === categoryId)])
-    }
-
     const handleOnChangeQuantity = (e, prefix) => {
         let newRequestAssignDetails = [...requestAssignDetails]
         const quantity = e.target.value
         const index = requestAssignDetails.findIndex(r => r.categoryId === prefix)
         newRequestAssignDetails[index].quantity = e.target.value
         setRequestAssignDetails(newRequestAssignDetails)
+    }
+
+    const handleRemove = (categoryId) => {
+        setRequestAssignDetails([...requestAssignDetails.filter(r => r.categoryId !== categoryId)])
+        setCategories([...categories, dataCategories.find(c => c.prefix === categoryId)])
     }
 
     const openDatePickerAd = () => {

@@ -1,5 +1,5 @@
-const DOMAIN = 'https://asset-ptithcm.herokuapp.com'
-// const DOMAIN = 'http://localhost:3000'
+// const DOMAIN = 'https://asset-ptithcm.herokuapp.com'
+const DOMAIN = 'http://localhost:3000'
 
 const STAFF_END_POINT = ['/', '/home', '/request_assign', '/create-request-assign']
 

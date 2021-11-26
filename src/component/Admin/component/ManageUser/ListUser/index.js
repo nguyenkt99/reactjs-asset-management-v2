@@ -134,7 +134,9 @@ export default function User() {
 
     const filterByStaffCodeOrFullName = (data, keySearch) => {
         return data.filter(e => (e.staffCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.fullName.toLowerCase().includes(keySearch.toLowerCase())))
+            || e.fullName.toLowerCase().includes(keySearch.toLowerCase())
+            || e.username.toLowerCase().includes(keySearch.toLowerCase())
+            ))
     }
 
     const handleSearch = async (keySearch) => {
@@ -578,7 +580,7 @@ const SORT_BY = { StaffCode: 'staffCode', FullName: 'fullName', Username: 'usern
 const TYPE = { ALL: 'ALL', STAFF: 'ROLE_STAFF', ADMIN: 'ROLE_ADMIN' }
 const ROLEtoLowcase = { ALL: 'All', ROLE_ADMIN: 'Admin', ROLE_STAFF: 'Staff' }
 const STATE = { ALL: 'ALL', DISABLED: 'DISABLED', ENABLED: 'ENABLED' }
-const STATEtoLowCase = { ALL: 'All', Disabled: 'Break', Enable: 'Working' }
+const STATEtoLowCase = { ALL: 'All', DISABLED: 'Break', ENABLED: 'Working' }
 
 const deleteIconStyle = {
     color: 'red',

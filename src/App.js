@@ -7,7 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { post } from './httpHelper'
 import Form from "react-validation/build/form";
 import AuthService from "./services/auth.service";
-import Home from "./component/Home/home.component";
+import Home from "./component/Home";
 import Login from "./component/Login/login.component";
 import ForgotPassword from "./component/ForgotPassword";
 
