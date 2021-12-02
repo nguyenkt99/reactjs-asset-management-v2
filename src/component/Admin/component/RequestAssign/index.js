@@ -110,7 +110,6 @@ export default function RequestForAssigning() {
     const handleDeclineRequest = (id) => {
         put(`/request-assign/${id}/decline`, note)
             .then((response) => {
-                if (response.status === 200) {
                     let newData = [...data]
                     const indexInData = data.findIndex(r => r.id === id)
                     newData[indexInData].state = 'DECLINED'
@@ -121,7 +120,6 @@ export default function RequestForAssigning() {
                     newData[indexInRequests].state = 'DECLINED'
                     setRequestAssigns(newRequestAssigns)
                     setShowModalDeclineRequest(false)
-                }
             })
             .catch((error) => {
                 // setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
@@ -201,15 +199,24 @@ export default function RequestForAssigning() {
     }
 
     const onClickAcceptRequest = (id) => {
-        requestId = id
-        let requestAssign = data.find(item => item.id === requestId)
-        setRequestAssignInfo(requestAssign)
-        setAssignedDate(requestAssign.intendedAssignDate.split('/').reverse().join('-'))
-        setReturnedDate(requestAssign.intendedReturnDate.split('/').reverse().join('-'))
-        setNote('')
-        setShowModalCreateAssignment(true)
-        // fetchAssets()
+        get(`/request-assign/${id}`)
+            .then(response => {
+                let strCategories = ''
+                response.data.requestAssignDetails.forEach(rad => {
+                    strCategories += `${rad.categoryName} (${rad.quantity}), `
+                })
+                const requestAssign = { ...response.data, strCategories: strCategories }
+                setRequestAssignInfo(requestAssign)
+                setAssignedDate(requestAssign.intendedAssignDate.split('/').reverse().join('-'))
+                setReturnedDate(requestAssign.intendedReturnDate.split('/').reverse().join('-'))
+                setNote('')
+                setShowModalCreateAssignment(true)
+            })
+            .catch(error => {
+                toastMessage("Fail to connect server!")
+            })
     }
+
 
     const handleStateClick = (e) => {
         if (e === STATE.ALL) setStateChecked([e]);
@@ -266,21 +273,13 @@ export default function RequestForAssigning() {
 
     const handleSearchChangeAsset = (e) => {
         let keySearch = e.target.value;
-        let newData = assetsData.filter(e => (
+        let newData = assets.filter(e => (
             e.assetCode.toLowerCase().includes(keySearch.toLowerCase())
             || e.assetName.toLowerCase().includes(keySearch.toLowerCase())
+            || e.categoryName.toLowerCase().includes(keySearch.toLowerCase())
         ))
-        setAssets(newData);
+        setAssetsData(newData);
     }
-
-    // const assetChange = (e) => {
-    //     let assetCode = e.target.value;
-    //     let a = assets.filter((a) => {
-    //         return a.assetCode === assetCode;
-    //     })
-    //     document.getElementById(assetCode).checked = true;
-    //     setAssetCurrent(a[0]);
-    // }
 
     const assetChange = (e) => {
         const assetCode = e.target.value;
@@ -292,28 +291,12 @@ export default function RequestForAssigning() {
         }
     }
 
-    // const handleSelectAsset = () => {
-    //     if (assetCurrent !== null) {
-    //         setSelectedAssets(assetCurrent);
-    //         setAssetDisplay(false);
-    //     }
-    // }
-
     const handleOk = () => {
         if (selectingAssets) setSelectedAssets(selectingAssets)
         setAssetDisplay(false)
     }
 
     const handleCancel = () => {
-        // setAssetDisplay(false);
-        // setAssetCurrent(null);
-        // setSelectedAssets(null);
-        // //asset
-        // if (selectedAssets) {
-        //     if (document.getElementById(selectedAssets.assetCode) !== null)
-        //         document.getElementById(selectedAssets.assetCode).checked = true;
-        // }
-
         selectedAssets.forEach((a) => {
             document.getElementById(a.assetCode).checked = true;
         })
@@ -558,7 +541,7 @@ export default function RequestForAssigning() {
                 </Modal.Header>
                 <Modal.Body>
                     <Form className='modal-detail-asset'>
-                        <Form.Group as={Row} className="mb-2" controlId='category'>
+                        <Form.Group as={Row} className="mb-2">
                             <Form.Label column sm='4' className='pr-0'>
                                 Category
                             </Form.Label>
@@ -602,11 +585,10 @@ export default function RequestForAssigning() {
             {/* Modal create assignment */}
             <Modal show={showModalCreateAssignment}>
                 <Modal.Header>
-                    <Modal.Title style={{ color: '#dc3545' }}>Create assignment</Modal.Title>
+                    <Modal.Title style={{ color: '#dc3545' }}>Create new assignment</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {/* <Form onSubmit={handleSubmit}> */}
-                    <Form.Group as={Row} className="mb-2" controlId='category'>
+                    <Form.Group as={Row} className="mb-2">
                         <Form.Label column sm={3}>
                             User
                         </Form.Label>

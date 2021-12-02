@@ -9,7 +9,7 @@ import './CreateUser.css';
 import { FaCalendarAlt } from 'react-icons/fa'
 
 export default function CreateUser() {
-    let history = useHistory();
+    const history = useHistory();
     const [roles, setRoles] = useState([]);
     const [departments, setDepartments] = useState([]);
     const [inputs, setInputs] = useState({
@@ -193,8 +193,6 @@ export default function CreateUser() {
         const formData = {
             ...inputs, ...inputDates
         }
-
-        console.log(formData);
 
         setIsSaving(true);
         post('/user', formData)

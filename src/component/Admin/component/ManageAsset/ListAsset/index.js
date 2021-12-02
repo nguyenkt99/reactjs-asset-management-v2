@@ -4,14 +4,17 @@ import { HiFilter } from 'react-icons/hi';
 import { GrEdit } from 'react-icons/gr';
 import { GrEditCus } from '../../../../icon/GrEditCus';
 import { CgCloseO } from 'react-icons/cg';
-import { get, del } from '../../../../../httpHelper';
+import { GiAutoRepair } from 'react-icons/gi';
+import { get, del, post } from '../../../../../httpHelper';
 import { BsFillCaretDownFill, BsSearch } from "react-icons/bs";
 import { Link, useHistory } from 'react-router-dom'
 import './ListAsset.css'
+import ModalRepair from './ModalRepair';
 
 const elementPerPage = 10;
 
 export default function ListAsset() {
+  const [showModalRepair, setShowModalRepair] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [showModalErrorDelete, setShowModalErrorDelete] = useState(false);
   const [assetSelect, setAssetSelect] = useState('');
@@ -32,6 +35,7 @@ export default function ListAsset() {
   const [stateChecked, setStateChecked] = useState([]);
   const [categoryChecked, setCategoryChecked] = useState([CATEGORY.All]);
   const [categoryNames, setCategoryNames] = useState(['All']);
+  const [selectedAsset, setSelectedAsset] = useState({});
   const history = useHistory();
 
   useEffect(() => {
@@ -45,24 +49,14 @@ export default function ListAsset() {
         if (response.status === 200) {
           let newAssets = response.data;
           if (history.location.state) {
-            newAssets.unshift(
-              newAssets.splice(
-                newAssets.findIndex(
-                  (item) => item.assetCode === history.location.state.assetCode
-                ),
-                1
-              )[0]
-            );
+            newAssets.unshift(newAssets.splice(
+              newAssets.findIndex((item) => item.assetCode === history.location.state.assetCode), 1)[0]);
           }
           setData(newAssets);
           setAssets(newAssets);
 
           //Default filter
-          setStateChecked([
-            STATE.Assigned,
-            STATE.Available,
-            STATE.Not_available,
-          ]);
+          setStateChecked([STATE.Assigned, STATE.Available, STATE.Repairing, STATE.Not_available]);
           history.replace();
         } else {
           toastMessage('Something wrong!');
@@ -74,11 +68,7 @@ export default function ListAsset() {
   const fetchCatagoryName = () => {
     get('/category')
       .then((res) => {
-        if (res.status === 200) {
-          setCategoryNames([...categoryNames, ...res.data.map((category) => category.name)]);
-        } else {
-          toastMessage('Something wrong!');
-        }
+        setCategoryNames([...categoryNames, ...res.data.map((category) => category.name)]);
       })
       .catch((error) => toastMessage('Fail to connect server!'));
   };
@@ -187,6 +177,7 @@ export default function ListAsset() {
     setAssetSelect('');
     setShowModalErrorDelete(false);
   };
+
   const handleDelete = () => {
     del(`/asset/${assetSelect}`)
       .then((res) => {
@@ -216,8 +207,46 @@ export default function ListAsset() {
       });
   };
 
+  const handleClickRepair = (assetCode) => {
+    get(`/asset/${assetCode}`)
+      .then(res => setSelectedAsset(res.data))
+      .catch(error => toastMessage('Get asset error'))
+    setShowModalRepair(true)
+  }
+
+  const handleCloseModalRepair = () => {
+    setShowModalRepair(false)
+  }
+
+  const handleCreateRepair = (formData) => {
+    post('/repair', formData)
+      .then(res => {
+        get(`/asset/${selectedAsset.assetCode}`)
+          .then(assetRes => {
+            let newAssets = [...assets]
+            const indexInAssets = assets.findIndex(a => a.assetCode === assetRes.data.assetCode)
+            newAssets[indexInAssets] = assetRes.data
+            setAssets(newAssets)
+            let newData = [...data]
+            const indexInData = data.findIndex(a => a.assetCode === assetRes.data.assetCode)
+            newData[indexInData] = assetRes.data
+            setData(newData)
+          })
+          .catch(error => toastMessage('Error get new asset!'))
+        handleCloseModalRepair()
+      })
+      .catch(error => toastMessage('Error create asset repair!'))
+  }
+
   return (
     <>
+      <ModalRepair
+        asset={selectedAsset}
+        show={showModalRepair}
+        handleClose={handleCloseModalRepair}
+        handleSubmit={handleCreateRepair}
+      />
+
       <Modal show={showModalDelete} onHide={handleCloseModalDelete}>
         <Modal.Header closeButton>
           <Modal.Title>Are you sure</Modal.Title>
@@ -254,8 +283,8 @@ export default function ListAsset() {
         <Modal.Body>
           Cannot delete the asset because it belongs to one or more historical
           assignments. If the asset is not able to be used anymore, please
-          update its state in{' '}
-          <a href={`/edit-asset/${assetSelect}`}>Edit Asset page</a>
+          update its state.
+          {/* <Link to={`/edit-asset/${assetSelect}`}>Edit Asset page</Link> */}
         </Modal.Body>
         <Modal.Footer
           style={{ display: 'block', marginLeft: '32px' }}></Modal.Footer>
@@ -301,6 +330,18 @@ export default function ListAsset() {
                   label='Available'
                   checked={
                     stateChecked.includes(STATE.Available) ? 'checked' : ''
+                  }
+                />
+              </div>
+              <div
+                className='dropdown-item checkbox px-3'
+                onClick={() => {
+                  handleStateClick(STATE.Repairing);
+                }}>
+                <FormCheck
+                  label='Repairing'
+                  checked={
+                    stateChecked.includes(STATE.Repairing) ? 'checked' : ''
                   }
                 />
               </div>
@@ -436,18 +477,19 @@ export default function ListAsset() {
                     </td>
                     <td>
                       <div className='d-flex justify-content-evenly align-items-center'>
-                        {a.state === 'ASSIGNED' ?
+                        {a.state === STATE.Available ?
                           <>
-                            <GrEditCus color='#ccc' />
-                            <CgCloseO style={iconDisabled} />
-                          </>
-                          :
-                          <>
+                            <GiAutoRepair style={{ fontSize: "130%", cursor: "pointer" }} onClick={() => handleClickRepair(a.assetCode)} />
                             <Link to={'/edit-asset/' + a.assetCode}>
                               <GrEdit style={editIconStyle} />
                             </Link>
-                            <CgCloseO style={deleteIconStyle} onClick={() => handleDeleteClick(a)}
-                            />
+                            <CgCloseO style={deleteIconStyle} onClick={() => handleDeleteClick(a)} />
+                          </>
+                          :
+                          <>
+                            <GiAutoRepair style={{ fontSize: "130%", color: "#ccc" }} />
+                            <GrEditCus color='#ccc' />
+                            <CgCloseO style={iconDisabled} />
                           </>
                         }
                       </div>
@@ -498,7 +540,7 @@ export default function ListAsset() {
         </Modal.Header>
         <Modal.Body style={{ backgroundColor: '#FAFCFC' }}>
           <Form className='modal-detail-asset'>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3' className='pr-0'>
                 Asset Code
               </Form.Label>
@@ -510,7 +552,7 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
                 Asset Name
               </Form.Label>
@@ -522,7 +564,7 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
                 Category
               </Form.Label>
@@ -536,7 +578,7 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
                 Installed Date
               </Form.Label>
@@ -550,7 +592,7 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
                 State
               </Form.Label>
@@ -562,7 +604,7 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
                 Location
               </Form.Label>
@@ -574,7 +616,7 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
                 Specfication
               </Form.Label>
@@ -586,33 +628,129 @@ export default function ListAsset() {
                 />
               </Col>
             </Form.Group>
-            <Form.Group as={Row} controlId='formPlaintextEmail'>
+            <Form.Group as={Row}>
               <Form.Label column sm='3'>
-                History
+                Assignment history
               </Form.Label>
               <Col sm='9'>
                 {
-                  assetInformation && assetInformation.assignmentDTOs ? (
-                    <Table responsive>
-                      <thead>
-                        <tr>
-                          <th>Assigned Date</th>
-                          <th>Assigned to</th>
-                          <th>Assigned by</th>
-                          <th>Returned Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {assetInformation.assignmentDTOs.map(a => (
-                          <tr key={a.assetCode}>
-                            <td>{a.assignedDate}</td>
-                            <td>{a.assignedTo}</td>
-                            <td>{a.assignedBy}</td>
-                            <td>{a.returnedDate ? a.returnedDate : ""}</td>
+                  assetInformation && assetInformation.assignmentDetails ? (
+                    <div className="table-wrapper">
+                      <Table responsive>
+                        <thead>
+                          <tr>
+                            <th>Assigned Date</th>
+                            <th>Assigned to</th>
+                            <th>Assigned by</th>
+                            <th>Returned Date</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                        </thead>
+                        <tbody>
+                          {assetInformation.assignmentDetails.map((ad, index) => (
+                            <tr key={index}>
+                              <td>{ad.assignedDate}</td>
+                              <td>{ad.assignedTo}</td>
+                              <td>{ad.assignedBy}</td>
+                              <td>{ad.returnedDate ? ad.returnedDate : ""}</td>
+                            </tr>
+                          ))}
+
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                        </tbody>
+                      </Table>
+                    </div>
+                  ) : <></>
+                }
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row}>
+              <Form.Label column sm='3'>
+                Repair history
+              </Form.Label>
+              <Col sm='9'>
+                {
+                  assetInformation && assetInformation.repairs ? (
+                    <div className="table-wrapper">
+                      <Table responsive>
+                        <thead>
+                          <tr>
+                            <th>Stared Date</th>
+                            <th>Note</th>
+                            <th>Created by</th>
+                            <th>Finished Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {assetInformation.repairs.map((r, index) => (
+                            <tr key={index}>
+                              <td>{r.startedDate}</td>
+                              <td>{r.note}</td>
+                              <td>{r.createdBy}</td>
+                              <td>{r.finishedDate ? r.returnedDate : ""}</td>
+                            </tr>
+                          ))}
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                          <tr >
+                            <td>12/02/1999</td>
+                            <td>nguyenkt</td>
+                            <td>nguyenkt</td>
+                            <td>1/12/2021</td>
+                          </tr>
+                        </tbody>
+                      </Table>
+                    </div>
                   ) : <></>
                 }
               </Col>
@@ -650,6 +788,7 @@ const STATE = {
   Not_available: 'NOT_AVAILABLE',
   Waiting_for_recycling: 'WAITING_FOR_RECYCLING',
   Recycled: 'RECYCLED',
+  Repairing: 'REPAIRING'
 };
 const StateToLowCase = {
   ASSIGNED: 'Assigned',
@@ -657,6 +796,7 @@ const StateToLowCase = {
   NOT_AVAILABLE: 'Not available',
   WAITING_FOR_RECYCLING: 'Waiting for recycling',
   RECYCLED: 'Recycled',
+  REPAIRING: 'Reparing'
 };
 const CATEGORY = {
   All: 'All',

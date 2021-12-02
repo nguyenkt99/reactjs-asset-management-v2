@@ -127,7 +127,7 @@ html {
 }
 
 .modal-title {
-  color: var(--primary-color);
+  color: #dc3545;
   font-size: 2.0rem !important;
 }
 

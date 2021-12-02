@@ -167,7 +167,8 @@
 }
 
 .navbar__notify-item--unviewed {
-    background-color: rgba(238, 77, 45, 0.1);
+    /* background-color: rgba(238, 77, 45, 0.1); */
+    /* background-color: #ff465d; */
 }
 
 .navbar__notify-link {
@@ -190,18 +191,40 @@
 .navbar__notify-name {
     display: block;
     font-size: 1.4rem;
-    color: #333;
+    color: #555;
     font-weight: 500;
     line-height: 1.8rem;
 }
 
 .navbar__notify-description {
     display: block;
-    font-size: 1.2rem;
-    color: #756f6e;
+    font-size: 1.4rem;
+    color: #7c7473;
     font-weight: 400;
     line-height: 1.6rem;
     margin-top: 4px;
+}
+
+.navbar__notify-time {
+    display: block;
+    color: rgb(46, 46, 46);
+    font-size: 1.3rem;
+    margin-top: 4px;
+}
+
+.navbar__notify-item--unviewed .navbar__notify-name {
+    color: rgb(39, 39, 39);
+    font-weight: 700;
+}
+
+.navbar__notify-item--unviewed .navbar__notify-description {
+    color: rgb(46, 46, 46);
+    font-weight: 500;
+}
+
+.navbar__notify-item--unviewed .navbar__notify-time {
+    color: #2e83f3;
+    font-weight: 500;
 }
 
 .navbar__notify-footer {

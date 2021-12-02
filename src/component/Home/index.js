@@ -23,13 +23,18 @@ import EditAsset from '../Admin/component/ManageAsset/EditAsset'
 import ManagerAssignment from '../Admin/component/ManageAssignment/ListAssignment'
 import CreateAssignment from '../Admin/component/ManageAssignment/CreateAssignment'
 import EditAssignment from '../Admin/component/ManageAssignment/EditAssignmnet'
-import Request from '../Admin/component/RequestReturn';
+import RequestReturn from '../Admin/component/RequestReturn';
 import RequestForAssigning from '../Admin/component/RequestAssign';
 import Report from '../Admin/component/Report';
 import ChangePassword from '../User/ChangePassword'
 import RequestAssignUser from '../User/RequestAssignUser';
 import CreateRequestAssign from '../User/CreateRequestAssign';
 import EditRequestAssign from '../User/EditRequestAssign';
+import { AppContext } from '../../Context/AppProvider';
+import { Toast, ToastContainer } from 'react-bootstrap';
+import moment from 'moment';
+import { db } from '../../firebase/config';
+import ManageRepair from '../Admin/component/ManageRepair';
 
 function Home() {
   const history = useHistory();
@@ -47,12 +52,16 @@ function Home() {
 
   const [modalProfile, setModalProfile] = useState(false);
   const toggleModalProfile = () => setModalProfile(!modalProfile);
+
   const [profile, setProfile] = useState();
-  const [notifications, setNotifications] = useState([])
+  // const [notifications, setNotifications] = useState([])
+
+  // context
+  const { showToastNotify, setShowToastNotify, notifications, clickedNotify, setClickedNotify } = React.useContext(AppContext);
 
   useEffect(() => {
     EndPointRedirect();
-    fetchNotifications();
+
   }, []);
 
   const handleShowProfile = () => {
@@ -66,15 +75,15 @@ function Home() {
       });
   }
 
-  const fetchNotifications = () => {
-    get('/firebase/notifications')
-      .then(res => {
-        setNotifications(res.data)
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
+  // const fetchNotifications = () => {
+  //   get('/firebase/notifications')
+  //     .then(res => {
+  //       setNotifications(res.data)
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // }
 
   function handleLogout() {
     authService.logout();
@@ -125,9 +134,18 @@ function Home() {
     path = navbarName + " > Create request for assigning"
   else path = navbarName;
 
-  const handleSeen = () => {
-    console.log('Seen!')
+
+  const handleSeen = (id) => {
+    setClickedNotify(false)
+    db.collection('notifications').doc(id).update({
+      "isSeen": true
+    })
   }
+
+  // const handleCloseToastNotify = () => {
+  //   setShowToastNotify(false)
+  //   setClickedNotify(null)
+  // }
 
   return (
     <div className="Home">
@@ -141,29 +159,30 @@ function Home() {
                 </NavItem>
               </div>
               <div className="header__navbar-right">
-                <NavItem className="nav-item--has-notify">
+                <NavItem className="nav-item--has-notify" >
                   <MdNotifications className="header__navbar-notify-icon" />
-                  <div class="navbar__notify">
-                    <header class="navbar__notify-header">
+                  <div className="navbar__notify">
+                    <header className="navbar__notify-header">
                       <h3>Notifications</h3>
                     </header>
-                    <ul class="navbar__notify-list">
-                      {notifications.map(n => (
-                        <li class="navbar__notify-item navbar__notify-item--unviewed">
-                          <Link class="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/request-assign' : '/request-return'} onClick={handleSeen}>
+                    <ul className="navbar__notify-list">
+                      {notifications.map((n) => (
+                        <li key={n.id} className={n?.isSeen ? "navbar__notify-item" : "navbar__notify-item navbar__notify-item--unviewed"}>
+                          <Link className="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/request-assign' : '/request-return'} onClick={() => handleSeen(n.id)}>
                             <img src={n.type === 'REQUEST_ASSIGN' ? ReturnAssignImage
                               : n.type === 'REQUEST_RETURN' ? ReturnImage : AssignmentImage} alt="USB Kingston"
-                              class="navbar__notify-img" />
-                            <div class="navbar__notify-info">
-                              <span class="navbar__notify-name">{n.type}</span>
-                              <span class="navbar__notify-description">{n.title}</span>
+                              className="navbar__notify-img" />
+                            <div className="navbar__notify-info">
+                              <span className="navbar__notify-name">{n.type}</span>
+                              <span className="navbar__notify-description">{n.title}</span>
+                              <span className="navbar__notify-time">{moment.utc(n.createdDate.seconds * 1000).local().startOf('seconds').fromNow()}</span>
                             </div>
                           </Link>
                         </li>
                       ))}
                     </ul>
-                    <footer class="navbar__notify-footer">
-                      <a href="" class="navbar__notify-footer-btn">View all</a>
+                    <footer className="navbar__notify-footer">
+                      <a href="" className="navbar__notify-footer-btn">View all</a>
                     </footer>
                   </div>
                 </NavItem>
@@ -225,7 +244,7 @@ function Home() {
                   if (user.role === "ROLE_ADMIN") return <EditAssignment />
                 }} />
                 <Route path="/request-return" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <Request />
+                  if (user.role === "ROLE_ADMIN") return <RequestReturn />
                   else return <Redirect to="/home" />
                 }} />
                 <Route path="/report" render={() => {
@@ -243,6 +262,10 @@ function Home() {
                 }} />
                 <Route path="/edit-request-assign/:requestId" render={() => {
                   if (user.role === "ROLE_STAFF") return <EditRequestAssign />
+                  else return <Redirect to="/home" />
+                }} />
+                <Route path="/manage-repair" render={() => {
+                  if (user.role === "ROLE_ADMIN") return <ManageRepair />
                   else return <Redirect to="/home" />
                 }} />
               </Switch>
@@ -337,6 +360,22 @@ function Home() {
         </ModalBody>
       </Modal>
 
+      {/* Toast notifications */}
+      <ToastContainer className="m-4" position='bottom-end'>
+        <Toast
+          style={{ fontSize: '1.4rem' }}
+          onClose={() => setShowToastNotify(false)}
+          show={clickedNotify !== null ? false : showToastNotify}
+          delay={4000}
+          autohide
+        >
+          <Toast.Header>
+            <strong className='me-auto'>{notifications.length > 0 && notifications[0].type}</strong>
+            <small>{notifications.length > 0 && moment.utc(notifications[0].createdDate.seconds * 1000).local().startOf('seconds').fromNow()}</small>
+          </Toast.Header>
+          <Toast.Body>{notifications.length > 0 && notifications[0].title}</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </div >
   );
 };

@@ -22,6 +22,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle'
 import { Button } from "@material-ui/core";
+import AppProvider from "./Context/AppProvider";
 
 class App extends Component {
   constructor(props) {
@@ -90,7 +91,9 @@ class App extends Component {
         <Switch>
           <Route exact path={["/login"]} component={Login} />
           <Route exact path={["/forgot"]} component={ForgotPassword} />
-          <Route path={["/"]} component={Home} />
+          <AppProvider>
+            <Route path={["/"]} component={Home} />
+          </AppProvider>
         </Switch>
         {/* Dialog first login required change password */}
         <Dialog

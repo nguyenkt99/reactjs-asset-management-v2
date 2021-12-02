@@ -19,7 +19,6 @@ import { FaCalendarAlt } from "react-icons/fa"
 import './ListAssignment.css'
 
 const elementPerPage = 10
-
 export default function ListAssignment() {
   const history = useHistory()
   const assignmentIdRef = useRef()
@@ -76,7 +75,7 @@ export default function ListAssignment() {
             u.assignmentDetails.forEach(ad => {
               strAssets += `${ad.assetCode}, `
             })
-            return { ...u, strAssets: strAssets }
+            return { ...u, strAssets: strAssets.substring(0, strAssets.length - 2) }
           })
 
           setData(dataWithStrAssets)
@@ -217,7 +216,7 @@ export default function ListAssignment() {
             newAssignment.assignmentDetails.forEach(ad => {
               strAssets += `${ad.assetCode}, `
             })
-            newAssignments[index] = {...newAssignment, strAssets}
+            newAssignments[index] = { ...newAssignment, strAssets }
             setAssignments(newAssignments)
             setData(newAssignments)
           })
@@ -350,11 +349,11 @@ export default function ListAssignment() {
                 <BsFillCaretDownFill />
               </th>
               <th className="table-thead" style={{ width: "300px" }} onClick={() => handleSort(SORT_BY.AssetCode)}>
-                Asset
+                Asset List
                 <BsFillCaretDownFill />
               </th>
               <th className="table-thead" onClick={() => handleSort(SORT_BY.AssignedTo)}>
-                Assigned to
+                Assigned To
                 <BsFillCaretDownFill />
               </th>
               <th className="table-thead" onClick={() => handleSort(SORT_BY.AssignedBy)}>
@@ -461,6 +460,18 @@ export default function ListAssignment() {
           <Form className='modal-detail-asset'>
             <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
+                Id
+              </Form.Label>
+              <Col sm='8'>
+                <Form.Control
+                  plaintext
+                  readOnly
+                  defaultValue={assignmentInformation && assignmentInformation.id}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row}>
+              <Form.Label column sm='4' className='pr-0'>
                 Assigned To
               </Form.Label>
               <Col sm='8'>
@@ -492,6 +503,18 @@ export default function ListAssignment() {
                   plaintext
                   readOnly
                   defaultValue={assignmentInformation && assignmentInformation.assignedDate}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row}>
+              <Form.Label column sm='4' className='pr-0'>
+                Intended Return Date
+              </Form.Label>
+              <Col sm='8'>
+                <Form.Control
+                  plaintext
+                  readOnly
+                  defaultValue={assignmentInformation && assignmentInformation.intendedReturnDate}
                 />
               </Col>
             </Form.Group>

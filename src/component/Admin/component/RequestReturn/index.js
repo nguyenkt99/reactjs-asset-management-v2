@@ -51,7 +51,7 @@ export default function Request() {
                     u.assignmentDetails.forEach(ad => {
                         strAssets += `${ad.assetCode}, `
                     })
-                    return { ...u, strAssets: strAssets }
+                    return { ...u, strAssets: strAssets.substring(0, strAssets.length - 2) }
                 })
 
                 setData(dataWithStrAssets)
@@ -284,7 +284,7 @@ export default function Request() {
                                 <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetCode)} >
-                                Asset Code
+                                Asset List
                                 <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.RequestBy)} >

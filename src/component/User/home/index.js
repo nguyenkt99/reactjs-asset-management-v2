@@ -363,6 +363,18 @@ export default function UserAssignment() {
           <Form className='modal-detail-asset'>
             <Form.Group as={Row} controlId='formPlaintextEmail'>
               <Form.Label column sm='4' className='pr-0'>
+                Id
+              </Form.Label>
+              <Col sm='8'>
+                <Form.Control
+                  plaintext
+                  readOnly
+                  defaultValue={assignmentInformation && assignmentInformation.id}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row} controlId='formPlaintextEmail'>
+              <Form.Label column sm='4' className='pr-0'>
                 Assigned To
               </Form.Label>
               <Col sm='8'>
@@ -462,10 +474,10 @@ export default function UserAssignment() {
       </Modal>
       <Modal centered show={showModalAccept}>
         <Modal.Header>
-          <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
+          <Modal.Title className="modal-title">Are you sure?</Modal.Title>
         </Modal.Header>
         <Modal.Body>Do you want to accept this assignment?</Modal.Body>
-        <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+        <Modal.Footer>
           <Button variant='danger' onClick={handleAccept}>
             Accept
           </Button>
@@ -476,7 +488,7 @@ export default function UserAssignment() {
       </Modal>
       <Modal centered show={showModalDeclined}>
         <Modal.Header>
-          <Modal.Title style={{ color: '#dc3545' }}>Are you sure decline this assignment?</Modal.Title>
+          <Modal.Title className="modal-title">Are you sure decline this assignment?</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group as={Row} className='mb-3' controlId='note'>
@@ -488,7 +500,7 @@ export default function UserAssignment() {
             </Col>
           </Form.Group>
         </Modal.Body>
-        <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+        <Modal.Footer>
           <Button variant='danger' onClick={handleDeclined} disabled={note === ''}>
             Decline
           </Button>
@@ -497,20 +509,6 @@ export default function UserAssignment() {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* <Modal centered show={showModalRequest}>
-      <Modal.Header>
-        <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>Do you want to create a returning for this asset?</Modal.Body>
-      <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
-        <Button variant='danger' onClick={() => handleCreateRequestReturn(assignmentIdRef.current)}>
-          Yes
-        </Button>
-        <Button variant='secondary' onClick={() => setShowModalRequest(false)}>
-          No
-        </Button>
-      </Modal.Footer>
-    </Modal> */}
 
       {/* Modal return */}
       <Modal show={showModalRequest} onHide={() => setShowModalRequest(false)}>

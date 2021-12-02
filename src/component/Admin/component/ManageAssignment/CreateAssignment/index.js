@@ -509,6 +509,7 @@ export default function CreateAssignment() {
                         </Form.Label>
                         <Col>
                             <Form.Control
+                                className='textarea-input'
                                 name='note'
                                 as='textarea'
                                 maxLength={100}
