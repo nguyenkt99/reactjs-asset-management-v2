@@ -29,6 +29,9 @@ function Menu({ tableTab }) {
       />
       <h3 className="menu-title">Online Asset Management</h3>
       <ListGroup className="menu-list">
+        <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(9)} active={selected === 9}>
+          <Link to='/messenger' className="menu-item__link">Messenger</Link>
+        </ListGroupItem>
         <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(1)} active={selected === 1}>
           <Link to='/home' className="menu-item__link">Home</Link>
         </ListGroupItem>

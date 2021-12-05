@@ -35,6 +35,7 @@ import { Toast, ToastContainer } from 'react-bootstrap';
 import moment from 'moment';
 import { db } from '../../firebase/config';
 import ManageRepair from '../Admin/component/ManageRepair';
+import ChatMessage from '../ChatMessage';
 
 function Home() {
   const history = useHistory();
@@ -212,6 +213,9 @@ function Home() {
           <Col xs="10">
             <div className="app-content">
               <Switch>
+                <Route path='/messenger'>
+                  <ChatMessage />
+                </Route>
                 <Route path='/home'>
                   <UserAssignment />
                 </Route>
