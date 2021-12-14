@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const url = 'http://localhost:8082/api'
+// const url = 'http://localhost:8082/api'
+const url = 'https://api-ptithcm-v2.herokuapp.com/api'
 // const url = 'https://api-asset-ptithcm.herokuapp.com/api'
 // const url = 'https://spring-asset-management-v2-production.up.railway.app/api'
 

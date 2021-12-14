@@ -7,7 +7,7 @@ import authService from '../../services/auth.service'
 import moment from 'moment'
 import { socketUrl } from '../../constants/configUrl'
 import SockJsClient from 'react-stomp'
-import { Link, NavLink, useHistory, useRouteMatch } from 'react-router-dom'
+import { NavLink, useRouteMatch } from 'react-router-dom'
 import Avatar from '../../assets/avatar.png'
 import { FormControl, InputGroup } from 'react-bootstrap'
 
@@ -15,7 +15,7 @@ export default function ChatMessage() {
     const historyRef = useRef()
     const refSockJs = useRef(null)
     const match = useRouteMatch()
-    const history = useHistory()
+    // const history = useHistory()
 
     const conversationRef = useRef({})
     const [users, setUsers] = useState([])
@@ -23,12 +23,13 @@ export default function ChatMessage() {
     const [conversations, setConversations] = useState([])
     const [selectedConversation, setSelectedConversation] = useState()
     const [currentUser, setCurrentUser] = useState()
-    const [selectedUser, setSelectedUser] = useState()
+    // const [selectedUser, setSelectedUser] = useState()
     const [messages, setMessages] = useState([])
     const [messageText, setMessageText] = useState('')
     const [searchValue, setSearchValue] = useState('')
-    const [newConversation, setNewConversation] = useState({})
+    // const [newConversation, setNewConversation] = useState({})
     const [showListSearch, setShowListSearch] = useState(false)
+    const [connect, setConnect] = useState(false)
 
 
     useEffect(() => {
@@ -72,6 +73,10 @@ export default function ChatMessage() {
             setUsers(newUsers)
             setDataUsers(newUsers)
         }).catch(error => console.log(error))
+    }
+
+    const handleOnConnect = () => {
+        setConnect(true)
     }
 
     const handleClickItemSearch = (user) => {
@@ -164,30 +169,32 @@ export default function ChatMessage() {
     }
 
     const handleSend = () => {
-        if (messageText.trim() === '') return
+        if (connect && selectedConversation) { // if websocket has been connnected then send the message
+            if (messageText.trim() === '') return
 
-        // preparing form data to send
-        const message = {
-            sender: currentUser.username,
-            content: messageText,
-            conversationId: selectedConversation?.id
+            // preparing form data to send
+            const message = {
+                sender: currentUser.username,
+                content: messageText,
+                conversationId: selectedConversation?.id
+            }
+
+            // determine receiver
+            let to = ''
+            if (selectedConversation) {
+                to = getUserIsChating(selectedConversation).username
+            }
+
+            // send message
+            refSockJs.current.sendMessage(
+                `/app/chat/${to}`,
+                JSON.stringify(message)
+            )
+
+            // render chat window
+            setMessages([...messages, { ...message, time: new Date() }])
+            setMessageText('')
         }
-
-        // determine receiver
-        let to = ''
-        if (selectedConversation) {
-            to = getUserIsChating(selectedConversation).username
-        }
-
-        // send message
-        refSockJs.current.sendMessage(
-            `/app/chat/${to}`,
-            JSON.stringify(message)
-        )
-
-        // render chat window
-        setMessages([...messages, { ...message, time: new Date() }])
-        setMessageText('')
 
         // render conversation
         // renderConversations(message)
@@ -356,6 +363,11 @@ export default function ChatMessage() {
                                         aria-label="Recipient's username"
                                         aria-describedby="button-addon2"
                                         value={messageText}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                handleSend()
+                                            }
+                                        }}
                                         onChange={(e) => setMessageText(e.target.value)}
                                     />
                                     <div className="input-group-append">
@@ -372,6 +384,7 @@ export default function ChatMessage() {
                 url={socketUrl + '/chat'}
                 topics={[`/topic/messages/${currentUser?.username}`]}
                 onMessage={(msg) => { handleReceiveMessage(msg) }}
+                onConnect={handleOnConnect}
             />
         </>
     )

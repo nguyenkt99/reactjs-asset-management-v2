@@ -387,7 +387,7 @@ function Home() {
           style={{ fontSize: '1.4rem' }}
           onClose={() => setShowToastNotify(false)}
           show={clickedNotify !== null ? false : showToastNotify}
-          delay={10000}
+          delay={5000}
           autohide
         >
           <Toast.Header>
