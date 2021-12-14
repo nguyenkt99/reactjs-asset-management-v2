@@ -1,4 +1,4 @@
-import './Home.css';
+import './home.css';
 import ReturnImage from '../../assets/return_icon.png'
 import ReturnAssignImage from '../../assets/request_assign_icon.png'
 import AssignmentImage from '../../assets/assignment_icon.png'
