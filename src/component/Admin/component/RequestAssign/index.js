@@ -86,7 +86,7 @@ export default function RequestForAssigning() {
                     r.requestAssignDetails.forEach(rad => {
                         strCategories += `${rad.categoryName} (${rad.quantity}), `;
                     })
-                    return { ...r, strCategories: strCategories }
+                    return { ...r, strCategories: strCategories.substring(0, strCategories.length - 2) }
                 })
                 setData(dataWithStrCategories)
                 setRequestAssigns(dataWithStrCategories.filter(r => stateChecked.includes(r.state)))
@@ -441,6 +441,14 @@ export default function RequestForAssigning() {
                                 <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.RequestedDate)} >
+                                Assigned Date
+                                <BsFillCaretDownFill />
+                            </th>
+                            <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.RequestedDate)} >
+                                Returned Date
+                                <BsFillCaretDownFill />
+                            </th>
+                            <th className="table-thead w-14" onClick={() => handleSort(SORT_BY.RequestedDate)} >
                                 Requested Date
                                 <BsFillCaretDownFill />
                             </th>
@@ -475,6 +483,8 @@ export default function RequestForAssigning() {
                                         </OverlayTrigger>
                                     </td>
                                     <td>{r.requestedDate}</td>
+                                    <td>{r.intendedAssignDate}</td>
+                                    <td>{r.intendedReturnDate}</td>
                                     <td>{r.requestedBy}</td>
                                     <td>{STATEtoLowcase[r.state]}</td>
                                     <td>
@@ -655,7 +665,7 @@ export default function RequestForAssigning() {
                         <Col sm={3}>
                             <div className='user_asset_area'>
                                 <div className='label_asset'>
-                                    <span>Asset</span>
+                                    <span>Asset List</span>
                                 </div>
                             </div>
                         </Col>

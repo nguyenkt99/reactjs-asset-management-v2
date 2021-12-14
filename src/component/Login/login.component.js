@@ -74,7 +74,6 @@ export default class Login extends Component {
               error.response.data.message) ||
             error.message ||
             error.toString();
-          console.log(error);
 
           if (error.response.status === 401)
             this.setState({

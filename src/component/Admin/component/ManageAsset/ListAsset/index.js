@@ -10,6 +10,7 @@ import { BsFillCaretDownFill, BsSearch } from "react-icons/bs";
 import { Link, useHistory } from 'react-router-dom'
 import './ListAsset.css'
 import ModalRepair from './ModalRepair';
+import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize'
 
 const elementPerPage = 10;
 
@@ -112,9 +113,10 @@ export default function ListAsset() {
   };
 
   const filterByAssetCodeOrAssetName = (data, keySearch) => {
+    const searchInput = removeAccents(normalizeString(keySearch))
     return data.filter(e =>
-      e.assetCode.toLowerCase().includes(keySearch.toLowerCase()) ||
-      e.assetName.toLowerCase().includes(keySearch.toLowerCase())
+      e.assetCode.toLowerCase().includes(searchInput) ||
+      e.assetName.toLowerCase().includes(searchInput)
     );
   };
 
@@ -247,12 +249,12 @@ export default function ListAsset() {
         handleSubmit={handleCreateRepair}
       />
 
-      <Modal show={showModalDelete} onHide={handleCloseModalDelete}>
+      <Modal centered show={showModalDelete} onHide={handleCloseModalDelete}>
         <Modal.Header closeButton>
-          <Modal.Title>Are you sure</Modal.Title>
+          <Modal.Title>Are you sure?</Modal.Title>
         </Modal.Header>
         <Modal.Body>Do you want to delete this asset</Modal.Body>
-        <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+        <Modal.Footer>
           <Button variant='danger' onClick={handleDelete}>
             Delete
           </Button>
@@ -276,7 +278,7 @@ export default function ListAsset() {
         <Toast.Body>{errMessage}</Toast.Body>
       </Toast>
 
-      <Modal show={showModalErrorDelete} onHide={handleCloseModalErr}>
+      <Modal centered show={showModalErrorDelete} onHide={handleCloseModalErr}>
         <Modal.Header closeButton>
           <Modal.Title>Cannot delete asset</Modal.Title>
         </Modal.Header>
@@ -655,11 +657,11 @@ export default function ListAsset() {
                             </tr>
                           ))}
 
-                          <tr >
-                            <td>12/02/1999</td>
+                          {/* <tr >
+                            <td>12/01/2021</td>
                             <td>nguyenkt</td>
                             <td>nguyenkt</td>
-                            <td>1/12/2021</td>
+                            <td>8/12/2021</td>
                           </tr>
                           <tr >
                             <td>12/02/1999</td>
@@ -684,7 +686,7 @@ export default function ListAsset() {
                             <td>nguyenkt</td>
                             <td>nguyenkt</td>
                             <td>1/12/2021</td>
-                          </tr>
+                          </tr> */}
                         </tbody>
                       </Table>
                     </div>
@@ -718,36 +720,18 @@ export default function ListAsset() {
                               <td>{r.finishedDate ? r.returnedDate : ""}</td>
                             </tr>
                           ))}
-                          <tr >
-                            <td>12/02/1999</td>
+                          {/* <tr >
+                            <td>12/11/2021</td>
+                            <td>Upgrade memory</td>
                             <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
+                            <td>15/11/2021</td>
                           </tr>
                           <tr >
-                            <td>12/02/1999</td>
+                            <td>23/11/2020</td>
+                            <td>Battery replacement</td>
                             <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
+                            <td>24/11/2020</td>
+                          </tr> */}
                         </tbody>
                       </Table>
                     </div>

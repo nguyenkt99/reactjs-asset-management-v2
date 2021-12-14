@@ -54,7 +54,7 @@ export default function RequestAssignUser() {
                     r.requestAssignDetails.forEach(rad => {
                         strCategories += `${rad.categoryName} (${rad.quantity}), `;
                     })
-                    return { ...r, strCategories: strCategories }
+                    return { ...r, strCategories: strCategories.substring(0, strCategories.length - 2) }
                 })
 
                 setDataRequestAssigns(dataWithStrCategories)
@@ -212,6 +212,9 @@ export default function RequestAssignUser() {
                                                 </>
                                                 :
                                                 <>
+                                                    <Link style={{ textDecoration: 'none', color: '#ccc' }} to={'/edit-request-assign/' + r.id}>
+                                                        <GrEditCus />
+                                                    </Link>
                                                     <FontAwesomeIcon color="#ccc" size="lg" icon={faTimes} />
                                                 </>
                                             }
@@ -244,7 +247,7 @@ export default function RequestAssignUser() {
                     <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>Do you want to delete this assigning request?</Modal.Body>
-                <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+                <Modal.Footer>
                     <Button variant='danger' onClick={() => handleDeleteRequest(requestId)}>
                         Delete
                     </Button>

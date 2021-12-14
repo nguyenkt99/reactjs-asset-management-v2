@@ -4,7 +4,7 @@ import { Modal, Button, Form, Row, Col } from 'react-bootstrap'
 export default function ModalFinishRepair({ note, setNote, description, show, handleClose, handleFinish }) {
     return (
         <>
-            <Modal show={show} onHide={handleClose}>
+            <Modal centered show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title className="modal-title">{description}</Modal.Title>
                 </Modal.Header>
@@ -20,7 +20,7 @@ export default function ModalFinishRepair({ note, setNote, description, show, ha
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="danger" onClick={handleFinish}>
-                        Save
+                        Finish
                     </Button>
                     <Button variant="outline-secondary" onClick={handleClose}>
                         Cancel

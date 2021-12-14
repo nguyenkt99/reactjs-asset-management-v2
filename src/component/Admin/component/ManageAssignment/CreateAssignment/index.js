@@ -45,10 +45,10 @@ export default function CreateAssignment() {
         fetchAssets()
     }, [assignedDate, returnedDate])
 
-    useEffect(() => {
-        setUsersData(users)
-        setAssetsData(assets)
-    }, [users, assets])
+    // useEffect(() => {
+    //     setUsersData(users)
+    //     setAssetsData(assets)
+    // }, [users, assets])
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -79,7 +79,9 @@ export default function CreateAssignment() {
     const fetchUsers = () => {
         get('/user').then(response => {
             if (response.status === 200) {
-                setUsers(response.data.filter(u => u.state !== 'Disabled'))
+                const result = response.data.filter(u => u.state !== 'DISABLED')
+                setUsers(result)
+                setUsersData(result)
             } else {
                 alert('Something wrong!')
             }
@@ -90,10 +92,12 @@ export default function CreateAssignment() {
         get(`/asset/available?startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
                 setAssets(response.data)
-            } else {
-                alert('Something wrong!')
+                setAssetsData(response.data)
             }
-        }).catch(error => console.log(error.response))
+        }).catch(error => {
+            setAssets([])
+            setAssetsData([])
+        })
     }
 
     const handleUserDisplay = () => {
@@ -353,7 +357,7 @@ export default function CreateAssignment() {
             <Col sm={3}>
                 <div className='user_asset_area'>
                     <div className='label_asset'>
-                        <span>Asset</span>
+                        <span>Asset List</span>
                     </div>
                 </div>
             </Col>
@@ -399,6 +403,7 @@ export default function CreateAssignment() {
                                             return <tr key={a.assetCode} className="fix_width">
                                                 <td style={{ width: "20px" }} >
                                                     <input
+                                                        className='checkbox_custom'
                                                         id={a.assetCode}
                                                         type="checkbox"
                                                         name="assetCheckbox"
@@ -418,7 +423,7 @@ export default function CreateAssignment() {
 
                                 <Col className="button-group">
                                     <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
-                                        Save
+                                        OK
                                     </Button>
                                     <Button variant="outline-secondary"
                                         style={{ marginLeft: '20px' }}

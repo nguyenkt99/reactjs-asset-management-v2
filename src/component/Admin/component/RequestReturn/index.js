@@ -197,8 +197,8 @@ export default function Request() {
     const filterSort = (data, keySearch) => {
         return data.filter((e) => (
             e.id.toString() === keySearch ||
-            e.assetCode.toLowerCase().includes(keySearch.toLowerCase()) ||
-            e.assetName.toLowerCase().includes(keySearch.toLowerCase()) ||
+            e.strAssets.toLowerCase().includes(keySearch.toLowerCase()) ||
+            // e.assetName.toLowerCase().includes(keySearch.toLowerCase()) ||
             e.requestBy.toLowerCase().includes(keySearch.toLowerCase())
         ));
     };
@@ -222,17 +222,17 @@ export default function Request() {
                             <HiFilter />
                         </Dropdown.Toggle>
                         <Dropdown.Menu id="drop-show-assignment">
-                            <div className="checkbox px-3" onClick={() => {
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.ALL)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.ALL]} checked={stateChecked.includes(STATE.ALL) ? 'checked' : ''} />
                             </div>
-                            <div className="checkbox px-3" onClick={() => {
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.COMPLETED)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.COMPLETED]} checked={stateChecked.includes(STATE.COMPLETED) ? 'checked' : ''} />
                             </div>
-                            <div className="checkbox px-3" onClick={() => {
+                            <div className="dropdown-item checkbox px-3" onClick={() => {
                                 handleStateClick(STATE.WAITING_FOR_RETURNING)
                             }}>
                                 <FormCheck label={STATEtoLowcase[STATE.WAITING_FOR_RETURNING]} checked={stateChecked.includes(STATE.WAITING_FOR_RETURNING) ? 'checked' : ''} />
@@ -381,13 +381,13 @@ export default function Request() {
                 <Modal.Header>
                     <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Do you want to cancel this returning request?</Modal.Body>
-                <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+                <Modal.Body>Do you want to delete this returning request?</Modal.Body>
+                <Modal.Footer>
                     <Button variant='danger' onClick={() => handleCancelRequest(requestId)}>
-                        Yes
+                        Delete
                     </Button>
                     <Button variant='secondary' onClick={() => setShowModalCancelRequest(false)}>
-                        No
+                        Cancel
                     </Button>
                 </Modal.Footer>
             </Modal>
@@ -396,7 +396,7 @@ export default function Request() {
                     <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>Do you want to mark this returning request as 'Completed'?</Modal.Body>
-                <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+                <Modal.Footer>
                     <Button variant='danger' onClick={() => handleAcceptRequest(requestId)}>
                         Yes
                     </Button>

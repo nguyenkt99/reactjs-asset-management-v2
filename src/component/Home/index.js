@@ -25,7 +25,8 @@ import CreateAssignment from '../Admin/component/ManageAssignment/CreateAssignme
 import EditAssignment from '../Admin/component/ManageAssignment/EditAssignmnet'
 import RequestReturn from '../Admin/component/RequestReturn';
 import RequestForAssigning from '../Admin/component/RequestAssign';
-import Report from '../Admin/component/Report';
+import Overview from '../Admin/component/Report/Overview';
+import AssignedAssignments from '../Admin/component/Report/AssignedAssignments';
 import ChangePassword from '../User/ChangePassword'
 import RequestAssignUser from '../User/RequestAssignUser';
 import CreateRequestAssign from '../User/CreateRequestAssign';
@@ -66,7 +67,7 @@ function Home() {
   }, []);
 
   const handleShowProfile = () => {
-    get('/users/profile')
+    get('/user/profile')
       .then((response) => {
         setProfile(response.data);
         toggleModalProfile();
@@ -113,6 +114,8 @@ function Home() {
         return setnavbarName('Report');
       case 7:
         return setnavbarName('Request for Assigning');
+      case 8:
+        return setnavbarName('Manage Repair');
       default:
         console.error('Some thing wrong!!!');
     }
@@ -213,6 +216,7 @@ function Home() {
           <Col xs="10">
             <div className="app-content">
               <Switch>
+                <Route path="/messenger/:username" component={ChatMessage} />
                 <Route path='/messenger'>
                   <ChatMessage />
                 </Route>
@@ -244,6 +248,9 @@ function Home() {
                 <Route path="/create-assignment" render={() => {
                   if (user.role === "ROLE_ADMIN") return <CreateAssignment />
                 }} />
+                {/* <Route path="/edit-assignment/:assignmentId" render={() => {
+                  if (user.role === "ROLE_ADMIN") return <EditAssignment />
+                }} /> */}
                 <Route path="/edit-assignment/:assignmentId" render={() => {
                   if (user.role === "ROLE_ADMIN") return <EditAssignment />
                 }} />
@@ -251,8 +258,12 @@ function Home() {
                   if (user.role === "ROLE_ADMIN") return <RequestReturn />
                   else return <Redirect to="/home" />
                 }} />
-                <Route path="/report" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <Report />
+                <Route path="/report/overview" render={() => {
+                  if (user.role === "ROLE_ADMIN") return <Overview />
+                  else return <Redirect to="/home" />
+                }} />
+                <Route path="/report/assigned-assignments" render={() => {
+                  if (user.role === "ROLE_ADMIN") return <AssignedAssignments />
                   else return <Redirect to="/home" />
                 }} />
                 <Route path="/request-assign" render={() => {
@@ -332,6 +343,12 @@ function Home() {
             </Col>
           </FormGroup>
           <FormGroup row>
+            <Label sm={4}>Department</Label>
+            <Col sm={8}>
+              <Input type="text" plaintext readOnly value={profile && profile.deptName} />
+            </Col>
+          </FormGroup>
+          <FormGroup row>
             <Label sm={4}>Location</Label>
             <Col sm={8}>
               <Input type="text" plaintext readOnly value={profile && profile.location} />
@@ -342,16 +359,16 @@ function Home() {
 
       {/* Change password here */}
       <Modal className='changepass-modal' centered isOpen={modalpw} toggle={toggleModalpw}>
-        <ModalHeader style={{ backgroundColor: '#d8d8d8' }, { border: 'solid 2px' }}>
-          <p style={{ color: '#CF2338' }}>Change Password</p>
+        <ModalHeader >
+          <p >Change Password</p>
         </ModalHeader>
-        <ModalBody style={{ border: 'solid 2px' }}>
+        <ModalBody>
           <ChangePassword isOpenModel={setModalpw} />
         </ModalBody>
       </Modal>
 
       {/* Modal logout */}
-      <Modal style={{ width: '300px' }} isOpen={modal} toggle={toggleModal}>
+      <Modal style={{ width: '300px' }} centered isOpen={modal} toggle={toggleModal}>
         <ModalHeader className="modal-header-logout" >Are you sure?</ModalHeader>
         <ModalBody className="modal-body-logout">
           <p>Do you want to log out?</p>
@@ -370,7 +387,7 @@ function Home() {
           style={{ fontSize: '1.4rem' }}
           onClose={() => setShowToastNotify(false)}
           show={clickedNotify !== null ? false : showToastNotify}
-          delay={4000}
+          delay={10000}
           autohide
         >
           <Toast.Header>

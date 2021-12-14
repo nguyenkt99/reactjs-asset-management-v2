@@ -88,13 +88,14 @@ class App extends Component {
     const isEnabled = this.state.newPassword.length > 0
     return (
       <div className="App">
-        <Switch>
-          <Route exact path={["/login"]} component={Login} />
-          <Route exact path={["/forgot"]} component={ForgotPassword} />
-          <AppProvider>
+        <AppProvider>
+          <Switch>
+            <Route exact path={["/login"]} component={Login} />
+            <Route exact path={["/forgot"]} component={ForgotPassword} />
             <Route path={["/"]} component={Home} />
-          </AppProvider>
-        </Switch>
+
+          </Switch>
+        </AppProvider>
         {/* Dialog first login required change password */}
         <Dialog
           open={this.state.isfirstLogin}
@@ -121,13 +122,13 @@ class App extends Component {
                 </p>
               </div>
 
-              <div className="form-group">
+              <div className="password-wrap form-group">
                 <label htmlFor="password">
                   Password
-                  <span className="star"> *</span></label>
+                </label>
                 <Input
                   id="standard-adornment-password"
-                  className="first-login form-control"
+                  className="password-input form-control"
                   type={this.state.showPassword ? 'text' : 'password'}
                   value={this.state.newPassword}
                   onChange={this.onChangePassword}

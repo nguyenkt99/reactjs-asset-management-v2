@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Row, Col, Form, Button, Spinner, Modal, Table } from 'react-bootstrap'
-import { Link, useHistory, withRouter } from 'react-router-dom'
+import { Link, useHistory, useRouteMatch } from 'react-router-dom'
 import { get, put } from '../../../../../httpHelper'
 import { FaSearch, FaAngleDown, FaCalendarAlt } from 'react-icons/fa'
 import { CgCloseO } from 'react-icons/cg'
@@ -37,11 +37,24 @@ function EditAssignment(props) {
     const [isSaving, setIsSaving] = useState(false)
 
     const history = useHistory()
+    const match = useRouteMatch()
+
+    console.log(match.params.assignmentId)
 
     useEffect(() => {
-        fetchAssets()
-        fetchAssigment()
+        const promise = new Promise((resovle) => {
+            resovle()
+        })
+
+        promise
+            .then(() => {
+                return fetchAssets()
+            })
+            .then(() => {
+                return fetchAssigment()
+            })
     }, [])
+
 
     useEffect(() => {
         fetchAvailableAssets()
@@ -53,7 +66,6 @@ function EditAssignment(props) {
         if (isMounted.current) {
             isMounted.current = false
         } else {
-            fetchUsers()
             let oldAssets = []
             assignment.assignmentDetails.forEach(ad => {
                 const asset = assets.find(a => a.assetCode === ad.assetCode)
@@ -61,9 +73,11 @@ function EditAssignment(props) {
                     oldAssets.push(asset)
                 }
             })
-            setNote(assignment.note)
+
+            fetchUsers()
             setSelectingAssets(oldAssets)
             setSelectedAssets(oldAssets)
+            setNote(assignment.note)
             setAssignedDate(assignment.assignedDate.split("/").reverse().join("-"))
             setReturnedDate(assignment.intendedReturnDate.split("/").reverse().join("-"))
         }
@@ -116,11 +130,10 @@ function EditAssignment(props) {
         }).catch(error => console.log(error))
     }
 
-    const id = props.match.params.assignmentId
     const fetchAssigment = () => {
-        get(`/assignment/${id}`)
+        return get(`/assignment/${match.params.assignmentId}`)
             .then((res) => {
-                if (res.data.state !== "WAITING_FOR_ACCEPTANCE") {
+                if (res.data.state !== "WAITING_FOR_ACCEPTANCE" && res.data.state !== "ACCEPTED") {
                     history.push('/manage-assignment')
                 }
                 setAssignment(res.data)
@@ -131,7 +144,7 @@ function EditAssignment(props) {
     }
 
     const fetchAssets = () => {
-        get(`/asset`).then(response => {
+        return get(`/asset`).then(response => {
             if (response.status === 200) {
                 setAssets(response.data)
             } else {
@@ -141,7 +154,7 @@ function EditAssignment(props) {
     }
 
     const fetchAvailableAssets = () => {
-        get(`/asset/available?assignmentId=${id}&startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
+        get(`/asset/available?assignmentId=${match.params.assignmentId}&startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
                 setAvailableAssets(response.data)
                 setAvailableAssetsData(response.data)
@@ -188,7 +201,7 @@ function EditAssignment(props) {
         availableAssets.forEach((a) => {
             if (document.getElementById(a.assetCode) && selectedAssets.find(selectedAsset => selectedAsset.assetCode === a.assetCode))
                 document.getElementById(a.assetCode).checked = true;
-            else 
+            else
                 document.getElementById(a.assetCode).checked = false;
         })
     }
@@ -414,7 +427,7 @@ function EditAssignment(props) {
             <Col sm={3}>
                 <div className='user_asset_area'>
                     <div className='label_asset'>
-                        <span>Asset</span>
+                        <span>Asset List</span>
                     </div>
                 </div>
             </Col>
@@ -424,19 +437,16 @@ function EditAssignment(props) {
                         <FaSearch className="fa-search" />
                     </div>
                 </div>
-                <Modal.Dialog className="dialog" style={{ display: assetDisplay ? 'block' : 'none' }}>
+                <Modal.Dialog className="dialog-select" style={{ display: assetDisplay ? 'block' : 'none' }}>
                     <Modal.Body style={{ padding: "0px" }}>
                         <div className="list_select">
                             <Row className="header_select">
                                 <Col className="label_select reset"><span className="c-red title">Select Asset</span></Col>
                                 <Col className="search_select reset">
-                                    <input onChange={handleSearchChangeAsset}>
-
-                                    </input>
+                                    <input onChange={handleSearchChangeAsset} />
                                     <div className="fa-header">
                                         <FaSearch className=""></FaSearch>
                                     </div>
-
                                 </Col>
                             </Row>
                             <Row className="table_ua" >
@@ -477,22 +487,21 @@ function EditAssignment(props) {
                                                 <td style={{ width: "115px" }} >{a.assetCode}</td>
                                                 <td style={{ width: "170px" }} >{a.assetName}</td>
                                                 <td>{a.categoryName}</td>
-
                                             </tr>
                                         })}
                                     </tbody>
-                                    <Col className="button-group">
-                                        <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
-                                            Save
-                                        </Button>
-                                        <Button variant="outline-secondary"
-                                            style={{ marginLeft: '20px' }}
-                                            onClick={handleCancel}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Col>
                                 </Table>
+                                <Col className="button-group">
+                                    <Button variant='danger' style={{ padding: "0px 19px" }} onClick={handleOk} >
+                                        OK
+                                    </Button>
+                                    <Button variant="outline-secondary"
+                                        style={{ marginLeft: '20px' }}
+                                        onClick={handleCancel}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </Col>
                             </Row>
                         </div>
                     </Modal.Body>
@@ -569,6 +578,7 @@ function EditAssignment(props) {
                         </Form.Label>
                         <Col>
                             <Form.Control
+                                className='textarea-input'
                                 name='note'
                                 as='textarea'
                                 maxLength={100}
@@ -605,4 +615,4 @@ const USER_SORT_BY = {
     Type: 'type',
 }
 
-export default withRouter(EditAssignment);
+export default EditAssignment;

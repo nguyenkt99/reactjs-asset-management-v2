@@ -35,6 +35,7 @@
     display: block;
     width: 100%;
     padding: 8px 0 8px 16px;
+    position: relative;
 }
 
 .menu-item__link:hover {
@@ -45,6 +46,44 @@
     background-color: var(--primary-color);
 }
 
-.active .menu-item__link {
+.active > .menu-item__link {
     color: var(--text-white-color);
+}
+
+.sub-menu {
+    position: absolute;
+    width: 180px;
+    left: calc(100% + 2px);
+    bottom: 0;
+    background-color: #eff1f5;
+    display: none;
+}
+
+.sub-menu::before {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: -4px;
+    width: 8px;
+    height: 40px;
+    cursor: pointer;
+}
+.menu-item-report:hover .sub-menu {
+    display: block;
+}
+
+.report-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.report-item {
+    color: #000;
+    border: 1px solid #fff;
+}
+
+.report-item:hover {
+    /* background-color: #f8f9fa; */
+    opacity: 0.6;
 }

@@ -56,6 +56,7 @@
 
 #disable-user-btn {
     background-color: #E30C18;
+    border: none;
 }
 
 #cancel-btn {

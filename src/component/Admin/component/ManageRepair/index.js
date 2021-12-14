@@ -23,7 +23,9 @@ export default function ManageRepair() {
     const [categoryASC, setCategoryASC] = useState(false)
     const [stateASC, setStateASC] = useState(false)
     const [startedDate, setStartedDate] = useState(null)
-    const [showDatePicker, setShowDatePicker] = useState(false)
+    const [finishedDate, setFinishedDate] = useState(null)
+    const [showDatePickerStarted, setShowDatePickerStarted] = useState(false)
+    const [showDatePickerFinished, setShowDatePickerFinished] = useState(false)
     const [keySearch, setKeySearch] = useState('')
     const [showModalDetail, setShowModalDetail] = useState(false)
     const [showModalDelete, setShowModalDelete] = useState(false)
@@ -36,11 +38,13 @@ export default function ManageRepair() {
 
     useEffect(() => {
         let result = [...data]
-        var pickedDate = startedDate ? moment(startedDate).format('DD/MM/YYYY') : null
+        var statedDatePicked = startedDate ? moment(startedDate).format('DD/MM/YYYY') : null
+        var finishedDatePicked = finishedDate ? moment(finishedDate).format('DD/MM/YYYY') : null
         result = filterSort(data.filter(d => (stateChecked.includes(d.state) || stateChecked.includes('ALL')) &&
-            (d.startedDate === pickedDate || pickedDate === null)), keySearch)
+            (d.startedDate === statedDatePicked ||   statedDatePicked === null)
+            && (d.finishedDate === finishedDatePicked ||   finishedDatePicked === null)), keySearch)
         setRepairs(result)
-    }, [stateChecked, startedDate, keySearch])
+    }, [stateChecked, startedDate, finishedDate, keySearch])
 
     const fetchRepairs = () => {
         get('/repair').then(res => {
@@ -77,10 +81,10 @@ export default function ManageRepair() {
     }
 
     const filterSort = (data, keySearch) => {
-        return data.filter((d) => ( d.id.toString() === keySearch 
-            || d.assetCode.toLowerCase().includes(keySearch.toLowerCase()) 
-            || d.assetName.toLowerCase().includes(keySearch.toLowerCase()) 
-            || d.categoryName.toLowerCase().includes(keySearch.toLowerCase()) 
+        return data.filter((d) => (d.id.toString() === keySearch
+            || d.assetCode.toLowerCase().includes(keySearch.toLowerCase())
+            || d.assetName.toLowerCase().includes(keySearch.toLowerCase())
+            || d.categoryName.toLowerCase().includes(keySearch.toLowerCase())
             || d.createdBy.toLowerCase().includes(keySearch.toLowerCase())
         ));
     };
@@ -128,8 +132,13 @@ export default function ManageRepair() {
         setShowModalDetail(false)
     }
 
-    const toggleDatePicker = () => {
-        setShowDatePicker(!showDatePicker)
+    const toggleDatePickerStarted = () => {
+        setShowDatePickerStarted(!showDatePickerStarted)
+    }
+
+    const toggleDatePickerFinished = () => {
+        setShowDatePickerFinished(!showDatePickerFinished)
+
     }
 
     const onClickFinishRepair = (id) => {
@@ -159,10 +168,21 @@ export default function ManageRepair() {
                 <DropDownFilter states={states} stateChecked={stateChecked} handleStateClick={handleStateClick} />
             </Col>
             <Col xs={3}>
-                <DatePickerCustom startedDate={startedDate}
-                    setStartedDate={setStartedDate}
-                    showDatePicker={showDatePicker}
-                    toggleDatePicker={toggleDatePicker}
+                <DatePickerCustom
+                    title="Started Date"
+                    date={startedDate}
+                    setDate={setStartedDate}
+                    showDatePicker={showDatePickerStarted}
+                    toggleDatePicker={toggleDatePickerStarted}
+                />
+            </Col>
+            <Col xs={3}>
+                <DatePickerCustom
+                    title="Finished Date"
+                    date={finishedDate}
+                    setDate={setFinishedDate}
+                    showDatePicker={showDatePickerFinished}
+                    toggleDatePicker={toggleDatePickerFinished}
                 />
             </Col>
             <Col xs={3}>
@@ -205,7 +225,7 @@ export default function ManageRepair() {
                             State
                             <BsFillCaretDownFill />
                         </th>
-                        <th className=''></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>

@@ -3,6 +3,7 @@ import { Button, Col, Form, FormControl, InputGroup, Row, Spinner } from 'react-
 import { Link } from 'react-router-dom';
 import logo from '../../assets/Logo_lk.png';
 import { post } from '../../httpHelper';
+// import '../Login/login.css';
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -77,20 +78,20 @@ export default function ForgotPassword() {
 
     return (
         <div id='Login'>
-            <nav className='__conNAV_LOGIN navbar-expand'>
-                <div className=' container'>
-                    <div id='Logo_mjv'>
-                        <div id='Online_Asset_Management_mjw'>
+            <nav className='navbar-login navbar-expand'>
+                <div className='container'>
+                    <div className='navbar-login__brand'>
+                        <img className='navbar-login__logo' src={logo} alt="Logo login" />
+                        <div className='navbar-login__title'>
                             <span>Online Asset Management</span>
                         </div>
-                        <img id='Logo_mjx' src={logo} />
                     </div>
                 </div>
             </nav>
             <div className='container'>
                 <div className='row'>
                     <div className='col-12 col-md-12'>
-                        <div className='logincard'>
+                        <div className='login-card'>
                             <div className='cardTitle card-container'>
                                 <div className='title'>
                                     <h4 className='logintitle'>
@@ -105,7 +106,7 @@ export default function ForgotPassword() {
                                             <>
                                                 <Row className="mt-4 mx-2">
                                                     <Form.Label>
-                                                        OTP has been sent to <span style={{fontStyle: "italic", fontWeight: "bolder"}}>{email}</span> Please check your email and enter OTP:
+                                                        OTP has been sent to <span style={{ fontStyle: "italic", fontWeight: "bolder" }}>{email}</span> Please check your email and enter OTP:
                                                     </Form.Label>
                                                 </Row>
                                                 <Row className="align-items-center justify-content-center">
@@ -152,7 +153,7 @@ export default function ForgotPassword() {
                                                 <Row className="align-items-center justify-content-center">
                                                     <Col sm={10} className="mt-1">
                                                         <InputGroup>
-                                                            <FormControl placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                                                            <FormControl style={{fontSize: "1.4rem"}} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
                                                         </InputGroup>
                                                         {errorMessage &&
                                                             < Form.Control.Feedback className="d-block text-center" type="invalid">
@@ -172,7 +173,7 @@ export default function ForgotPassword() {
                                                 </Row>
                                                 <Row className="align-items-center justify-content-center">
                                                     <Col xs="auto" className="mt-3">
-                                                        <span style={{fontStyle: "italic"}}>Already account? </span><Link style={{textDecoration: "none"}} to="/login">Login here</Link>
+                                                        <span style={{ fontStyle: "italic" }}>Already account? </span><Link style={{ textDecoration: "none" }} to="/login">Login here</Link>
                                                     </Col>
                                                 </Row>
                                             </>

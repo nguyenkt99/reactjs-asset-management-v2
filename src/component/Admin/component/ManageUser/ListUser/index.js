@@ -7,6 +7,7 @@ import { CgCloseO } from 'react-icons/cg'
 import { get, put } from '../../../../../httpHelper'
 import { BsFillCaretDownFill, BsSearch } from "react-icons/bs";
 import { Link, useHistory } from 'react-router-dom'
+import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize'
 
 const elementPerPage = 10
 
@@ -41,14 +42,10 @@ export default function User() {
 
     useEffect(() => {
         let result = [...data];
-        result = filterByStaffCodeOrFullName(
-            data.filter(
-                u =>
-                    (typeChecked.includes(u.type) || typeChecked.includes(TYPE.ALL)) &&
-                    (stateChecked.includes(u.state) || stateChecked.includes(STATE.ALL))
-            ),
-            keySearch
-        );
+        result = filterByStaffCodeOrFullName(data.filter(u =>
+            (typeChecked.includes(u.type) || typeChecked.includes(TYPE.ALL)) &&
+            (stateChecked.includes(u.state) || stateChecked.includes(STATE.ALL))
+        ), keySearch);
 
         setUsers(result);
         setCurrentPage(1);
@@ -133,10 +130,11 @@ export default function User() {
     }
 
     const filterByStaffCodeOrFullName = (data, keySearch) => {
-        return data.filter(e => (e.staffCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.fullName.toLowerCase().includes(keySearch.toLowerCase())
-            || e.username.toLowerCase().includes(keySearch.toLowerCase())
-            ))
+        const searchInput = removeAccents(normalizeString(keySearch))
+        return data.filter(e => (e.staffCode.toLowerCase().includes(searchInput)
+            || e.fullName.toLowerCase().includes(searchInput)
+            || e.username.toLowerCase().includes(searchInput)
+        ))
     }
 
     const handleSearch = async (keySearch) => {
@@ -539,8 +537,8 @@ export default function User() {
                             <>
                                 Do you want to disable this user?
                                 <p id="disable-user">
-                                    <Button id="disable-user-btn" onClick={DisableUser}>Disable</Button>
-                                    <Button id="cancel-btn" autoFocus={true} onClick={handleCancelDisableOrDelete}>Cancel</Button>
+                                    <Button variant="danger" onClick={DisableUser}>Disable</Button>
+                                    <Button variant="outline-secondary" autoFocus={true} onClick={handleCancelDisableOrDelete}>Cancel</Button>
 
                                 </p>
                             </>
@@ -549,8 +547,8 @@ export default function User() {
                                 <>
                                     Do you want to delete this user?
                                     <p id="disable-user">
-                                        <Button id="disable-user-btn" onClick={DisableUser}>Delete</Button>
-                                        <Button id="cancel-btn" autoFocus={true} onClick={handleCancelDisableOrDelete}>Cancel</Button>
+                                        <Button variant="danger" onClick={DisableUser}>Delete</Button>
+                                        <Button variant="outline-secondary" autoFocus={true} onClick={handleCancelDisableOrDelete}>Cancel</Button>
                                     </p>
                                 </>
                                 :

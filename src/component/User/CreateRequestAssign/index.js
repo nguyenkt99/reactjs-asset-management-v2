@@ -25,6 +25,8 @@ export default function CreateRequestAssign() {
     const [returnedDate, setReturnedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
+    const [showModalError, setShowModalError] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
 
     useEffect(() => {
         fetchCategories()
@@ -63,6 +65,8 @@ export default function CreateRequestAssign() {
             })
             .catch((error) => {
                 setIsSaving(false)
+                setErrorMessage(error.response.data.message)
+                setShowModalError(true)
                 console.log(error)
             })
     }
@@ -92,12 +96,20 @@ export default function CreateRequestAssign() {
         setCategories([...categories, dataCategories.find(c => c.prefix === categoryId)])
     }
 
+    const handleOnChangeQuantityInSelectCategory = (e) => {
+        const quantity = e.target.value
+        if (quantity > 0 || quantity === '')
+            setQuantity(quantity)
+    }
+
     const handleOnChangeQuantity = (e, prefix) => {
         let newRequestAssignDetails = [...requestAssignDetails]
         const quantity = e.target.value
         const index = requestAssignDetails.findIndex(r => r.categoryId === prefix)
-        newRequestAssignDetails[index].quantity = e.target.value
-        setRequestAssignDetails(newRequestAssignDetails)
+        if (quantity > 0 || quantity === '') {
+            newRequestAssignDetails[index].quantity = quantity
+            setRequestAssignDetails(newRequestAssignDetails)
+        }
     }
 
     const openDatePickerAd = () => {
@@ -209,7 +221,7 @@ export default function CreateRequestAssign() {
                     </Form.Group>
                     <Form.Group as={Row} className="mb-4 float-end">
                         <Col >
-                            <Button variant="danger" type="submit" disabled={requestAssignDetails.length === 0}>Save</Button>
+                            <Button variant="danger" type="submit" disabled={requestAssignDetails.length === 0 || requestAssignDetails.some(r => r.quantity === '')}>Save</Button>
                             <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="/request-assign">Cancel</Link>
                         </Col>
                     </Form.Group>
@@ -239,7 +251,7 @@ export default function CreateRequestAssign() {
                             Quantity
                         </Form.Label>
                         <Col>
-                            <Form.Control name='quantity' type='number' required onChange={(e) => setQuantity(e.target.value)} />
+                            <Form.Control name='quantity' type='number' required value={quantity} onChange={handleOnChangeQuantityInSelectCategory} />
                         </Col>
                     </Form.Group>
                 </Modal.Body>
@@ -251,6 +263,22 @@ export default function CreateRequestAssign() {
                         Cancel
                     </Button>
                 </Modal.Footer>
+            </Modal>
+
+            <Modal
+                show={showModalError}
+                onHide={() => setShowModalError(false)}
+                top
+                id="detail-dialog"
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title style={{ color: '#CF2338' }}>
+                        Asset is not enough
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {errorMessage}
+                </Modal.Body>
             </Modal>
         </>
     )

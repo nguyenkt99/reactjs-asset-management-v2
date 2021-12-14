@@ -69,6 +69,7 @@
   left: -20%;
   top: 0;
   margin: 0;
+  animation: fadeIn ease-in 0.2s;
 }
 
 .list_select {
@@ -100,7 +101,9 @@
 
 .table-content {
   display: block;
-  max-height: 216px;
+  /* max-height: 216px; */
+  max-height: 200px;
+
   overflow: auto;
   table-layout: fixed;
 }
@@ -124,6 +127,13 @@
 .radio_custom:checked {
   background-color: #dc3545 !important;
 }
+
+.checkbox_custom {
+  width: 14px;
+  height: 14px;
+  accent-color: #dc3545;
+}
+
 
 .fix_width th {
   cursor: pointer;

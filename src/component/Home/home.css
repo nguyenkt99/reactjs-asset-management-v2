@@ -241,3 +241,7 @@
     width: 100%;
     text-align: center;
 }
+
+.changepass-modal {
+    width: 400px;
+}

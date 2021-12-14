@@ -1,32 +1,39 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Col, Row, Table } from 'react-bootstrap'
+import { Button, Col, Row, Table, FormGroup, Form } from 'react-bootstrap'
 import { BsFillCaretDownFill } from 'react-icons/bs'
-import { get } from '../../../../httpHelper'
+import { get } from '../../../../../httpHelper'
 import moment from 'moment';
+import DatePicker from "react-datepicker"
+import { FaCalendarAlt } from "react-icons/fa"
 import * as XLSX from 'xlsx';
 import * as FileSaver from 'file-saver';
 
-export default function Report() {
+export default function AssignedAssignments() {
     const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
     const EXCEL_EXTENSION = '.xlsx';
     const DATE = moment(new Date()).format('DD-MM-YYYY');
 
     const [report, setReport] = useState([]);
+    // const [assignedDate, setAssignedDate] = useState(moment(new Date()).format('YYYY-MM-DD'));
+    const [assignedDate, setAssignedDate] = useState();
+    const [isOpenDatePicker, setIsOpenDatePicker] = useState(false)
+
     const [dataReport, setDataReport] = useState([]);
     const [categoryASC, setCategoryASC] = useState(false);
     const [totalASC, setTotalASC] = useState(false);
     const [assignedASC, setAssignedASC] = useState(false);
     const [availableASC, setAvailableASC] = useState(false);
     const [notAvailableASC, setNotAvailableASC] = useState(false);
+    const [repairingASC, setRepairingASC] = useState(false);
     const [watingForRecycleASC, setWatingForRecycleASC] = useState(false);
     const [recycledASC, setRecycledASC] = useState(false);
 
     useEffect(() => {
         fetchReport();
-    }, [])
+    }, [assignedDate])
 
     const fetchReport = () => {
-        get('/report')
+        get(`/report/assignments-assigned/${assignedDate}`)
             .then((response) => {
                 if (response.status === 200) {
                     setReport(response.data);
@@ -48,8 +55,9 @@ export default function Report() {
                 "Category": d.category,
                 "Total": d.total,
                 "Assigned": d.assigned,
-                "Avaliable": d.available,
+                "Available": d.available,
                 "Not Avaliable": d.notAvailable,
+                "Repairing": d.repairing,
                 "Waiting For Recyling": d.waitingForRecycle,
                 "Recycled": d.recycled
             }
@@ -80,6 +88,10 @@ export default function Report() {
             reverse = notAvailableASC ? -1 : 1;
             setNotAvailableASC(!notAvailableASC)
             list = report.slice().sort((a, b) => (a.notAvailable > b.notAvailable) ? 1 * reverse : ((b.notAvailable > a.notAvailable) ? -1 * reverse : 0))
+        } else if (key === SORT_BY.REPAIRING) {
+            reverse = repairingASC ? -1 : 1;
+            setRepairingASC(!repairingASC)
+            list = report.slice().sort((a, b) => (a.repairing > b.repairing) ? 1 * reverse : ((b.repairing > a.repairing) ? -1 * reverse : 0))
         } else if (key === SORT_BY.WAITING_FOR_RECYCLING) {
             reverse = watingForRecycleASC ? -1 : 1;
             setWatingForRecycleASC(!watingForRecycleASC)
@@ -105,12 +117,34 @@ export default function Report() {
         FileSaver.saveAs(data, fileName + EXCEL_EXTENSION);
     }
 
+    const openDatePicker = () => {
+        setIsOpenDatePicker(!isOpenDatePicker);
+    }
+
     return (
         <>
-            <h3 className="content-title">Report</h3>
-            <Row>
+            <h3 className="content-title">Assigned Assignemts</h3>
+            {/* <Row>
                 <Col>
                     <Button className="float-end" variant="danger" onClick={() => exportToCSV(dataReport, `asset_management_${DATE}`)}>Export to .xlsx</Button>
+                </Col>
+            </Row> */}
+            <Row>
+                <Col sm="2">
+                    <div className="datepicker">
+                        <DatePicker className="form-control date-picker-input"
+                            dateFormat="dd/MM/yyyy" showMonthDropdown showYearDropdown scrollableYearDropdown yearDropdownItemNumber={50}
+                            onKeyDown={(e) => e.preventDefault()}
+                            selected={assignedDate && new Date(assignedDate)}
+                            onChange={(date) => setAssignedDate(moment(date).format('YYYY-MM-DD'))}
+                            placeholderText="Assigned Date"
+                            onClickOutside={openDatePicker}
+                            onSelect={openDatePicker}
+                            onFocus={openDatePicker}
+                            open={isOpenDatePicker}
+                        />
+                        <FaCalendarAlt className="icon-date" onClick={openDatePicker} />
+                    </div>
                 </Col>
             </Row>
             <Row>
@@ -118,43 +152,32 @@ export default function Report() {
                     <thead>
                         <tr>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.CATEGORY)} >
-                                Category <BsFillCaretDownFill />
+                                Asset Code <BsFillCaretDownFill />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.TOTAL)}>
-                                Total <BsFillCaretDownFill cursor="pointer" />
+                                Asset Name <BsFillCaretDownFill cursor="pointer" />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.ASSIGNED)}>
-                                Assigned <BsFillCaretDownFill cursor="pointer" />
+                                Assigned By <BsFillCaretDownFill cursor="pointer" />
                             </th>
                             <th className="table-thead" onClick={() => handleSort(SORT_BY.AVAILABLE)}>
-                                Available <BsFillCaretDownFill cursor="pointer" />
-                            </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.NOT_AVAILABLE)}>
-                                Not available <BsFillCaretDownFill cursor="pointer" />
-                            </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.WAITING_FOR_RECYCLING)}>
-                                Waiting for recycling <BsFillCaretDownFill cursor="pointer" />
-                            </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.RECYCLED)}>
-                                Recycled <BsFillCaretDownFill cursor="pointer" />
+                                Assigned To <BsFillCaretDownFill cursor="pointer" />
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         {report.map((r, index) => (
                             <tr key={index}>
-                                <td>{r.category}</td>
-                                <td>{r.total}</td>
-                                <td>{r.assigned}</td>
-                                <td>{r.available}</td>
-                                <td>{r.notAvailable}</td>
-                                <td>{r.waitingForRecycle}</td>
-                                <td>{r.recycled}</td>
+                                <td>{r.assetCode}</td>
+                                <td>{r.assetName}</td>
+                                <td>{r.assignedBy}</td>
+                                <td>{r.assignedTo}</td>
                             </tr>
                         ))}
                     </tbody>
                 </Table>
             </Row>
+
         </>
     )
 }
@@ -165,6 +188,7 @@ const SORT_BY = {
     ASSIGNED: 'assigned',
     AVAILABLE: 'available',
     NOT_AVAILABLE: 'notAvailable',
+    REPAIRING: 'repairing',
     WAITING_FOR_RECYCLING: 'waitingForRecycle',
     RECYCLED: 'recycled'
 }

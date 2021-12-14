@@ -9,7 +9,7 @@
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%);
 }
 .chat-app .people-list {
-    width: 280px;
+    width: 380px;
     position: absolute;
     left: 0;
     top: 0;
@@ -18,7 +18,7 @@
 }
 
 .chat-app .chat {
-    margin-left: 280px;
+    margin-left: 380px;
     border-left: 1px solid #eaeaea
 }
 
@@ -73,12 +73,13 @@
 
 .people-list .about {
     float: left;
-    padding-left: 8px
+    padding-left: 8px;
+    color: #333;
 }
 
 .people-list .status {
-    color: #999;
-    font-size: 13px
+    color: #888;
+    font-size: 1.3rem
 }
 
 .chat .chat-header {
@@ -124,7 +125,7 @@
 }
 
 .chat .chat-history .message-data {
-    margin-bottom: 15px;
+    /* margin-bottom: 15px; */
 }
 
 .chat .chat-history .message-data img {
@@ -145,12 +146,12 @@
     /* line-height: 26px; */
     /* font-size: 16px; */
     font-size: 1.4rem;
-    border-radius: 8px;
+    border-radius: 18px;
     display: inline-block;
     position: relative
 }
 
-.chat .chat-history .message:after {
+/* .chat .chat-history .message:after {
     bottom: 100%;
     left: 7%;
     border: solid transparent;
@@ -162,13 +163,14 @@
     border-bottom-color: #fff;
     border-width: 10px;
     margin-left: -10px
-}
+} */
 
 .chat .chat-history .my-message {
-    background: #efefef;
+    color: #1c1c1d;
+    background-color: #e4e6eb;
 }
 
-.chat .chat-history .my-message:after {
+/* .chat .chat-history .my-message:after {
     bottom: 100%;
     left: 30px;
     border: solid transparent;
@@ -180,16 +182,17 @@
     border-bottom-color: #efefef;
     border-width: 10px;
     margin-left: -10px
-}
+} */
 
 .chat .chat-history .other-message {
-    background: #e8f1f3;
+    color: #efefef;
+    background-color: #0084ff;
 }
 
-.chat .chat-history .other-message:after {
-    border-bottom-color: #e8f1f3;
-    left: 86%
-}
+/* .chat .chat-history .other-message:after {
+    border-bottom-color: #0084ff;
+    left: 86%;
+} */
 
 .chat .chat-message {
     padding: 12px;
@@ -197,6 +200,7 @@
 
 .chat .chat-message .message-input {
     font-size: 1.4rem;
+    height: 32px;
     resize: none;
 }
 
@@ -298,4 +302,92 @@
         height: calc(100vh - 350px);
         overflow-x: auto
     }
+}
+
+.is-active-messenger {
+    background-color: #eaf3ff;
+}
+
+.search-people-input-wrap {
+    position: relative;
+}
+
+.search-people-input {
+    font-size: 1.4rem;
+}
+
+/* .search-people-input:focus ~ .search-people {
+    display: block;
+} */
+
+.search-people {
+    position: absolute;
+    width: calc(100% - 32px);
+    top: calc(100% + 4px);
+    left: 0;
+    color: #333;
+    background-color: #fff;
+    box-shadow: 0 1px 5px rgb(189, 189, 189);
+    border-radius: 2px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.search-people-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 6px 0 0 0;
+}
+
+.search-people-item {
+    height: 38px;
+    font-size: 1.4rem;
+    padding: 0 12px;
+    line-height: 38px;
+    cursor: pointer;
+}
+
+.search-people-item:hover {
+    background-color: #fafafa;
+}
+
+.search-people-list a {
+    text-decoration: none;
+    font-size: 1.4rem;
+    color: #333;
+    line-height: 38px;
+    display: block;
+}
+
+.search-fullname {
+    font-weight: 600;
+}
+
+.search-username {
+    color: #666;
+}
+
+.last-message-content {
+    font-size: 1.3rem;
+    display: inline-block;
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}
+
+.last-message-time {
+    font-size: 1.3rem;
+    display: inline-block;
+    max-width: 90px;
+    white-space: nowrap;
+    overflow: hidden !important;
+    text-overflow: ellipsis;
+}
+
+.last-message-dot {
+    position: relative;
+    line-height: 1.3rem;
+    padding: 4px;
+    top: -5px;
 }

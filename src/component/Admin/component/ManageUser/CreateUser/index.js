@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Row, Col, Form, Button, Spinner } from 'react-bootstrap'
+import { Row, Col, Form, Button, Spinner, Modal } from 'react-bootstrap'
 import { Link, useHistory } from 'react-router-dom';
-import { get, post } from '../../../../../httpHelper'
+import { del, get, post, put } from '../../../../../httpHelper'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment";
 import './CreateUser.css';
-import { FaCalendarAlt } from 'react-icons/fa'
+import { FaAngleDown, FaCalendarAlt, FaCheck, FaEdit, FaTimes } from 'react-icons/fa'
 
+let deptCode = '';
 export default function CreateUser() {
     const history = useHistory();
     const [roles, setRoles] = useState([]);
@@ -37,6 +38,23 @@ export default function CreateUser() {
         joindDateBeforeDOB: '',
         emailInvalid: ''
     });
+
+
+    // Department
+    const [inputAddDeparment, setInputAddDeparment] = useState({
+        deptCode: '',
+        name: '',
+    });
+    const [headerTitle, setHeaderTitle] = useState('');
+    const [display, setdisplay] = useState(false);
+    const [show, setShow] = useState(false);
+    const [showModalEditDepartment, setShowModalEditDepartment] = useState(false);
+    const [errorMessageDepartmentEdit, setErrorMessageDepartmentEdit] = useState('');
+    const [showModalDeleteDepartment, setShowModalDeleteDepartment] = useState(false);
+    const [departmentEdit, setDepartmentEdit] = useState();
+    const [showModalErrorDeleteDepartment, setShowModalErrorDeleteDepartment] = useState(false);
+    const [errorAddDepartment, setErrorAddDepartment] = useState('');
+
 
     useEffect(() => {
         fetchDepartments();
@@ -242,6 +260,171 @@ export default function CreateUser() {
         setIsOpenDatePickerJd(!isOpenDatePickerJd);
     }
 
+
+    // Department
+    const handleDisplayDepartments = () => {
+        if (show !== true) {
+            setShow(false);
+            setdisplay(!display);
+        } else {
+        }
+    };
+
+    const onChangeSelected = (item) => {
+        if (show !== true) {
+            setdisplay(!display);
+            setHeaderTitle(item.name);
+            // setCategory(item.name);
+
+            setInputs((prevState) => ({
+                ...prevState,
+                deptCode: item.deptCode,
+            }));
+        } else {
+        }
+    };
+
+    const handleOnClickAddDepartment = () => {
+        setShow(true);
+    };
+
+    const handleClickEditDepartment = (category) => {
+        setShowModalEditDepartment(true);
+        setDepartmentEdit(category);
+    }
+
+    const handleCloseModalEditDapartment = () => {
+        setShowModalEditDepartment(false);
+        setErrorMessageDepartmentEdit('');
+    }
+
+    const handleEditDepartment = () => {
+        departmentEdit.name = departmentEdit.name.replace(/\s+/g, ' ').trim();
+        put(`/department/${departmentEdit.deptCode}`, departmentEdit)
+            .then((res) => {
+                fetchDepartments()
+                handleCloseModalEditDapartment();
+            })
+            .catch((error) => {
+                // console.log(error);
+                if (error.response.status === 409) {
+                    setErrorMessageDepartmentEdit('Department is already existed. Please enter a different department');
+                }
+            });
+    }
+
+    const handleCloseModalDeleteDepartment = () => {
+        setShowModalDeleteDepartment(false);
+    }
+
+    const handleOnChangedepartmentEdit = (e) => {
+        setDepartmentEdit((prevState) => ({
+            ...prevState,
+            [e.target.name]: e.target.value.replace(/[^A-Za-z\s]/gi, ''),
+        }));
+    }
+
+    const handleDeleteDepartment = () => {
+        del(`/department/${deptCode}`)
+            .then((res) => {
+                if (res.status === 200) {
+                    setDepartments(departments.filter(d => d.deptCode !== deptCode))
+                    setShowModalDeleteDepartment(false);
+                }
+            })
+            .catch((err) => {
+                if (err.response) {
+                    if (err.response.status === 409) {
+                        setShowModalDeleteDepartment(false);
+                        setShowModalErrorDeleteDepartment(true);
+                    }
+                }
+            })
+    }
+
+    const handleClickDeleteDepartment = (departmentCode) => {
+        deptCode = departmentCode;
+        setShowModalDeleteDepartment(true);
+    }
+
+    const handleOnChangeAdd = (e) => {
+        let value = e.target.value;
+
+        if (e.target.name === 'deptCode') {
+            value = value.replace(/[^0-9A-Za-z]/gi, '');
+        } else {
+            value = value.replace(/[^0-9A-Za-z\s]/gi, '');
+            // value = value.replace(/\s+/g, ' ').trim();
+        }
+        // console.log('vl', value);
+        setInputAddDeparment((prevState) => ({
+            ...prevState,
+            [e.target.name]: value,
+        }));
+    };
+
+    const preAddCate = () => {
+        let check = true;
+
+        if (inputAddDeparment.name.replace(/\s/g, '') === '') {
+            check = false;
+        }
+        if (inputAddDeparment.deptCode === '') {
+            check = false;
+        }
+
+        if (inputAddDeparment.deptCode.length < 2 || inputAddDeparment.deptCode.length > 5) {
+            check = false;
+        }
+
+        return check;
+    };
+
+    const addNewDepartment = () => {
+        if (!preAddCate()) {
+            return;
+        }
+
+        inputAddDeparment.deptCode = inputAddDeparment.deptCode.toUpperCase();
+        inputAddDeparment.name = inputAddDeparment.name.replace(/\s+/g, ' ').trim();
+
+        setErrorAddDepartment('');
+
+        post('/department', inputAddDeparment)
+            .then((res) => {
+                setDepartments([
+                    ...departments,
+                    { name: res.data.name, deptCode: res.data.deptCode },
+                ]);
+
+                setShow(false);
+                setInputAddDeparment({
+                    deptCode: '',
+                    name: '',
+                });
+            })
+            .catch((error) => {
+                if (error.response.status === 409) {
+                    setErrorAddDepartment(
+                        'Department is already exists. Please enter a different department'
+                    );
+                } else {
+                    setErrorAddDepartment(
+                        'Prefix is already exists. Please enter a different prefix'
+                    );
+                }
+            });
+    };
+
+    const removeNewDepartment = () => {
+        setInputAddDeparment({
+            deptCode: '',
+            name: '',
+        });
+        setErrorAddDepartment('');
+        setShow(false);
+    };
+
     return (
         <>
             <h5 className="content-title">Create user</h5>
@@ -349,7 +532,7 @@ export default function CreateUser() {
                                 }
                             </Col>
                         </Form.Group>
-                        <Form.Group as={Row} className="mb-4" controlId="id">
+                        {/* <Form.Group as={Row} className="mb-4" controlId="id">
                             <Form.Label column sm="3">Department</Form.Label>
                             <Col>
                                 <Form.Select name="deptCode" type="text" required as="select" aria-label="Default select example" onChange={handleOnChange}>
@@ -363,7 +546,100 @@ export default function CreateUser() {
                                     )}
                                 </Form.Select>
                             </Col>
-                        </Form.Group>
+                        </Form.Group> */}
+
+                        <Row className="align-items-center mb-3">
+                            <Col sm={3}>
+                                <div className='category_area'>
+                                    <div className='label'>
+                                        <span>Department</span>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col>
+                                <div className='category_input'>
+                                    <div className='boder_search' onClick={handleDisplayDepartments}>
+                                        {headerTitle}
+                                        <FaAngleDown className='angledown' />
+                                    </div>
+                                    <div className='list_below' style={{ display: display ? 'block' : 'none' }}>
+                                        <ul id='list'>
+                                            {departments.map((item) => (
+                                                <li className="category_item">
+                                                    <span className="name_area" onClick={() => onChangeSelected(item)}>{item.name}</span>
+                                                    <div className="icon_area">
+                                                        <FaEdit className='times' onClick={() => handleClickEditDepartment(item)} />
+                                                        <FaTimes className='times' onClick={() => handleClickDeleteDepartment(item.deptCode)} />
+                                                    </div>
+                                                </li>
+                                            ))}
+
+                                            {show === true ? (
+                                                <li id='end_li'>
+                                                    <div className='add_cate'>
+                                                        <div className='left'>
+                                                            <input
+                                                                id='input_add'
+                                                                value={inputAddDeparment.name}
+                                                                maxLength={20}
+                                                                minLength={1}
+                                                                name='name'
+                                                                onChange={handleOnChangeAdd}
+                                                            />
+                                                        </div>
+                                                        <div className='right'>
+                                                            <input
+                                                                id='input_add'
+                                                                value={inputAddDeparment.deptCode}
+                                                                maxLength={5}
+                                                                minLength={2}
+                                                                name='deptCode'
+                                                                onChange={handleOnChangeAdd}
+                                                            />
+                                                        </div>
+                                                        <div className='right'>
+                                                            <FaCheck
+                                                                className='check'
+                                                                onClick={addNewDepartment}
+                                                            />
+                                                            <FaTimes
+                                                                className='times'
+                                                                onClick={removeNewDepartment}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <span id='error'>
+                                                        {errorAddDepartment}
+                                                    </span>
+                                                </li>
+                                            ) : (
+                                                <></>
+                                            )}
+                                            {show === false ? (
+                                                <li id='end_li'>
+                                                    <div className='add_cate'>
+                                                        {show === false ? (
+                                                            <Button
+                                                                id='link'
+                                                                variant='link'
+                                                                onClick={handleOnClickAddDepartment}
+                                                            >
+                                                                Add new department
+                                                            </Button>
+                                                        ) : (
+                                                            <></>
+                                                        )}
+                                                    </div>
+                                                </li>
+                                            ) : (
+                                                <></>
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+
                         <Form.Group as={Row} className="mb-4" controlId="id">
                             <Form.Label column sm="3">Type</Form.Label>
                             <Col>
@@ -388,6 +664,57 @@ export default function CreateUser() {
                     </Form>
                 </Col>
             </Row>
+
+            <Modal size="sm" centered show={showModalEditDepartment} onHide={handleCloseModalEditDapartment}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Edit department</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3" >
+                            <Form.Label>Name</Form.Label>
+                            <Form.Control type="text" name="name" value={departmentEdit?.name} onChange={handleOnChangedepartmentEdit} />
+                            {errorMessageDepartmentEdit &&
+                                < Form.Control.Feedback className="d-block" type="invalid">
+                                    {errorMessageDepartmentEdit}
+                                </Form.Control.Feedback>
+                            }
+                        </Form.Group>
+                        <Form.Group className="mb-3" >
+                            <Form.Label>Department code</Form.Label>
+                            <Form.Control type="text" name="prefix" readOnly value={departmentEdit?.deptCode} onChange={handleOnChangedepartmentEdit} />
+                        </Form.Group>
+                        <Form.Group className="float-end">
+                            <Button variant="danger" onClick={handleEditDepartment}>
+                                Save
+                            </Button>
+                            <Button variant="outline-secondary" onClick={handleCloseModalEditDapartment}>
+                                Cancel
+                            </Button>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+            <Modal size="sm" centered show={showModalDeleteDepartment} onHide={handleCloseModalDeleteDepartment}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Are you sure</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Do you want to delete this department?</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={handleDeleteDepartment}>
+                        Delete
+                    </Button>
+                    <Button variant="outline-secondary" onClick={handleCloseModalDeleteDepartment}>
+                        Cancel
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showModalErrorDeleteDepartment} onHide={() => setShowModalErrorDeleteDepartment(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Can not delete this department</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>This department already has user!</Modal.Body>
+            </Modal>
         </>
     )
 }

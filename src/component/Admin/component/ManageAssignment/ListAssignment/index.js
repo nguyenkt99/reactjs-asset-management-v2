@@ -17,6 +17,7 @@ import DatePicker from "react-datepicker"
 import { FaCalendarAlt } from "react-icons/fa"
 
 import './ListAssignment.css'
+import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize'
 
 const elementPerPage = 10
 export default function ListAssignment() {
@@ -144,12 +145,13 @@ export default function ListAssignment() {
   };
 
   const filterSort = (data, keySearch) => {
+    const searchInput = removeAccents(normalizeString(keySearch))
     return data.filter((d) => (
       d.id.toString() === keySearch ||
-      d.strAssets.toLowerCase().includes(keySearch.toLowerCase()) ||
-      // d.assetName.toLowerCase().includes(keySearch.toLowerCase()) ||
-      d.assignedTo.toLowerCase().includes(keySearch.toLowerCase()) ||
-      d.assignedBy.toLowerCase().includes(keySearch.toLowerCase())
+      d.strAssets.toLowerCase().includes(searchInput) ||
+      // d.assetName.toLowerCase().includes(searchInput) ||
+      d.assignedTo.toLowerCase().includes(searchInput) ||
+      d.assignedBy.toLowerCase().includes(searchInput)
     ));
   };
 
@@ -348,7 +350,8 @@ export default function ListAssignment() {
                 No.
                 <BsFillCaretDownFill />
               </th>
-              <th className="table-thead" style={{ width: "300px" }} onClick={() => handleSort(SORT_BY.AssetCode)}>
+              {/* <th className="table-thead" style={{ width: "300px" }} onClick={() => handleSort(SORT_BY.AssetCode)}> */}
+              <th className="table-thead" onClick={() => handleSort(SORT_BY.AssetCode)}>
                 Asset List
                 <BsFillCaretDownFill />
               </th>
@@ -396,7 +399,7 @@ export default function ListAssignment() {
                     </td>
                     <td>
                       <div className='d-flex justify-content-evenly align-items-center'>
-                        {a.state === 'WAITING_FOR_ACCEPTANCE' ? (
+                        {a.state === 'WAITING_FOR_ACCEPTANCE' || a.state === 'ACCEPTED' ? (
                           <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-assignment/' + a.id}>
                             <GrEditCus />
                           </Link>
@@ -411,11 +414,11 @@ export default function ListAssignment() {
                           }}
                           onClick={() => handleDeleteClick(a)}
                         />
-                        {(a.state === 'ACCEPTED' && !a.isCreatedRequest) ? (
+                        {a.state === 'ACCEPTED' ?
                           <FaUndo id="undo-assignment" style={{ cursor: 'pointer' }} onClick={() => onClickRequestForReturning(a.id)} />
-                        ) : (
+                          :
                           <FaUndo id="undo-assignment" style={{ color: '#ccc' }} />
-                        )}
+                        }
                       </div>
                     </td>
                   </tr>
@@ -600,7 +603,7 @@ export default function ListAssignment() {
           <Modal.Title style={{ color: '#dc3545' }}>Are you sure?</Modal.Title>
         </Modal.Header>
         <Modal.Body>Do you want to delete this assignment?</Modal.Body>
-        <Modal.Footer style={{ display: 'block', marginLeft: '32px' }}>
+        <Modal.Footer>
           <Button variant='danger' onClick={handleDelete}>
             Delete
           </Button>
@@ -611,7 +614,7 @@ export default function ListAssignment() {
       </Modal>
 
       {/* Modal return */}
-      <Modal show={showModalRequest} onHide={() => setShowModalRequest(false)}>
+      <Modal centered show={showModalRequest} onHide={() => setShowModalRequest(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create request for returning</Modal.Title>
         </Modal.Header>
@@ -664,10 +667,10 @@ export default function ListAssignment() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant='danger' onClick={handleCreateRequestReturn}>
-            Save
+            Yes
           </Button>
           <Button variant='secondary' onClick={() => setShowModalRequest(false)}>
-            Cancel
+            No
           </Button>
         </Modal.Footer>
       </Modal>

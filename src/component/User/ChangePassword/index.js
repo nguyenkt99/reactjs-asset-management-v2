@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
-
 import "./ChangePassword.css";
 import { BsFillEyeFill, BsFillEyeSlashFill } from "react-icons/bs";
 import { post } from "../../../httpHelper";

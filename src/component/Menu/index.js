@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ListGroup, ListGroupItem } from 'reactstrap';
-import logo from '../../assets/logo_ptit.png'
+import logo from '../../assets/Logo_lk.png';
 import '../../App.css';
 import "./Menu.css";
 import authService from "../../services/auth.service";
@@ -29,11 +29,11 @@ function Menu({ tableTab }) {
       />
       <h3 className="menu-title">Online Asset Management</h3>
       <ListGroup className="menu-list">
-        <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(9)} active={selected === 9}>
-          <Link to='/messenger' className="menu-item__link">Messenger</Link>
-        </ListGroupItem>
         <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(1)} active={selected === 1}>
           <Link to='/home' className="menu-item__link">Home</Link>
+        </ListGroupItem>
+        <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(9)} active={selected === 9}>
+          <Link to='/messenger' className="menu-item__link">Messenger</Link>
         </ListGroupItem>
         <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(7)} active={selected === 7}>
           <Link to='/request-assign' className="menu-item__link">
@@ -61,8 +61,24 @@ function Menu({ tableTab }) {
               <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(8)} active={selected === 8}>
                 <Link to='/manage-repair' className="menu-item__link">Manage Repair</Link>
               </ListGroupItem>
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(6)} active={selected === 6}>
-                <Link to='/report' className="menu-item__link">Report</Link>
+              <ListGroupItem className="menu-item menu-item-report" action onClick={() => setSelectedItem(6)} active={selected === 6}>
+                <Link to='/report/overview' className="menu-item__link ">
+                  Report
+                </Link>
+                <div className="sub-menu">
+                  <ul className="report-list">
+                    <li className="report-item">
+                      <Link to='/report/overview' className="menu-item__link">
+                        Overview
+                      </Link>
+                    </li>
+                    <li className="report-item">
+                      <Link to='/report/assigned-assignments' className="menu-item__link">
+                        Assigned Assignments
+                      </Link>
+                    </li>
+                  </ul>
+                </div>
               </ListGroupItem>
             </>
             :

@@ -39,7 +39,7 @@ html {
 }
 
 .app-content {
-  padding: 48px 0 0 8px
+  padding: 40px 0 0 8px
 }
 
 .content-title {
@@ -71,7 +71,6 @@ html {
 .page-link {
   font-size: 1.4rem !important;
 }
-
 
 /* Date Picker */
 .datepicker{
@@ -134,4 +133,48 @@ html {
 /* Text area */
 .text-area-input {
   font-size: 1.4rem !important;
+}
+
+/*  */
+.resettitle {
+  font-size: 1.8rem;
+  color: #dc3545;
+  padding: 8px;
+}
+
+.cardreset {
+  padding: 0 16px 16px 16px;
+}
+
+.resetform {
+  font-size: 1.3rem;
+}
+
+.resettitle {
+
+}
+
+.password-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  font-size: 1.4rem !important;
+  margin-left: 16px;
+}
+
+.btnsave {
+  float: right;
+  margin-top: 8px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
 }

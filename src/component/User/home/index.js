@@ -42,7 +42,7 @@ export default function UserAssignment() {
             u.assignmentDetails.forEach(ad => {
               strAssets += `${ad.assetCode}, `;
             })
-            return { ...u, strAssets: strAssets }
+            return { ...u, strAssets: strAssets.substring(0, strAssets.length - 2) }
           })
 
           setData(dataWithStrAssets);
@@ -169,7 +169,7 @@ export default function UserAssignment() {
   }
 
   const handleDeclined = () => {
-    put(`/assignment/staff/${assignmentIdRef.current}`, { state: "CANCELED_ASSIGN", note: note })
+    put(`/assignment/staff/${assignmentIdRef.current}`, { state: "DECLINED", note: note })
       .then((res) => {
         // setData(data.filter(e => e.id !== assignmentIdRef.current))
         // setAssignments(assignments.filter(e => e.id !== assignmentIdRef.current))
@@ -177,7 +177,7 @@ export default function UserAssignment() {
         const index = assignments.findIndex(item => item.id === assignmentIdRef.current);
         let newAssignments = assignments;
         let item = { ...newAssignments[index] };
-        item.state = STATE.CANCELED_ASSIGN;
+        item.state = STATE.DECLINED;
         item.note = note;
         newAssignments[index] = item;
         setAssignments(newAssignments);
@@ -290,12 +290,12 @@ export default function UserAssignment() {
         <Table className="content-table" responsive>
           <thead>
             <tr>
-              <th>
+              <th style={{ width: "48px" }}>
                 No.
                 <BsFillCaretDownFill />
               </th>
               <th style={{ width: "300px" }}>
-                Asset
+                Asset List
                 <BsFillCaretDownFill />
               </th>
               <th onClick={() => handleSort(SORT_BY.AssignedDate)}>
@@ -411,6 +411,18 @@ export default function UserAssignment() {
             </Form.Group>
             <Form.Group as={Row} controlId='formPlaintextEmail'>
               <Form.Label column sm='4' className='pr-0'>
+                Returned Date
+              </Form.Label>
+              <Col sm='8'>
+                <Form.Control
+                  plaintext
+                  readOnly
+                  defaultValue={assignmentInformation && assignmentInformation.intendedReturnDate}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row} controlId='formPlaintextEmail'>
+              <Form.Label column sm='4' className='pr-0'>
                 State
               </Form.Label>
               <Col sm='8'>
@@ -496,7 +508,7 @@ export default function UserAssignment() {
               Note
             </Form.Label>
             <Col>
-              <Form.Control name='note' as='textarea' required maxLength={100} onChange={(e) => setNote(e.target.value)} />
+              <Form.Control className="textarea-input" name='note' as='textarea' required maxLength={100} onChange={(e) => setNote(e.target.value)} />
             </Col>
           </Form.Group>
         </Modal.Body>
@@ -511,7 +523,7 @@ export default function UserAssignment() {
       </Modal>
 
       {/* Modal return */}
-      <Modal show={showModalRequest} onHide={() => setShowModalRequest(false)}>
+      <Modal centered show={showModalRequest} onHide={() => setShowModalRequest(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create request for returning</Modal.Title>
         </Modal.Header>
@@ -586,14 +598,14 @@ const STATE = {
   All: "All",
   ACCEPTED: "ACCEPTED",
   WAITING_FOR_ACCEPTANCE: "WAITING_FOR_ACCEPTANCE",
-  CANCELED_ASSIGN: "CANCELED_ASSIGN",
+  DECLINED: "DECLINED",
   WAITING_FOR_RETURNING: "WAITING_FOR_RETURNING",
   COMPLETED: "COMPLETED"
 };
 const StateToLowCase = {
   ACCEPTED: "Accepted",
   WAITING_FOR_ACCEPTANCE: "Waiting for acceptance",
-  CANCELED_ASSIGN: "Declined",
+  DECLINED: "Declined",
   WAITING_FOR_RETURNING: "Waiting for returning",
   COMPLETED: 'Completed'
 };
