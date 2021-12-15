@@ -137,7 +137,7 @@ export default function ChatMessage() {
 
     const handleReceiveMessage = (message) => {
         // use for new conversation (be sent to mine!!!) to get new conversation Id
-        if (message.sender === currentUser?.username && selectedConversation.id === null) {
+        if (message.sender === currentUser?.username && selectedConversation?.id === null) {
             let newConversations = [...conversations]
             const index = conversations.findIndex(c => c.id === null)
             let newConversation = newConversations.splice(index, 1)[0]
@@ -175,7 +175,7 @@ export default function ChatMessage() {
             // preparing form data to send
             const message = {
                 sender: currentUser.username,
-                content: messageText,
+                content: messageText.trim(),
                 conversationId: selectedConversation?.id
             }
 

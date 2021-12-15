@@ -589,9 +589,10 @@ export default function CreateUser() {
                                                         </div>
                                                         <div className='right'>
                                                             <input
+                                                                style={{width: "68px"}}
                                                                 id='input_add'
                                                                 value={inputAddDeparment.deptCode}
-                                                                maxLength={5}
+                                                                maxLength={6}
                                                                 minLength={2}
                                                                 name='deptCode'
                                                                 onChange={handleOnChangeAdd}
