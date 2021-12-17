@@ -31,7 +31,7 @@ export default function Request() {
     const [stateASC, setStateASC] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [data, setData] = useState([])
-    const [stateChecked, setStateChecked] = useState([STATE.ALL])
+    const [stateChecked, setStateChecked] = useState([STATE.WAITING_FOR_RETURNING])
     const [returnedDate, setReturnedDate] = useState()
     const [isOpenDatePicker, setIsOpenDatePicker] = useState(false);
     const [showModalCancelRequest, setShowModalCancelRequest] = useState(false);
@@ -55,7 +55,7 @@ export default function Request() {
                 })
 
                 setData(dataWithStrAssets)
-                setRequests(dataWithStrAssets)
+                setRequests(dataWithStrAssets.filter(r => stateChecked.includes(r.state)))
             } else {
                 toastMessage('Something wrong!')
             }
@@ -84,25 +84,17 @@ export default function Request() {
     }
 
     const handleAcceptRequest = (requestId) => {
-        put(`/request-return/${requestId}`).then(response => {
-            if (response.status === 200) {
-                setData(data.map(e => {
-                    if (e.id === requestId) {
-                        e.state = response.data.state
-                        e.acceptBy = response.data.acceptBy
-                        e.returnedDate = response.data.returnedDate
-                    }
-                    return e
-                }))
+        put(`/request-return/${requestId}`).then(res => {
+            if (res.status === 200) {
+                let newData = [...data]
+                const dIndex = data.findIndex(r => r.id === requestId)
+                newData[dIndex] = {...newData[dIndex], state: res.data.state, acceptBy: res.data.acceptBy, returnedDate: res.data.returnedDate}
+                setData(newData)
 
-                setRequests(data.map(e => {
-                    if (e.id === requestId) {
-                        e.state = response.data.state
-                        e.acceptBy = response.data.acceptBy
-                        e.returnedDate = response.data.returnedDate
-                    }
-                    return e
-                }))
+                let newRequests = [...requests]
+                const rIndex = requests.findIndex(r => r.id === requestId)
+                newRequests[rIndex] = {...newRequests[rIndex], state: res.data.state, acceptBy: res.data.acceptBy, returnedDate: res.data.returnedDate}
+                setRequests(newRequests)
             } else {
                 toastMessage('Server not return successfully!')
             }

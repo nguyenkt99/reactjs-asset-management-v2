@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Row, Col, Form, Button, Spinner, Modal, Table } from 'react-bootstrap'
+import { Row, Col, Form, Button, Spinner, Modal, Table, Badge } from 'react-bootstrap'
 import { Link, useHistory, useRouteMatch } from 'react-router-dom'
 import { get, put } from '../../../../../httpHelper'
 import { FaSearch, FaAngleDown, FaCalendarAlt } from 'react-icons/fa'
@@ -7,6 +7,7 @@ import { CgCloseO } from 'react-icons/cg'
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import moment from "moment"
+import ModalNotification from '../../../../ModalNotification'
 
 function EditAssignment(props) {
     const [users, setUsers] = useState([])
@@ -35,11 +36,11 @@ function EditAssignment(props) {
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
+    const [fullAccess, setFullAccess] = useState(true)
+    const [showModalError, setShowModalError] = useState(false)
 
     const history = useHistory()
     const match = useRouteMatch()
-
-    console.log(match.params.assignmentId)
 
     useEffect(() => {
         const promise = new Promise((resovle) => {
@@ -80,6 +81,10 @@ function EditAssignment(props) {
             setNote(assignment.note)
             setAssignedDate(assignment.assignedDate.split("/").reverse().join("-"))
             setReturnedDate(assignment.intendedReturnDate.split("/").reverse().join("-"))
+
+            if (assignment.assignmentDetails.some(ad => ad.state === 'ACCEPTED')) {
+                setFullAccess(false)
+            }
         }
     }, [assignment])
 
@@ -112,7 +117,8 @@ function EditAssignment(props) {
             })
             .catch((error) => {
                 setIsSaving(false);
-                console.log(error.response);
+                // console.log(error.response);
+                setShowModalError(true)
             })
     }
 
@@ -137,6 +143,7 @@ function EditAssignment(props) {
                     history.push('/manage-assignment')
                 }
                 setAssignment(res.data)
+
             })
             .catch((err) => {
                 console.log(err.response)
@@ -165,8 +172,10 @@ function EditAssignment(props) {
     }
 
     const handleUserDisplay = () => {
-        if (assetDisplay === true) setAssetDisplay(false)
-        if (userDisplay === false) setUserDisplay(true);
+        if (fullAccess) {
+            if (assetDisplay === true) setAssetDisplay(false)
+            if (userDisplay === false) setUserDisplay(true)
+        }
     }
 
     const handleAssetDisplay = () => {
@@ -175,11 +184,6 @@ function EditAssignment(props) {
     }
 
     const handleCancel = () => {
-        setUserDisplay(false);
-        setAssetDisplay(false);
-        setSelectingAssets(selectedAssets);
-        setSelectingUser(selectedUser);
-
         //user
         if (document.getElementById(selectedUser.staffCode))
             document.getElementById(selectedUser.staffCode).checked = true;
@@ -198,12 +202,17 @@ function EditAssignment(props) {
         //             document.getElementById(u.assetCode).checked = false;
         //     })
 
-        availableAssets.forEach((a) => {
-            if (document.getElementById(a.assetCode) && selectedAssets.find(selectedAsset => selectedAsset.assetCode === a.assetCode))
-                document.getElementById(a.assetCode).checked = true;
-            else
-                document.getElementById(a.assetCode).checked = false;
-        })
+        // availableAssets.forEach((a) => {
+        //     if (document.getElementById(a.assetCode) && selectedAssets.find(selectedAsset => selectedAsset.assetCode === a.assetCode))
+        //         document.getElementById(a.assetCode).checked = true;
+        //     else
+        //         document.getElementById(a.assetCode).checked = false;
+        // })
+
+        setUserDisplay(false);
+        setAssetDisplay(false);
+        setSelectingAssets(selectedAssets);
+        setSelectingUser(selectedUser);
     }
 
     const handleOk = () => {
@@ -329,6 +338,12 @@ function EditAssignment(props) {
         setUsersData(list);
     }
 
+    const handleRemove = (assetCode) => {
+        console.log(assetCode)
+        setSelectedAssets([...selectedAssets.filter(a => a.assetCode !== assetCode)])
+        setSelectingAssets([...selectedAssets.filter(a => a.assetCode !== assetCode)])
+    }
+
     let userJsx =
         <Row>
             <Col sm={3}>
@@ -339,8 +354,8 @@ function EditAssignment(props) {
                 </div>
             </Col>
             <Col className="user_area" onClick={handleUserDisplay}>
-                <div className="input_field">
-                    <div className="border_search_info">
+                <div className="input_field" >
+                    <div style={!fullAccess ? { backgroundColor: "#e9ecef", cursor: "default" } : {}} className="border_search_info">
                         {selectedUser && selectedUser.fullName}
                         <FaSearch className="fa-search" />
                     </div>
@@ -475,12 +490,15 @@ function EditAssignment(props) {
                                                 <td style={{ width: "20px" }} >
                                                     <input
                                                         id={a.assetCode}
+                                                        className="checkbox_custom"
                                                         type="checkbox"
                                                         name="assetCheckbox"
                                                         value={a.assetCode}
                                                         style={{ cursor: "pointer" }}
                                                         onClick={assetChange}
-                                                        defaultChecked={selectedAssets.find(selectedAsset => selectedAsset.assetCode === a.assetCode)}
+                                                        disabled={assignment?.assignmentDetails.some(ad => ad.assetCode === a.assetCode && ad.state !== 'WAITING_FOR_ACCEPTANCE')}
+                                                        checked={selectingAssets.some(s => s.assetCode === a.assetCode)}
+                                                    // defaultChecked={assignment?.assignmentDetails.some(ad => ad.assetCode === a.assetCode)}
                                                     // className="radio_custom"
                                                     ></input>
                                                 </td>
@@ -531,6 +549,7 @@ function EditAssignment(props) {
                                     onSelect={openDatePickerAd}
                                     onFocus={openDatePickerAd}
                                     open={isOpenDatePickerAd}
+                                    disabled={!fullAccess}
                                 />
                                 <FaCalendarAlt className="icon-date" onClick={openDatePickerAd} />
                             </div>
@@ -553,6 +572,7 @@ function EditAssignment(props) {
                                     onSelect={openDatePickerRd}
                                     onFocus={openDatePickerRd}
                                     open={isOpenDatePickerRd}
+                                    disabled={!fullAccess}
                                 />
                                 <FaCalendarAlt className="icon-date" onClick={openDatePickerRd} />
                             </div>
@@ -564,12 +584,30 @@ function EditAssignment(props) {
                         <Form.Label column sm={3}>
                         </Form.Label>
                         <Col>
-                            {selectedAssets.map((a) =>
-                                <div className="asset-item" key={a.assetCode}>
-                                    <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
-                                    <CgCloseO className="asset-icon-remove" />
-                                </div>
-                            )}
+                            <div className="selected-asset-list">
+                                {selectedAssets.map((a) =>
+                                    <div className="asset-item" key={a.assetCode}>
+                                        <span key={a.assetCode}>{a.assetName} ({a.assetCode})
+                                            {/* {(() => {
+                                                const adState = assignment?.assignmentDetails.find(ad => ad.assetCode === a.assetCode)?.state
+                                                if (!adState)
+                                                    return <Badge bg="warning">New</Badge>
+                                                if (adState === STATE.WAITING_FOR_RETURNING || adState === STATE.COMPLETED)
+                                                    return <Badge bg="secondary">{StateToLowerCase[adState]}</Badge>
+                                                else if (adState === STATE.ACCEPTED)
+                                                    return <Badge bg="success">{StateToLowerCase[adState]}</Badge>
+                                            })()} */}
+                                        </span>
+                                        {(() => {
+                                            const adState = assignment?.assignmentDetails.find(ad => ad.assetCode === a.assetCode)?.state
+                                            if (!adState || adState === STATE.WAITING_FOR_ACCEPTANCE) {
+                                                return <CgCloseO className="asset-icon-remove" display={a.stat} onClick={() => handleRemove(a.assetCode)} />
+                                            }
+                                        })()}
+
+                                    </div>
+                                )}
+                            </div>
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} className='mb-3'>
@@ -596,6 +634,12 @@ function EditAssignment(props) {
                     </Form.Group>
                 </Form>
             </Col>
+            <ModalNotification
+                title={"Cannot edit this assignment"}
+                content={"The assets may not be available in this time! Please check again"}
+                show={showModalError}
+                setShow={setShowModalError}
+            />
         </>
     )
 }
@@ -614,5 +658,20 @@ const USER_SORT_BY = {
     JoinedDate: 'joinedDate',
     Type: 'type',
 }
+
+const STATE = {
+    ACCEPTED: 'ACCEPTED',
+    WAITING_FOR_ACCEPTANCE: 'WAITING_FOR_ACCEPTANCE',
+    DECLINED: 'DECLINED',
+    WAITING_FOR_RETURNING: 'WAITING_FOR_RETURNING',
+    COMPLETED: 'COMPLETED'
+};
+const StateToLowerCase = {
+    ACCEPTED: 'Accepted',
+    WAITING_FOR_ACCEPTANCE: 'Waiting for acceptance',
+    DECLINED: 'Declined',
+    WAITING_FOR_RETURNING: 'Waiting for returning',
+    COMPLETED: 'Completed'
+};
 
 export default EditAssignment;

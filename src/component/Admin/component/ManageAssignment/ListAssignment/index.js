@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import {
   Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination,
-  FormCheck, FormGroup, ToastContainer, OverlayTrigger, Tooltip
+  FormCheck, FormGroup, ToastContainer, OverlayTrigger, Tooltip, Spinner
 } from 'react-bootstrap'
 
 import { HiFilter } from 'react-icons/hi'
@@ -18,6 +18,7 @@ import { FaCalendarAlt } from "react-icons/fa"
 
 import './ListAssignment.css'
 import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize'
+import ModalNotification from '../../../../ModalNotification'
 
 const elementPerPage = 10
 export default function ListAssignment() {
@@ -46,6 +47,8 @@ export default function ListAssignment() {
   const [stateChecked, setStateChecked] = useState([STATE.WAITING_FOR_ACCEPTANCE, STATE.ACCEPTED])
   const [isOpenDatePicker, setIsOpenDatePicker] = useState(false)
   const [selectingAssets, setSelectingAssets] = useState([])
+  const [showModalError, setShowModalError] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     fetchAssignments()
@@ -174,6 +177,7 @@ export default function ListAssignment() {
   };
 
   const onClickRequestForReturning = (assignmentId) => {
+    console.log(assignmentId)
     assignmentIdRef.current = assignmentId;
     const assignment = assignments.find((assignment) => assignment.id === assignmentId);
     setAssignmentInformation(assignment);
@@ -206,9 +210,11 @@ export default function ListAssignment() {
       assignmentDetails: selectingAssets.map(assetCode => ({ assetCode: assetCode }))
     }
 
+    setIsLoading(true)
     post(`/request-return`, formData)
       .then((response) => {
-        // fetchAssignments();
+        setSelectingAssets([])
+
         let newAssignments = [...assignments]
         const index = assignments.findIndex(item => item.id === assignmentIdRef.current)
         get(`/assignment/${assignmentIdRef.current}`)
@@ -218,7 +224,7 @@ export default function ListAssignment() {
             newAssignment.assignmentDetails.forEach(ad => {
               strAssets += `${ad.assetCode}, `
             })
-            newAssignments[index] = { ...newAssignment, strAssets }
+            newAssignments[index] = { ...newAssignment, strAssets: strAssets.substring(0, strAssets.length - 2) }
             setAssignments(newAssignments)
             setData(newAssignments)
           })
@@ -236,7 +242,10 @@ export default function ListAssignment() {
         }
         setShowToastError(true)
       })
-      .finally(() => setShowModalRequest(false));
+      .finally(() => {
+        setIsLoading(false)
+        setShowModalRequest(false)
+      });
   }
 
   const openDatePicker = () => {
@@ -250,6 +259,23 @@ export default function ListAssignment() {
     } else {
       setSelectingAssets([...selectingAssets, assetCode])
     }
+  }
+
+  const handleOnClickEditAssignment = (id) => {
+    get(`/assignment/${id}`)
+      .then(res => {
+        const assignment = res.data
+        // Can only be edited within assigned date!!!
+        if (assignment.assignmentDetails.some(ad => ad.state === STATE.ACCEPTED)
+          && assignment.assignedDate !== moment(new Date()).format('DD/MM/YYYY')) {
+          setShowModalError(true)
+        } else {
+          history.push('/edit-assignment/' + id)
+        }
+      })
+      .catch((error) => {
+        toastMessage('Something wrong!')
+      })
   }
 
   return (
@@ -400,9 +426,11 @@ export default function ListAssignment() {
                     <td>
                       <div className='d-flex justify-content-evenly align-items-center'>
                         {a.state === 'WAITING_FOR_ACCEPTANCE' || a.state === 'ACCEPTED' ? (
-                          <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-assignment/' + a.id}>
+                          // <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-assignment/' + a.id}>
+                          <span style={{ cursor: "pointer" }} onClick={() => handleOnClickEditAssignment(a.id)} >
                             <GrEditCus />
-                          </Link>
+                          </span>
+                          // </Link>
                         ) : (
                           <GrEditCus color='#ccc' />
                         )}
@@ -666,14 +694,23 @@ export default function ListAssignment() {
           </Table>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant='danger' onClick={handleCreateRequestReturn}>
+          <Button style={{width: "60px"}} variant='danger' disabled={isLoading} onClick={handleCreateRequestReturn}>
+            {isLoading ? <Spinner animation="border" variant="light" /> : ""}
             Yes
           </Button>
-          <Button variant='secondary' onClick={() => setShowModalRequest(false)}>
+          <Button style={{width: "60px"}} variant='secondary' disabled={isLoading} onClick={() => setShowModalRequest(false)}>
             No
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Modal show error click edit assignemt */}
+      <ModalNotification
+        title={"Cannot edit the assignment"}
+        content={"Assignment has been accepted can only be edited within the assigned day!"}
+        show={showModalError}
+        setShow={setShowModalError}
+      />
 
       <ToastContainer className="p-3" id='t' position='middle-end'>
         <Toast bg="warning" onClose={() => setShowToastError(false)} show={showToastError} delay={3000} autohide>

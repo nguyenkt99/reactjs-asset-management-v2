@@ -112,7 +112,7 @@ export default function CreateUser() {
 
     const handleValidation = () => {
         let isValid = true;
-        const regexEmail = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+        const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!regexEmail.test(inputs.email)) {
             setValidStateList(prevState => ({
                 ...prevState, isEmail: false

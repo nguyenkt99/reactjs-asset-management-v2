@@ -198,12 +198,21 @@
 }
 
 .navbar__notify-description {
-    display: block;
+    /* display: block; */
     font-size: 1.4rem;
     color: #7c7473;
     font-weight: 400;
-    line-height: 1.6rem;
     margin-top: 4px;
+
+    line-height: 2rem;
+    max-height: 6rem;
+    overflow: hidden;
+    flex: 1;
+    text-align: left;
+    padding-right: 16px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
 }
 
 .navbar__notify-time {

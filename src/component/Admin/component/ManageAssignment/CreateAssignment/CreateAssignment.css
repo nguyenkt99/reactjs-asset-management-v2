@@ -139,6 +139,15 @@
   cursor: pointer;
 }
 
+.selected-asset-list {
+  padding: 8px;
+  border: 2px dashed #666;
+  border-radius: 4px;
+  min-height: 100px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
 .asset-item {
   padding: 6px;
   width: fit-content;
@@ -148,12 +157,12 @@
   position: relative;
   margin-bottom: 12px;
 }
-
-/* .asset-item:hover {
+/* 
+.asset-item:hover {
   border: 4px solid var(--border-color);
-}
+} */
 
-.asset-item:hover .asset-icon-remove {
+/* .asset-icon-remove {
   display: block;
   transition: ease-in 0.2s;
 } */
@@ -165,8 +174,12 @@
   font-size: 1.8rem;
   font-weight: 700;
   width: 24px;
-  top: -8px;
-  right: -16px;
-  display: none;
+  top: 8px;
+  right: -32px;
+  display: block;
   cursor: pointer;
+}
+
+.asset-icon-remove:hover {
+  color: #fc6161;
 }

@@ -8,6 +8,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import './CreateAssignment.css'
 import moment from "moment";
+import ModalNotification from '../../../../ModalNotification';
 
 export default function CreateAssignment() {
     const [users, setUsers] = useState([])
@@ -34,6 +35,7 @@ export default function CreateAssignment() {
     const [returnedDate, setReturnedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
+    const [showModalError, setShowModalError] = useState(false)
 
     const history = useHistory()
 
@@ -72,7 +74,8 @@ export default function CreateAssignment() {
             })
             .catch((error) => {
                 setIsSaving(false)
-                console.log(error.response)
+                // console.log(error.response)
+                setShowModalError(true)
             })
     }
 
@@ -123,19 +126,19 @@ export default function CreateAssignment() {
         }
 
         // uncheck checkbox assets
-        selectedAssets.forEach((a) => {
-            document.getElementById(a.assetCode).checked = true;
-        })
+        // selectedAssets.forEach((a) => {
+        //     document.getElementById(a.assetCode).checked = true;
+        // })
 
-        selectingAssets.forEach((a) => {
-            if (document.getElementById(a.assetCode))
-                document.getElementById(a.assetCode).checked = false;
-        })
+        // selectingAssets.forEach((a) => {
+        //     if (document.getElementById(a.assetCode))
+        //         document.getElementById(a.assetCode).checked = false;
+        // })
 
         setUserDisplay(false)
         setAssetDisplay(false)
         setSelectingUser(null)
-        setSelectingAssets([])
+        setSelectingAssets(selectedAssets)
     }
 
     const handleOk = () => {
@@ -259,6 +262,11 @@ export default function CreateAssignment() {
             list = usersData.slice().sort((a, b) => (a.type > b.type) ? 1 * reverse : ((b.type > a.type) ? -1 * reverse : 0))
         }
         setUsersData(list)
+    }
+
+    const handleRemove = (assetCode) => {
+        setSelectedAssets([...selectedAssets.filter(a => a.assetCode !== assetCode)])
+        setSelectingAssets([...selectedAssets.filter(a => a.assetCode !== assetCode)])
     }
 
     let userJsx =
@@ -403,13 +411,14 @@ export default function CreateAssignment() {
                                             return <tr key={a.assetCode} className="fix_width">
                                                 <td style={{ width: "20px" }} >
                                                     <input
-                                                        className='checkbox_custom'
                                                         id={a.assetCode}
+                                                        className='checkbox_custom'
                                                         type="checkbox"
                                                         name="assetCheckbox"
                                                         value={a.assetCode}
                                                         style={{ cursor: "pointer" }}
                                                         onClick={assetChange}
+                                                        checked={selectingAssets.some(s => s.assetCode === a.assetCode)}
                                                     // className="radio_custom"
                                                     ></input>
                                                 </td>
@@ -500,12 +509,14 @@ export default function CreateAssignment() {
                         <Form.Label column sm={3}>
                         </Form.Label>
                         <Col>
-                            {selectedAssets.map((a) =>
-                                <div className="asset-item" key={a.assetCode}>
-                                    <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
-                                    <CgCloseO className="asset-icon-remove" />
-                                </div>
-                            )}
+                            <div className="selected-asset-list">
+                                {selectedAssets.map((a) =>
+                                    <div className="asset-item" key={a.assetCode}>
+                                        <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
+                                        <CgCloseO className="asset-icon-remove" onClick={() => handleRemove(a.assetCode)} />
+                                    </div>
+                                )}
+                            </div>
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} className='mb-3'>
@@ -532,6 +543,12 @@ export default function CreateAssignment() {
                     </Form.Group>
                 </Form>
             </Col>
+            <ModalNotification
+                title={"Cannot create this assignment"}
+                content={"The assets may not be available in this time! Please check again"}
+                show={showModalError}
+                setShow={setShowModalError}
+            />
         </>
     )
 }

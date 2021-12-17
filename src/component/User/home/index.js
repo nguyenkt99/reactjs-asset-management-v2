@@ -7,6 +7,7 @@ import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { get, put, post } from '../../../httpHelper';
 import { BsFillCaretDownFill } from "react-icons/bs";
 import { HiInformationCircle } from "react-icons/hi";
+import ModalNotification from "../../ModalNotification";
 
 export default function UserAssignment() {
   const assignmentIdRef = useRef()
@@ -27,6 +28,7 @@ export default function UserAssignment() {
   const [showModalRequest, setShowModalRequest] = useState(false);
   const [note, setNote] = useState('');
   const [selectingAssets, setSelectingAssets] = useState([])
+  const [showModalError, setShowModalError] = useState(false)
 
   useEffect(() => {
     fetchUserAssignment();
@@ -168,12 +170,16 @@ export default function UserAssignment() {
       }).finally(() => setShowModalAccept(false));
   }
 
-  const handleDeclined = () => {
+  const getAssignment = async (id) => {
+    const res = await get(`/assignment/${id}`)
+    return res.data
+  }
+
+  const handleDeclined = async () => {
     put(`/assignment/staff/${assignmentIdRef.current}`, { state: "DECLINED", note: note })
       .then((res) => {
         // setData(data.filter(e => e.id !== assignmentIdRef.current))
         // setAssignments(assignments.filter(e => e.id !== assignmentIdRef.current))
-
         const index = assignments.findIndex(item => item.id === assignmentIdRef.current);
         let newAssignments = assignments;
         let item = { ...newAssignments[index] };
@@ -193,6 +199,8 @@ export default function UserAssignment() {
         }
         setShowToast(true)
       }).finally(() => setShowModalDeclined(false));
+
+
   }
 
   // const handleRequestForReturning = (assignmentId) => {
@@ -262,9 +270,18 @@ export default function UserAssignment() {
     setShowModalAccept(true)
   }
 
-  const handleDeclineClick = (id) => {
+  const handleDeclineClick = async (id) => {
     assignmentIdRef.current = id
-    setShowModalDeclined(true)
+    try {
+      const assignment = await getAssignment(id)
+      if (assignment.assignmentDetails.every(ad => ad.state === 'WAITING_FOR_ACCEPTANCE')) {
+        setShowModalDeclined(true)
+      } else {
+        setShowModalError(true)
+      }
+    } catch (erorr) {
+      toastMessage("Something wrong!")
+    }
   }
 
   const onClickRequestForReturning = (id) => {
@@ -583,6 +600,14 @@ export default function UserAssignment() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Modal show error click decline assignemt */}
+      <ModalNotification
+        title={"Cannot decline the assignment"}
+        content={"Assignment has been accepted so you can only be accepted this assigment!"}
+        show={showModalError}
+        setShow={setShowModalError}
+      />
     </div>
   );
 }

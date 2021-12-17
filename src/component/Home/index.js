@@ -177,7 +177,7 @@ function Home() {
                               : n.type === 'REQUEST_RETURN' ? ReturnImage : AssignmentImage} alt="USB Kingston"
                               className="navbar__notify-img" />
                             <div className="navbar__notify-info">
-                              <span className="navbar__notify-name">{n.type}</span>
+                              {/* <span className="navbar__notify-name">{n.type}</span> */}
                               <span className="navbar__notify-description">{n.title}</span>
                               <span className="navbar__notify-time">{moment.utc(n.createdDate.seconds * 1000).local().startOf('seconds').fromNow()}</span>
                             </div>
@@ -387,7 +387,7 @@ function Home() {
           style={{ fontSize: '1.4rem' }}
           onClose={() => setShowToastNotify(false)}
           show={clickedNotify !== null ? false : showToastNotify}
-          delay={5000}
+          delay={10000}
           autohide
         >
           <Toast.Header>
