@@ -1,12 +1,12 @@
 import React from 'react'
 import { Modal } from 'react-bootstrap'
-export default function ModalNotification({title, content, show, setShow}) {
+export default function ModalNotification({title="Notifications!", content, show, setShow}) {
     return (
         <div>
             <Modal
                 show={show}
                 onHide={() => setShow(false)}
-                centered
+                top
                 id="detail-dialog"
             >
                 <Modal.Header closeButton>

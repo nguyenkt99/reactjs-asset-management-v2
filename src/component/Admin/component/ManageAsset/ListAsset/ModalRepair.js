@@ -14,6 +14,7 @@ export default function ModalRepair({ asset, show, handleClose, handleSubmit }) 
             note: note
         }
 
+        setNote('')
         handleSubmit(formData)
     }
 
@@ -41,7 +42,7 @@ export default function ModalRepair({ asset, show, handleClose, handleSubmit }) 
                 </Form.Group>
                 <Form.Group as={Row} className='mb-3' required>
                     <Form.Label column sm={3}>
-                        Assigned Date
+                        Created Date
                     </Form.Label>
                     <Col>
                         <div className="datepicker">

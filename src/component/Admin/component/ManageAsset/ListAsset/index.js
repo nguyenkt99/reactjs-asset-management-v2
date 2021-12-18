@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Row, Table, Modal, Toast, Form, Dropdown, Button, Pagination, FormCheck } from 'react-bootstrap';
+import { Col, Row, Table, Modal, Form, Dropdown, Button, Pagination, FormCheck } from 'react-bootstrap';
 import { HiFilter } from 'react-icons/hi';
 import { GrEdit } from 'react-icons/gr';
 import { GrEditCus } from '../../../../icon/GrEditCus';
@@ -11,21 +11,17 @@ import { Link, useHistory } from 'react-router-dom'
 import './ListAsset.css'
 import ModalRepair from './ModalRepair';
 import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize'
+import ModalNotification from '../../../../ModalNotification';
 
 const elementPerPage = 10;
 
 export default function ListAsset() {
   const [showModalRepair, setShowModalRepair] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
-  const [showModalErrorDelete, setShowModalErrorDelete] = useState(false);
   const [assetSelect, setAssetSelect] = useState('');
-  const [showToastErr, setShowToastErr] = useState(false);
-  const [errMessage, setErrMessage] = useState('');
   const [assets, setAssets] = useState([]);
   const [showAssets, setShowAssets] = useState(false);
   const [assetInformation, setAssetInformation] = useState();
-  const [showToast, setShowToast] = useState(false);
-  const [message, setMessage] = useState('');
   const [keySearch, setKeySearch] = useState('');
   const [assetCodeASC, setAssetCodeASC] = useState(true);
   const [assetNameASC, setAssetNameASC] = useState(false);
@@ -37,11 +33,14 @@ export default function ListAsset() {
   const [categoryChecked, setCategoryChecked] = useState([CATEGORY.All]);
   const [categoryNames, setCategoryNames] = useState(['All']);
   const [selectedAsset, setSelectedAsset] = useState({});
+  const [showError, setShowError] = useState(false)
+  const [errorTitle, setErrorTitle] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const history = useHistory();
 
   useEffect(() => {
     fetchAssets();
-    fetchCatagoryName();
+    fetchCategoryName();
   }, []);
 
   const fetchAssets = () => {
@@ -60,29 +59,27 @@ export default function ListAsset() {
           setStateChecked([STATE.Assigned, STATE.Available, STATE.Repairing, STATE.Not_available]);
           history.replace();
         } else {
-          toastMessage('Something wrong!');
+          showErrorNotification('Something wrong!');
         }
       })
-      .catch((error) => toastMessage('Fail to connect server!'));
+      .catch((error) => showErrorNotification('Cannot fetch assets!'));
   };
 
-  const fetchCatagoryName = () => {
+  const fetchCategoryName = () => {
     get('/category')
       .then((res) => {
         setCategoryNames([...categoryNames, ...res.data.map((category) => category.name)]);
       })
-      .catch((error) => toastMessage('Fail to connect server!'));
-  };
-
-  const toastMessage = (message) => {
-    setMessage(message);
-    setShowToast(true);
+      .catch((error) => showErrorNotification('Fail to connect server!'));
   };
 
   const handleRowClick = (assetCode) => {
-    var asset = assets.find((asset) => asset.assetCode === assetCode);
-    setAssetInformation(asset);
-    setShowAssets(true);
+    get(`/asset/${assetCode}`)
+      .then(res => {
+        setAssetInformation(res.data)
+        setShowAssets(true)
+      })
+      .catch(error => console.log(error))
   };
 
   const handleSort = (key) => {
@@ -150,18 +147,12 @@ export default function ListAsset() {
     setCurrentPage(1);
   }, [stateChecked, categoryChecked, keySearch]);
 
-  const toastErrMessage = (message) => {
-    setErrMessage(message);
-    setShowToastErr(true);
-  };
-
   const handleDeleteClick = (item) => {
     get(`/asset/${item.assetCode}/delete`)
       .then((res) => {
         if (res.data === false) {
           setAssetSelect(item.assetCode);
-          setShowModalErrorDelete(true);
-          setShowModalDelete(false);
+          showErrorNotification('Cannot delete asset', 'Cannot delete the asset because it belongs to one or more historical assignments or historical repairs. If the asset is not able to be used anymore, please update its state.')
         } else {
           setAssetSelect(item.assetCode);
           setShowModalDelete(true);
@@ -175,14 +166,9 @@ export default function ListAsset() {
     setShowModalDelete(false);
   };
 
-  const handleCloseModalErr = () => {
-    setAssetSelect('');
-    setShowModalErrorDelete(false);
-  };
-
   const handleDelete = () => {
     del(`/asset/${assetSelect}`)
-      .then((res) => {
+      .then(() => {
         setAssets(
           assets.filter(function (item) {
             return item.assetCode !== assetSelect;
@@ -192,28 +178,30 @@ export default function ListAsset() {
         setShowModalDelete(false);
       })
       .catch((error) => {
-        // setAssetSelect(item.assetCode);
-
         if (error.response.status === 409) {
-          setShowModalErrorDelete(true);
           setShowModalDelete(false);
+          showErrorNotification('Cannot delete asset', 'Cannot delete the asset because it belongs to one or more historical assignments or historical repairs. If the asset is not able to be used anymore, please update its state.')
         } else {
           setAssetSelect('');
           setShowModalDelete(false);
-          toastErrMessage(
-            error.response && error.response.data.message
-              ? error.response.data.message
-              : error.message
-          );
+          showErrorNotification('Error', error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message)
         }
       });
   };
 
   const handleClickRepair = (assetCode) => {
     get(`/asset/${assetCode}`)
-      .then(res => setSelectedAsset(res.data))
-      .catch(error => toastMessage('Get asset error'))
-    setShowModalRepair(true)
+      .then(res => {
+        if (res.data.state !== 'AVAILABLE')
+          showErrorNotification("Asset can be repaired when it is available state!")
+        else {
+          setSelectedAsset(res.data)
+          setShowModalRepair(true)
+        }
+      })
+      .catch(error => showErrorNotification('Get asset error'))
   }
 
   const handleCloseModalRepair = () => {
@@ -234,10 +222,16 @@ export default function ListAsset() {
             newData[indexInData] = assetRes.data
             setData(newData)
           })
-          .catch(error => toastMessage('Error get new asset!'))
+          .catch(error => showErrorNotification('Error get new asset!'))
         handleCloseModalRepair()
       })
-      .catch(error => toastMessage('Error create asset repair!'))
+      .catch(error => showErrorNotification(error.response.data.message))
+  }
+
+  const showErrorNotification = (title, errorMessage) => {
+    setShowError(true)
+    setErrorTitle(title)
+    setErrorMessage(errorMessage)
   }
 
   return (
@@ -262,34 +256,6 @@ export default function ListAsset() {
             Cancel
           </Button>
         </Modal.Footer>
-      </Modal>
-
-      <Toast
-        style={{ position: 'fixed' }}
-        onClose={() => setShowToastErr(false)}
-        show={showToastErr}
-        delay={2000}
-        autohide
-        position='top-end'
-        bg={'danger'}>
-        <Toast.Header>
-          <strong className='me-auto'>Can not delete asset</strong>
-        </Toast.Header>
-        <Toast.Body>{errMessage}</Toast.Body>
-      </Toast>
-
-      <Modal centered show={showModalErrorDelete} onHide={handleCloseModalErr}>
-        <Modal.Header closeButton>
-          <Modal.Title>Cannot delete asset</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Cannot delete the asset because it belongs to one or more historical
-          assignments. If the asset is not able to be used anymore, please
-          update its state.
-          {/* <Link to={`/edit-asset/${assetSelect}`}>Edit Asset page</Link> */}
-        </Modal.Body>
-        <Modal.Footer
-          style={{ display: 'block', marginLeft: '32px' }}></Modal.Footer>
       </Modal>
 
       <h3 className="content-title">Asset List</h3>
@@ -479,7 +445,7 @@ export default function ListAsset() {
                     </td>
                     <td>
                       <div className='d-flex justify-content-evenly align-items-center'>
-                        {a.state === STATE.Available ?
+                        {(a.state !== STATE.Repairing && a.state !== STATE.Assigned) ?
                           <>
                             <GiAutoRepair style={{ fontSize: "130%", cursor: "pointer" }} onClick={() => handleClickRepair(a.assetCode)} />
                             <Link to={'/edit-asset/' + a.assetCode}>
@@ -656,36 +622,11 @@ export default function ListAsset() {
                               <td>{ad.returnedDate ? ad.returnedDate : ""}</td>
                             </tr>
                           ))}
-
                           {/* <tr >
                             <td>12/01/2021</td>
                             <td>nguyenkt</td>
                             <td>nguyenkt</td>
                             <td>8/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
-                          </tr>
-                          <tr >
-                            <td>12/02/1999</td>
-                            <td>nguyenkt</td>
-                            <td>nguyenkt</td>
-                            <td>1/12/2021</td>
                           </tr> */}
                         </tbody>
                       </Table>
@@ -720,18 +661,6 @@ export default function ListAsset() {
                               <td>{r.finishedDate ? r.returnedDate : ""}</td>
                             </tr>
                           ))}
-                          {/* <tr >
-                            <td>12/11/2021</td>
-                            <td>Upgrade memory</td>
-                            <td>nguyenkt</td>
-                            <td>15/11/2021</td>
-                          </tr>
-                          <tr >
-                            <td>23/11/2020</td>
-                            <td>Battery replacement</td>
-                            <td>nguyenkt</td>
-                            <td>24/11/2020</td>
-                          </tr> */}
                         </tbody>
                       </Table>
                     </div>
@@ -742,19 +671,13 @@ export default function ListAsset() {
           </Form>
         </Modal.Body>
       </Modal>
-      <Toast
-        onClose={() => setShowToast(false)}
-        show={showToast}
-        delay={1000}
-        autohide
-        position='top-end'>
-        <Toast.Header>
-          <img src='holder.js/20x20?text=%20' className='rounded me-2' alt='' />
-          <strong className='me-auto'>Bootstrap</strong>
-          <small>11 mins ago</small>
-        </Toast.Header>
-        <Toast.Body>{message}</Toast.Body>
-      </Toast>
+
+      <ModalNotification
+        title={errorTitle}
+        content={errorMessage}
+        show={showError}
+        setShow={setShowError}
+      />
     </>
   );
 }

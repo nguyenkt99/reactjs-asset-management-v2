@@ -43,9 +43,14 @@
 }
 
 .people-list .chat-list li {
-    padding: 10px 15px;
     list-style: none;
     border-radius: 3px;
+}
+
+.people-list .chat-list a {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
 }
 
 .people-list .chat-list li:hover {
@@ -63,7 +68,7 @@
 
 .people-list .chat-list img {
     width: 45px;
-    border-radius: 50%
+    border-radius: 50%;
 }
 
 .people-list img {
@@ -291,6 +296,8 @@
     border-radius: 2px;
     overflow: hidden;
     z-index: 1;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 .search-people-list {
@@ -300,15 +307,22 @@
 }
 
 .search-people-item {
+    display: flex;
     height: 38px;
     font-size: 1.4rem;
     padding: 0 12px;
     line-height: 38px;
     cursor: pointer;
+    align-items: center;
+}
+
+.search-people-avatar {
+    width: 26px;
+    margin-right: 6px;
 }
 
 .search-people-item:hover {
-    background-color: #fafafa;
+    background-color: #f7f7f7;
 }
 
 .search-people-list a {
@@ -330,7 +344,7 @@
 .last-message-content {
     font-size: 1.3rem;
     display: inline-block;
-    max-width: 160px;
+    max-width: 158px;
     white-space: nowrap;
     overflow: hidden !important;
     text-overflow: ellipsis;

@@ -7,7 +7,7 @@ import authService from '../../services/auth.service'
 import moment from 'moment'
 import { socketUrl } from '../../constants/configUrl'
 import SockJsClient from 'react-stomp'
-import { NavLink, useRouteMatch } from 'react-router-dom'
+import { NavLink, useRouteMatch, useHistory } from 'react-router-dom'
 import Avatar from '../../assets/avatar.png'
 import { FormControl, InputGroup } from 'react-bootstrap'
 
@@ -15,7 +15,7 @@ export default function ChatMessage() {
     const historyRef = useRef()
     const refSockJs = useRef(null)
     const match = useRouteMatch()
-    // const history = useHistory()
+    const history = useHistory()
 
     const conversationRef = useRef({})
     const [users, setUsers] = useState([])
@@ -39,11 +39,6 @@ export default function ChatMessage() {
     }, [])
 
     useEffect(() => {
-        if (selectedConversation)
-            fetchMessages(selectedConversation.id)
-    }, [selectedConversation])
-
-    useEffect(() => {
         setUsers(dataUsers.filter(u => u.fullName.toLowerCase().includes(searchValue.toLowerCase())
             || u.username.toLowerCase().includes(searchValue.toLowerCase())))
     }, [searchValue])
@@ -60,10 +55,11 @@ export default function ChatMessage() {
     }
 
     const fetchMessages = (conversationId) => {
-        get(`/conversation/${conversationId}`)
-            .then(res => {
-                setMessages(res.data)
-            }).catch(error => console.log(error))
+        if (conversationId)
+            get(`/conversation/${conversationId}`)
+                .then(res => {
+                    setMessages(res.data)
+                }).catch(error => console.log(error))
     }
 
     const fetchUsers = () => {
@@ -80,8 +76,6 @@ export default function ChatMessage() {
     }
 
     const handleClickItemSearch = (user) => {
-        // remove conversation temp
-
         // create converation temp
         if (!conversations.some(c => c.username1 === user.username || c.username2 === user.username)) {
             let newConversation = {
@@ -91,19 +85,23 @@ export default function ChatMessage() {
                 fullName2: user.fullName,
                 isSeen: true
             }
+            setSelectedConversation(newConversation)
             setConversations([newConversation, ...conversations])
-        } else {
-            // history.push(`./${username}`)
         }
+        history.push(`/messenger/${user.username}`)
     }
 
     const handleSelectedConversation = (c) => {
         setSelectedConversation(c)
         let newConversations = [...conversations]
-        const index = newConversations.findIndex((conversation) => conversation.id === c.id)
+        // const index = newConversations.findIndex((conversation) => conversation.id === c.id)
+        const index = conversations.findIndex(con =>
+            con.id === c.id &&
+            ((con.username1 === c.username1 && con.username2 === c.username2)
+                || (con.username1 === c.username2 && con.username2 === c.username1)))
         newConversations[index] = { ...c, isSeen: true }
         setConversations(newConversations)
-        if (!c.isSeen)
+        if (!c.isSeen && c.id)
             post(`/conversation/${c.id}/seen`)
 
         if (c.id) { // old conversation
@@ -113,58 +111,115 @@ export default function ChatMessage() {
         }
     }
 
-    const renderConversations = (newMessage, type = 'SEND') => {
-        const isSeen = type === 'RECEIVE' ? false : true
+    // const renderConversations = (newMessage, type = 'SEND') => {
+    //     const isSeen = type === 'RECEIVE' ? false : true
+    //     let newConversations = [...conversations]
+    //     let index = conversations.findIndex(c => c.id === newMessage.conversationId
+    //         || (c.username1 === currentUser.username && c.username2 === newMessage.sender) || (c.username1 === newMessage.sender && c.username2 === currentUser.username))
+    //     if (index === -1) {
+    //         const newConversation = {
+    //             id: newMessage.conversationId,
+    //             username1: newMessage.sender,
+    //             fullName1: newMessage.fullName,
+    //             lastMessage: newMessage.content,
+    //             time: newMessage.time,
+    //             isSeen: false
+    //         }
+    //         newConversations = [newConversation, ...newConversations]
+    //     } else {
+    //         newConversations[index] = { ...newConversations[index], lastMessage: newMessage.content, time: newMessage.time, isSeen: isSeen }
+    //         newConversations.unshift(newConversations.splice(index, 1)[0])
+    //     }
+
+    //     setConversations(newConversations)
+    // }
+
+    const renderConversations = (newMessage) => {
         let newConversations = [...conversations]
-        let index = conversations.findIndex(c => c.id === newMessage.conversationId || c.id === null)
-        if (index === -1) {
+        const isSeen = newMessage.sender === currentUser.username ? true : false
+        let index = conversations.findIndex(c => {
+            return c.id === newMessage.conversationId
+                || (c.username1 === currentUser.username && c.username1 === newMessage.sender)
+                || (c.username1 === currentUser.username && c.username2 === newMessage.sender)
+                || (c.username1 === newMessage.sender && c.username2 === currentUser.username)
+        })
+
+        if (index === -1) { // receive new conversation
             const newConversation = {
                 id: newMessage.conversationId,
                 username1: newMessage.sender,
                 fullName1: newMessage.fullName,
                 lastMessage: newMessage.content,
                 time: newMessage.time,
-                isSeen: false
+                isSeen: isSeen
             }
-            newConversations = [newConversation, ...newConversations]
+            newConversations = [newConversation, ...conversations]
         } else {
-            newConversations[index] = { ...newConversations[index], lastMessage: newMessage.content, time: newMessage.time, isSeen: isSeen }
+            newConversations[index] = {
+                ...newConversations[index],
+                id: newMessage.conversationId,
+                lastMessage: newMessage.content,
+                time: newMessage.time,
+                isSeen: isSeen
+            }
             newConversations.unshift(newConversations.splice(index, 1)[0])
         }
-
         setConversations(newConversations)
     }
 
+    // const handleReceiveMessage = (message) => {
+    //     // use for new conversation (be sent to mine!!!) to get new conversation Id
+    //     if (message.sender === currentUser?.username && selectedConversation?.id === null) {
+    //         let newConversations = [...conversations]
+    //         const index = conversations.findIndex(c => c.id === null)
+    //         let newConversation = newConversations.splice(index, 1)[0]
+    //         newConversation = {
+    //             ...newConversation,
+    //             id: message.conversationId,
+    //             fullName1: message.fullName,
+    //             lastMessage: message.content,
+    //             time: message.time,
+    //             sender: message.sender,
+    //         }
+
+    //         setConversations([newConversation, ...newConversations])
+    //         setSelectedConversation(newConversation)
+    //     }
+
+    //     // render conservation
+    //     if (message.sender !== currentUser?.username) {
+    //         renderConversations(message, 'RECEIVE')
+    //     } else {
+    //         renderConversations(message)
+    //     }
+
+    //     // render chat window when receive message
+    //     if (message.sender === getUserIsChating(selectedConversation)?.username)
+    //         setMessages([...messages, message])
+    // }
+
+    const getUserIsChating = (conversation) => {
+        if (conversation) {
+            const user = conversation.username1 !== currentUser.username ?
+                {
+                    username: conversation.username1,
+                    fullName: conversation.fullName1
+                } :
+                {
+                    username: conversation.username2,
+                    fullName: conversation.fullName2
+                }
+            return user;
+        }
+    }
+
     const handleReceiveMessage = (message) => {
-        // use for new conversation (be sent to mine!!!) to get new conversation Id
-        if (message.sender === currentUser?.username && selectedConversation?.id === null) {
-            let newConversations = [...conversations]
-            const index = conversations.findIndex(c => c.id === null)
-            let newConversation = newConversations.splice(index, 1)[0]
-            newConversation = {
-                ...newConversation,
-                id: message.conversationId,
-                fullName1: message.fullName,
-                lastMessage: message.content,
-                time: message.time,
-                sender: message.sender,
-            }
-
-            setConversations([newConversation, ...newConversations])
-            setSelectedConversation(newConversation)
-        }
-
         // render conservation
-        if (message.sender !== currentUser?.username) {
-            renderConversations(message, 'RECEIVE')
-        } else {
-            renderConversations(message)
-        }
+        renderConversations(message)
 
         // render chat window when receive message
         if (message.sender === getUserIsChating(selectedConversation)?.username)
             setMessages([...messages, message])
-
 
     }
 
@@ -195,9 +250,6 @@ export default function ChatMessage() {
             setMessages([...messages, { ...message, time: new Date() }])
             setMessageText('')
         }
-
-        // render conversation
-        // renderConversations(message)
     }
 
     const MenuLink = ({ conversationId, isSeen, sender, children, to, click }) => {
@@ -215,21 +267,6 @@ export default function ChatMessage() {
         )
     }
 
-    const getUserIsChating = (conversation) => {
-        if (conversation) {
-            const user = conversation.username1 !== currentUser.username ?
-                {
-                    username: conversation.username1,
-                    fullName: conversation.fullName1
-                } :
-                {
-                    username: conversation.username2,
-                    fullName: conversation.fullName2
-                }
-            return user;
-        }
-    }
-
     return (
         <>
             <div className="row clearfix">
@@ -239,7 +276,7 @@ export default function ChatMessage() {
                             <div className='search-people-input-wrap'>
                                 <InputGroup className="mb-4">
                                     <FormControl
-                                        placeholder="Search..."
+                                        placeholder="Search people..."
                                         className="search-people-input"
                                         onFocus={() => setShowListSearch(true)}
                                         onBlur={() => setTimeout(() => {
@@ -252,6 +289,7 @@ export default function ChatMessage() {
                                         <ul className="search-people-list">
                                             {users.map(u => (
                                                 <li key={u.staffCode} className="search-people-item" onClick={() => handleClickItemSearch(u)}>
+                                                    <img className="search-people-avatar" src={Avatar} alt="avatar" />
                                                     <span className='search-fullname'>
                                                         {u.fullName}
                                                     </span>
@@ -356,8 +394,8 @@ export default function ChatMessage() {
                             </div>
                             <div className="chat-message clearfix">
                                 <div className="input-group mb-0">
-                                    <textarea
-                                        type="textarea"
+                                    <input
+                                        type="text"
                                         className="form-control message-input"
                                         placeholder="Enter message..."
                                         aria-label="Recipient's username"

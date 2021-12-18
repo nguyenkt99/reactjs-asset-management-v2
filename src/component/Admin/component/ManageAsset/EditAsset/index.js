@@ -7,6 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import moment from 'moment';
 import { get, put } from '../../../../../httpHelper';
 import { withRouter } from 'react-router-dom';
+import ModalNotification from '../../../../ModalNotification';
 
 function EditAsset(props) {
   let history = useHistory();
@@ -14,6 +15,10 @@ function EditAsset(props) {
   const [errorSpeAsset, setErrorSpeAsset] = useState('');
   const [installedDate, setInstalledDate] = useState('');
   const [isOpenDatePicker, setIsOpenDatePicker] = useState(false);
+  const [showError, setShowError] = useState(false)
+  const [errorTitle, setErrorTitle] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
   const [inputs, setInputs] = useState({
     assetName: '',
     specification: '',
@@ -31,6 +36,12 @@ function EditAsset(props) {
   const fetchAsset = () => {
     get(`/asset/${assetCode}`)
       .then((res) => {
+        if (res.data.state === 'ASSIGNED' || res.data.state === 'REPAIRING') {
+          history.push({
+            pathname: '/manage-asset',
+          })
+        }
+
         let installedDate = res.data.installedDate.split("/").reverse().join("-")
         let object = {
           assetName: res.data.assetName,
@@ -45,9 +56,9 @@ function EditAsset(props) {
       })
       .catch(err => {
         console.log(err)
-        // history.push({
-        //   pathname: '/manage-asset',
-        // });
+        history.push({
+          pathname: '/manage-asset',
+        });
       })
   }
 
@@ -126,7 +137,9 @@ function EditAsset(props) {
         });
       })
       .catch((error) => {
-        console.log(error.response);
+        setErrorTitle('Error notification')
+        setErrorMessage(error?.response?.data?.message)
+        setShowError(true)
       });
   };
 
@@ -136,7 +149,7 @@ function EditAsset(props) {
 
   return (
     <>
-      <h5 className="content-title">Create asset</h5>
+      <h5 className="content-title">Edit asset</h5>
       <Col xs={6}>
         <Form onSubmit={handleSubmit} className="content-form">
           <Form.Group as={Row} className='mb-3'>
@@ -281,6 +294,12 @@ function EditAsset(props) {
           </Form.Group>
         </Form>
       </Col>
+      <ModalNotification
+        title={errorTitle}
+        content={errorMessage}
+        show={showError}
+        setShow={setShowError}
+      />
     </>
   );
 }

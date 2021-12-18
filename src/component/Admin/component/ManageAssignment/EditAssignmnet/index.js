@@ -8,6 +8,7 @@ import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import moment from "moment"
 import ModalNotification from '../../../../ModalNotification'
+import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize'
 
 function EditAssignment(props) {
     const [users, setUsers] = useState([])
@@ -37,6 +38,7 @@ function EditAssignment(props) {
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [fullAccess, setFullAccess] = useState(true)
+    const [errorMessage, setErrorMessage] = useState('')
     const [showModalError, setShowModalError] = useState(false)
 
     const history = useHistory()
@@ -57,9 +59,9 @@ function EditAssignment(props) {
     }, [])
 
 
-    useEffect(() => {
-        fetchAvailableAssets()
-    }, [assignedDate, returnedDate])
+    // useEffect(() => {
+    //     fetchAvailableAssets()
+    // }, [assignedDate, returnedDate])
 
     //useeffect after setAssignment
     const isMounted = useRef(true)
@@ -88,13 +90,6 @@ function EditAssignment(props) {
         }
     }, [assignment])
 
-    // useEffect(() => {
-    //     selectedAssets.forEach(a => {
-    //         if (document.getElementById(a.assetCode) !== null)
-    //             document.getElementById(a.assetCode).checked = true;
-    //     })
-    // }, [selectedAssets])
-
     const handleSubmit = (e) => {
         e.preventDefault()
         const formData = {
@@ -117,7 +112,7 @@ function EditAssignment(props) {
             })
             .catch((error) => {
                 setIsSaving(false);
-                // console.log(error.response);
+                setErrorMessage(error?.response?.data?.message)
                 setShowModalError(true)
             })
     }
@@ -179,8 +174,11 @@ function EditAssignment(props) {
     }
 
     const handleAssetDisplay = () => {
-        if (userDisplay === true) setUserDisplay(false);
-        if (assetDisplay === false) setAssetDisplay(true);
+        if (userDisplay === true) setUserDisplay(false)
+        if (assetDisplay === false) {
+            fetchAvailableAssets()
+            setAssetDisplay(true)
+        }
     }
 
     const handleCancel = () => {
@@ -242,20 +240,20 @@ function EditAssignment(props) {
     }
 
     const handleSearchChangeUser = (e) => {
-        let keySearch = e.target.value;
+        let keySearch = removeAccents(normalizeString(e.target.value))
         let newData = users.filter(e => (
-            e.staffCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.fullName.toLowerCase().includes(keySearch.toLowerCase())))
+            e.staffCode.toLowerCase().includes(keySearch)
+            || e.fullName.toLowerCase().includes(keySearch)))
         setUsersData(newData);
     }
 
     const handleSearchChangeAsset = (e) => {
-        let keySearch = e.target.value;
+        let keySearch = removeAccents(normalizeString(e.target.value))
         let newData = assets.filter(e => (
-            e.assetCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.assetName.toLowerCase().includes(keySearch.toLowerCase())
+            e.assetCode.toLowerCase().includes(keySearch)
+            || e.assetName.toLowerCase().includes(keySearch)
         ))
-        setAvailableAssetsData(newData);
+        setAvailableAssets(newData);
     }
 
     const openDatePickerAd = () => {
@@ -314,7 +312,7 @@ function EditAssignment(props) {
                             : 0
                 );
         }
-        setAvailableAssetsData(list);
+        setAvailableAssets(list);
     };
 
     const handleSortUser = (key) => {
@@ -485,7 +483,7 @@ function EditAssignment(props) {
                                         </tr>
                                     </thead>
                                     <tbody className="table-content fix_width">
-                                        {availableAssetsData.map((a) => {
+                                        {availableAssets.map((a) => {
                                             return <tr key={a.assetCode} className="fix_width">
                                                 <td style={{ width: "20px" }} >
                                                     <input
@@ -636,7 +634,7 @@ function EditAssignment(props) {
             </Col>
             <ModalNotification
                 title={"Cannot edit this assignment"}
-                content={"The assets may not be available in this time! Please check again"}
+                content={errorMessage}
                 show={showModalError}
                 setShow={setShowModalError}
             />

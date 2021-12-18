@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import './CreateAssignment.css'
 import moment from "moment";
 import ModalNotification from '../../../../ModalNotification';
+import { normalizeString, removeAccents } from '../../../../../utils/StringNormalize';
 
 export default function CreateAssignment() {
     const [users, setUsers] = useState([])
@@ -35,6 +36,7 @@ export default function CreateAssignment() {
     const [returnedDate, setReturnedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
     const [showModalError, setShowModalError] = useState(false)
 
     const history = useHistory()
@@ -43,9 +45,9 @@ export default function CreateAssignment() {
         fetchUsers()
     }, [])
 
-    useEffect(() => {
-        fetchAssets()
-    }, [assignedDate, returnedDate])
+    // useEffect(() => {
+    //     fetchAvailableAssets()
+    // }, [assignedDate, returnedDate])
 
     // useEffect(() => {
     //     setUsersData(users)
@@ -74,7 +76,7 @@ export default function CreateAssignment() {
             })
             .catch((error) => {
                 setIsSaving(false)
-                // console.log(error.response)
+                setErrorMessage(error?.response?.data?.message)
                 setShowModalError(true)
             })
     }
@@ -91,7 +93,7 @@ export default function CreateAssignment() {
         }).catch(error => console.log(error.response))
     }
 
-    const fetchAssets = () => {
+    const fetchAvailableAssets = () => {
         get(`/asset/available?startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
                 setAssets(response.data)
@@ -110,7 +112,10 @@ export default function CreateAssignment() {
 
     const handleAssetDisplay = () => {
         if (userDisplay === true) setUserDisplay(false)
-        if (assetDisplay === false) setAssetDisplay(true)
+        if (assetDisplay === false) {
+            fetchAvailableAssets()
+            setAssetDisplay(true)
+        }
     }
 
     const handleCancel = () => {
@@ -124,16 +129,6 @@ export default function CreateAssignment() {
                     document.getElementById(u.staffCode).checked = false;
             })
         }
-
-        // uncheck checkbox assets
-        // selectedAssets.forEach((a) => {
-        //     document.getElementById(a.assetCode).checked = true;
-        // })
-
-        // selectingAssets.forEach((a) => {
-        //     if (document.getElementById(a.assetCode))
-        //         document.getElementById(a.assetCode).checked = false;
-        // })
 
         setUserDisplay(false)
         setAssetDisplay(false)
@@ -152,7 +147,6 @@ export default function CreateAssignment() {
     const userChange = (e) => {
         let staffCode = e.target.value;
         let u = users.find(u => u.staffCode === staffCode)
-        // document.getElementById(staffCode).checked = true
         setSelectingUser(u)
     }
 
@@ -168,18 +162,18 @@ export default function CreateAssignment() {
     }
 
     const handleSearchChangeUser = (e) => {
-        let keySearch = e.target.value;
+        let keySearch = removeAccents(normalizeString(e.target.value))
         let newData = users.filter(e => (
-            e.staffCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.fullName.toLowerCase().includes(keySearch.toLowerCase())))
+            e.staffCode.toLowerCase().includes(keySearch)
+            || e.fullName.toLowerCase().includes(keySearch)))
         setUsersData(newData)
     }
 
     const handleSearchChangeAsset = (e) => {
-        let keySearch = e.target.value;
+        let keySearch = removeAccents(normalizeString(e.target.value))
         let newData = assets.filter(e => (
-            e.assetCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.assetName.toLowerCase().includes(keySearch.toLowerCase())
+            e.assetCode.toLowerCase().includes(keySearch)
+            || e.assetName.toLowerCase().includes(keySearch)
         ))
         setAssetsData(newData)
     }
@@ -545,7 +539,7 @@ export default function CreateAssignment() {
             </Col>
             <ModalNotification
                 title={"Cannot create this assignment"}
-                content={"The assets may not be available in this time! Please check again"}
+                content={errorMessage}
                 show={showModalError}
                 setShow={setShowModalError}
             />
