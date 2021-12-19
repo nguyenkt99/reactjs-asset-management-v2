@@ -8,10 +8,9 @@ import {
   DropdownItem, Input, FormGroup, Label, Row, Col, Button, Modal, ModalHeader, ModalBody
 } from 'reactstrap';
 import { MdNotifications } from "react-icons/md";
-import { Redirect, Route, Switch, useHistory, Link, useRouteMatch } from 'react-router-dom';
+import { Redirect, Route, Switch, useHistory, Link } from 'react-router-dom';
 import { get } from '../../httpHelper';
 import authService from '../../services/auth.service';
-import { EndPointRedirect } from '../../EndPointRedirect';
 import Menu from '../Menu/index';
 import UserAssignment from '../User/home'
 import ListUser from '../Admin/component/ManageUser/ListUser'
@@ -42,11 +41,7 @@ function Home() {
   const history = useHistory();
   const user = authService.getCurrentUser() ? authService.getCurrentUser() : ''
   const { location } = history;
-  const [isOpen, setIsOpen] = useState(false);
-  const [navbarName, setnavbarName] = useState('');
   const [modal, setModal] = useState(false);
-
-  const toggle = () => setIsOpen(!isOpen);
   const toggleModal = () => setModal(!modal);
 
   const [modalpw, setModalpw] = useState(false);
@@ -56,7 +51,6 @@ function Home() {
   const toggleModalProfile = () => setModalProfile(!modalProfile);
 
   const [profile, setProfile] = useState();
-  // const [notifications, setNotifications] = useState([])
 
   // context
   const { showToastNotify, setShowToastNotify, notifications, clickedNotify, setClickedNotify } = React.useContext(AppContext);

@@ -41,7 +41,7 @@ export default function ChatMessage() {
     useEffect(() => {
         if (selectedConversation?.id)
             fetchMessages(selectedConversation.id)
-        else 
+        else
             setMessages([])
     }, [selectedConversation])
 
@@ -118,37 +118,19 @@ export default function ChatMessage() {
         // }
     }
 
-    // const renderConversations = (newMessage, type = 'SEND') => {
-    //     const isSeen = type === 'RECEIVE' ? false : true
-    //     let newConversations = [...conversations]
-    //     let index = conversations.findIndex(c => c.id === newMessage.conversationId
-    //         || (c.username1 === currentUser.username && c.username2 === newMessage.sender) || (c.username1 === newMessage.sender && c.username2 === currentUser.username))
-    //     if (index === -1) {
-    //         const newConversation = {
-    //             id: newMessage.conversationId,
-    //             username1: newMessage.sender,
-    //             fullName1: newMessage.fullName,
-    //             lastMessage: newMessage.content,
-    //             time: newMessage.time,
-    //             isSeen: false
-    //         }
-    //         newConversations = [newConversation, ...newConversations]
-    //     } else {
-    //         newConversations[index] = { ...newConversations[index], lastMessage: newMessage.content, time: newMessage.time, isSeen: isSeen }
-    //         newConversations.unshift(newConversations.splice(index, 1)[0])
-    //     }
-
-    //     setConversations(newConversations)
-    // }
-
     const renderConversations = (newMessage) => {
+        console.log(newMessage)
         let newConversations = [...conversations]
         const isSeen = newMessage.sender === currentUser.username ? true : false
         let index = conversations.findIndex(c => {
-            return c.id === newMessage.conversationId
-                || (c.username1 === currentUser.username && c.username1 === newMessage.sender)
-                || (c.username1 === currentUser.username && c.username2 === newMessage.sender)
-                || (c.username1 === newMessage.sender && c.username2 === currentUser.username)
+            if (c.id) {
+                if (c.id === newMessage.conversationId) return true
+            } else {
+                if ((c.username1 === currentUser.username && c.username1 === newMessage.sender && c.username2 === selectedConversation.username2))
+                    return true
+                // || (c.username2 === newMessage.sender && c.username1 === currentUser.username && c.username2 === selectedConversation.username2))
+            }
+            return false
         })
 
         if (index === -1) { // receive new conversation
@@ -162,6 +144,7 @@ export default function ChatMessage() {
             }
             newConversations = [newConversation, ...conversations]
         } else {
+            console.log(index)
             newConversations[index] = {
                 ...newConversations[index],
                 id: newMessage.conversationId,
@@ -171,40 +154,8 @@ export default function ChatMessage() {
             }
             newConversations.unshift(newConversations.splice(index, 1)[0])
         }
-        console.log(newConversations)
         setConversations(newConversations)
     }
-
-    // const handleReceiveMessage = (message) => {
-    //     // use for new conversation (be sent to mine!!!) to get new conversation Id
-    //     if (message.sender === currentUser?.username && selectedConversation?.id === null) {
-    //         let newConversations = [...conversations]
-    //         const index = conversations.findIndex(c => c.id === null)
-    //         let newConversation = newConversations.splice(index, 1)[0]
-    //         newConversation = {
-    //             ...newConversation,
-    //             id: message.conversationId,
-    //             fullName1: message.fullName,
-    //             lastMessage: message.content,
-    //             time: message.time,
-    //             sender: message.sender,
-    //         }
-
-    //         setConversations([newConversation, ...newConversations])
-    //         setSelectedConversation(newConversation)
-    //     }
-
-    //     // render conservation
-    //     if (message.sender !== currentUser?.username) {
-    //         renderConversations(message, 'RECEIVE')
-    //     } else {
-    //         renderConversations(message)
-    //     }
-
-    //     // render chat window when receive message
-    //     if (message.sender === getUserIsChating(selectedConversation)?.username)
-    //         setMessages([...messages, message])
-    // }
 
     const getUserIsChating = (conversation) => {
         if (conversation) {
@@ -223,10 +174,10 @@ export default function ChatMessage() {
 
     const handleReceiveMessage = (message) => {
         // set conversationId for selectedConversation
-        if(!selectedConversation.id && selectedConversation.username1 === message.sender) {
-            setSelectedConversation({...selectedConversation, id: message.conversationId})
+        if (!selectedConversation?.id && selectedConversation?.username1 === message.sender) {
+            setSelectedConversation({ ...selectedConversation, id: message.conversationId })
         }
-        
+
         // render conservation
         renderConversations(message)
 

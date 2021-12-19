@@ -19,14 +19,10 @@ export default function AssignedAssignments() {
     const [isOpenDatePicker, setIsOpenDatePicker] = useState(false)
 
     const [dataReport, setDataReport] = useState([]);
-    const [categoryASC, setCategoryASC] = useState(false);
-    const [totalASC, setTotalASC] = useState(false);
-    const [assignedASC, setAssignedASC] = useState(false);
-    const [availableASC, setAvailableASC] = useState(false);
-    const [notAvailableASC, setNotAvailableASC] = useState(false);
-    const [repairingASC, setRepairingASC] = useState(false);
-    const [watingForRecycleASC, setWatingForRecycleASC] = useState(false);
-    const [recycledASC, setRecycledASC] = useState(false);
+    const [assetCodeASC, setAssetCodeASC] = useState(false);
+    const [assetNameASC, setAssetNameASC] = useState(false);
+    const [assignedToASC, setAssignedToASC] = useState(false);
+    const [assignedByASC, setAssignedByASC] = useState(false);
 
     useEffect(() => {
         fetchReport();
@@ -68,38 +64,22 @@ export default function AssignedAssignments() {
     const handleSort = (key) => {
         let reverse = -1;
         let list = [];
-        if (key === SORT_BY.CATEGORY) {
-            reverse = categoryASC ? -1 : 1;
-            setCategoryASC(!categoryASC);
-            list = report.slice().sort((a, b) => (a.category > b.category) ? 1 * reverse : ((b.category > a.category) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.TOTAL) {
-            reverse = totalASC ? -1 : 1;
-            setTotalASC(!totalASC)
-            list = report.slice().sort((a, b) => (a.total > b.total) ? 1 * reverse : ((b.total > a.total) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.ASSIGNED) {
-            reverse = assignedASC ? -1 : 1;
-            setAssignedASC(!assignedASC)
-            list = report.slice().sort((a, b) => (a.assigned > b.assigned) ? 1 * reverse : ((b.assigned > a.assigned) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.AVAILABLE) {
-            reverse = availableASC ? -1 : 1;
-            setAvailableASC(!availableASC)
-            list = report.slice().sort((a, b) => (a.available > b.available) ? 1 * reverse : ((b.available > a.available) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.NOT_AVAILABLE) {
-            reverse = notAvailableASC ? -1 : 1;
-            setNotAvailableASC(!notAvailableASC)
-            list = report.slice().sort((a, b) => (a.notAvailable > b.notAvailable) ? 1 * reverse : ((b.notAvailable > a.notAvailable) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.REPAIRING) {
-            reverse = repairingASC ? -1 : 1;
-            setRepairingASC(!repairingASC)
-            list = report.slice().sort((a, b) => (a.repairing > b.repairing) ? 1 * reverse : ((b.repairing > a.repairing) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.WAITING_FOR_RECYCLING) {
-            reverse = watingForRecycleASC ? -1 : 1;
-            setWatingForRecycleASC(!watingForRecycleASC)
-            list = report.slice().sort((a, b) => (a.waitingForRecycle > b.waitingForRecycle) ? 1 * reverse : ((b.waitingForRecycle > a.waitingForRecycle) ? -1 * reverse : 0))
-        } else if (key === SORT_BY.RECYCLED) {
-            reverse = recycledASC ? -1 : 1;
-            setRecycledASC(!recycledASC)
-            list = report.slice().sort((a, b) => (a.recycled > b.recycled) ? 1 * reverse : ((b.recycled > a.recycled) ? -1 * reverse : 0))
+        if (key === SORT_BY.ASSET_CODE) {
+            reverse = assetCodeASC ? -1 : 1;
+            setAssetCodeASC(!assetCodeASC);
+            list = report.slice().sort((a, b) => (a.assetCode> b.assetCode) ? 1 * reverse : ((b.assetCode> a.assetCode) ? -1 * reverse : 0))
+        } else if (key === SORT_BY.ASSET_NAME) {
+            reverse = assetNameASC ? -1 : 1;
+            setAssetNameASC(!assetNameASC)
+            list = report.slice().sort((a, b) => (a.assetName > b.assetName) ? 1 * reverse : ((b.assetName > a.assetName) ? -1 * reverse : 0))
+        } else if (key === SORT_BY.ASSIGNED_BY) {
+            reverse = assignedToASC ? -1 : 1;
+            setAssignedToASC(!assignedToASC)
+            list = report.slice().sort((a, b) => (a.assignedBy > b.assignedBy) ? 1 * reverse : ((b.assignedBy > a.assignedBy) ? -1 * reverse : 0))
+        } else if (key === SORT_BY.ASSIGNED_TO) {
+            reverse = assignedByASC ? -1 : 1;
+            setAssignedByASC(!assignedByASC)
+            list = report.slice().sort((a, b) => (a.assignedTo > b.assignedTo) ? 1 * reverse : ((b.assignedTo > a.assignedTo) ? -1 * reverse : 0))
         }
         setReport(list);
     }
@@ -151,16 +131,16 @@ export default function AssignedAssignments() {
                 <Table className="content-table" responsive>
                     <thead>
                         <tr>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.CATEGORY)} >
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.ASSET_CODE)} >
                                 Asset Code <BsFillCaretDownFill />
                             </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.TOTAL)}>
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.ASSET_NAME)}>
                                 Asset Name <BsFillCaretDownFill cursor="pointer" />
                             </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.ASSIGNED)}>
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.ASSIGNED_BY)}>
                                 Assigned By <BsFillCaretDownFill cursor="pointer" />
                             </th>
-                            <th className="table-thead" onClick={() => handleSort(SORT_BY.AVAILABLE)}>
+                            <th className="table-thead" onClick={() => handleSort(SORT_BY.ASSIGNED_TO)}>
                                 Assigned To <BsFillCaretDownFill cursor="pointer" />
                             </th>
                         </tr>
@@ -183,12 +163,8 @@ export default function AssignedAssignments() {
 }
 
 const SORT_BY = {
-    CATEGORY: 'category',
-    TOTAL: 'total',
-    ASSIGNED: 'assigned',
-    AVAILABLE: 'available',
-    NOT_AVAILABLE: 'notAvailable',
-    REPAIRING: 'repairing',
-    WAITING_FOR_RECYCLING: 'waitingForRecycle',
-    RECYCLED: 'recycled'
+    ASSET_CODE: 'assetCode',
+    ASSET_NAME: 'assetName',
+    ASSIGNED_BY: 'assignedBy',
+    ASSIGNED_TO: 'assignedTo',
 }
