@@ -39,6 +39,13 @@ export default function ChatMessage() {
     }, [])
 
     useEffect(() => {
+        if (selectedConversation?.id)
+            fetchMessages(selectedConversation.id)
+        else 
+            setMessages([])
+    }, [selectedConversation])
+
+    useEffect(() => {
         setUsers(dataUsers.filter(u => u.fullName.toLowerCase().includes(searchValue.toLowerCase())
             || u.username.toLowerCase().includes(searchValue.toLowerCase())))
     }, [searchValue])
@@ -104,11 +111,11 @@ export default function ChatMessage() {
         if (!c.isSeen && c.id)
             post(`/conversation/${c.id}/seen`)
 
-        if (c.id) { // old conversation
-            fetchMessages(c.id)
-        } else { // new conversation then message is empty
-            setMessages([])
-        }
+        // if (c.id) { // old conversation
+        //     fetchMessages(c.id)
+        // } else { // new conversation then message is empty
+        //     setMessages([])
+        // }
     }
 
     // const renderConversations = (newMessage, type = 'SEND') => {
@@ -164,6 +171,7 @@ export default function ChatMessage() {
             }
             newConversations.unshift(newConversations.splice(index, 1)[0])
         }
+        console.log(newConversations)
         setConversations(newConversations)
     }
 
@@ -214,6 +222,11 @@ export default function ChatMessage() {
     }
 
     const handleReceiveMessage = (message) => {
+        // set conversationId for selectedConversation
+        if(!selectedConversation.id && selectedConversation.username1 === message.sender) {
+            setSelectedConversation({...selectedConversation, id: message.conversationId})
+        }
+        
         // render conservation
         renderConversations(message)
 

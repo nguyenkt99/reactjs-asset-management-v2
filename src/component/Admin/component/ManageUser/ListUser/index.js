@@ -341,7 +341,7 @@ export default function User() {
                 </Col>
                 <Col>
                     <div className="float-end">
-                        <Link className="btn" style={{ color: "#FFF", backgroundColor: '#CF2338', borderColor: '#CF2338' }} to="./create-user">Create new user</Link>
+                        <Link className="btn" style={{ color: "#FFF", backgroundColor: '#CF2338', borderColor: '#CF2338' }} to="/users/create">Create new user</Link>
                     </div>
                 </Col>
             </Row>
@@ -390,7 +390,7 @@ export default function User() {
                                     <td onClick={() => handleRowClick(u.staffCode)}>{STATEtoLowCase[u.state]}</td>
                                     <td>
                                         <div className="d-flex justify-content-evenly align-items-center">
-                                            <Link to={"/edit-user/" + u.staffCode} style={{ textDecoration: "none" }}>
+                                            <Link to={"/users/" + u.staffCode} style={{ textDecoration: "none" }}>
                                                 <GrEdit style={editIconStyle} />
                                             </Link>
                                             <CgCloseO style={deleteIconStyle} style={{ fontSize: "130%", color: "red", cursor: "pointer", }} onClick={() => handleDelete(u.staffCode)} id='close-btn' />

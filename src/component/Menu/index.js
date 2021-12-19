@@ -1,92 +1,195 @@
-import React, { useState } from "react";
-import { ListGroup, ListGroupItem } from 'reactstrap';
+import React from "react";
 import logo from '../../assets/Logo_lk.png';
 import '../../App.css';
 import "./Menu.css";
 import authService from "../../services/auth.service";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
-function Menu({ tableTab }) {
-  const [selected, setSelected] = useState(null);
-  const user = authService.getCurrentUser() ? authService.getCurrentUser() : ''
+function Menu() {
+    const user = authService.getCurrentUser() ? authService.getCurrentUser() : ''
 
-  function setSelectedItem(index) {
-    setSelected(index)
-    tableTab(index)
-    localStorage.setItem("selected", index)
-  }
+    // const menus = [
+    //     {
+    //         label: 'Home',
+    //         to: '/home',
+    //         exact: true,
+    //         isUser: true
+    //     },
+    //     {
+    //         label: 'Messenger',
+    //         to: '/messenger',
+    //         exact: false,
+    //         isUser: true
+    //     },
+    //     {
+    //         label: 'Request for Assigning',
+    //         to: '/request-assign',
+    //         exact: false,
+    //         isUser: true
+    //     },
+    //     {
+    //         label: 'Manage User',
+    //         to: '/manage-user',
+    //         exact: false
+    //     },
+    //     {
+    //         label: 'Manage Asset',
+    //         to: '/manage-asset',
+    //         exact: false
+    //     },
+    //     {
+    //         label: 'Manage Assignment',
+    //         to: '/manage-assignment',
+    //         exact: false
+    //     },
+    //     {
+    //         label: 'Request for Returning',
+    //         to: '/request-return',
+    //         exact: false
+    //     },
+    //     {
+    //         label: 'Manage Repair',
+    //         to: '/manage-repair',
+    //         exact: false
+    //     },
+    //     {
+    //         label: 'Report',
+    //         to: '/report/overview',
+    //         exact: false,
+    //         subMenus: [
+    //             {
+    //                 label: 'Overview',
+    //                 to: '/report/overview',
+    //                 exact: false,
+    //             },
+    //             {
+    //                 label: 'Assigned Assignments',
+    //                 to: '/report/assigned-assignments',
+    //                 exact: false,
+    //             }
+    //         ]
+    //     },
+    // ]
 
-  if (selected === null) {
-    const index = localStorage.getItem('selected') ? parseInt(localStorage.getItem('selected')) : 1
-    setSelectedItem(index)
-  }
-
-  return (
-    <div className="menu">
-      <img
-        src={logo}
-        className="menu-image"
-      />
-      <h3 className="menu-title">Online Asset Management</h3>
-      <ListGroup className="menu-list">
-        <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(1)} active={selected === 1}>
-          <Link to='/home' className="menu-item__link">Home</Link>
-        </ListGroupItem>
-        <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(9)} active={selected === 9}>
-          <Link to='/messenger' className="menu-item__link">Messenger</Link>
-        </ListGroupItem>
-        <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(7)} active={selected === 7}>
-          <Link to='/request-assign' className="menu-item__link">
-            Request for Assigning
-          </Link>
-        </ListGroupItem>
+    const menus = [
         {
-          user.role === 'ROLE_ADMIN' ?
-            <>
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(2)} active={selected === 2}>
-                <Link to='/manage-user' className="menu-item__link">Manage User</Link>
-              </ListGroupItem>
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(3)} active={selected === 3}>
-                <Link to='/manage-asset' className="menu-item__link">Manage Asset</Link>
-              </ListGroupItem>
-              {/* <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(7)} active={selected === 7}>
-                <Link to='/request-assign' className="menu-item__link">Request for Assigning</Link>
-              </ListGroupItem> */}
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(4)} active={selected === 4}>
-                <Link to='/manage-assignment' className="menu-item__link">Manage Assignment</Link>
-              </ListGroupItem>
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(5)} active={selected === 5}>
-                <Link to='/request-return' className="menu-item__link">Request for Returning</Link>
-              </ListGroupItem>
-              <ListGroupItem className="menu-item" action onClick={() => setSelectedItem(8)} active={selected === 8}>
-                <Link to='/manage-repair' className="menu-item__link">Manage Repair</Link>
-              </ListGroupItem>
-              <ListGroupItem className="menu-item menu-item-report" action onClick={() => setSelectedItem(6)} active={selected === 6}>
-                <Link to='/report/overview' className="menu-item__link ">
-                  Report
-                </Link>
-                <div className="sub-menu">
-                  <ul className="report-list">
-                    <li className="report-item">
-                      <Link to='/report/overview' className="menu-item__link">
-                        Overview
-                      </Link>
-                    </li>
-                    <li className="report-item">
-                      <Link to='/report/assigned-assignments' className="menu-item__link">
-                        Assigned Assignments
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </ListGroupItem>
-            </>
-            :
-            <></>
-        }
-      </ListGroup>
-    </div >
-  );
+            label: 'Home',
+            to: '/home',
+            exact: true,
+            isUser: true
+        },
+        {
+            label: 'Messenger',
+            to: '/messenger',
+            exact: false,
+            isUser: true
+        },
+        {
+            label: 'Request for Assigning',
+            to: '/assigns',
+            exact: false,
+            isUser: true
+        },
+        {
+            label: 'Manage User',
+            to: '/users',
+            exact: false
+        },
+        {
+            label: 'Manage Asset',
+            to: '/assets',
+            exact: false
+        },
+        {
+            label: 'Manage Assignment',
+            to: '/assignments',
+            exact: false
+        },
+        {
+            label: 'Request for Returning',
+            to: '/returns',
+            exact: false
+        },
+        {
+            label: 'Manage Repair',
+            to: '/repairs',
+            exact: false
+        },
+        {
+            label: 'Report',
+            to: '/reports/overview',
+            exact: false,
+            subMenus: [
+                {
+                    label: 'Overview',
+                    to: '/reports/overview',
+                    exact: false,
+                },
+                {
+                    label: 'Assigned Assignments',
+                    to: '/reports/assigned-assignments',
+                    exact: false,
+                }
+            ]
+        },
+    ]
+
+    const MenuLink = ({ label, to, exact, isSubMenu = false, children }) => {
+        return (
+            <li className={isSubMenu ? 'menu-item menu-item-report' : 'menu-item'}>
+                <NavLink to={to} exact={exact}>
+                    {label}
+                </NavLink>
+                {children}
+            </li>
+        )
+    }
+
+    const SubMenuLink = ({ label, to }) => {
+        return <>
+            <li className="menu-item">
+                <NavLink to={to} className="menu-item__link">
+                    {label}
+                </NavLink>
+            </li>
+
+        </>
+    }
+
+
+    return (
+        <div className="menu">
+            <img src={logo} className="menu-image" alt="logo" />
+            <h3 className="menu-title">Online Asset Management</h3>
+            <ul className="menu-list">
+                {user.role === 'ROLE_ADMIN' ?
+                    menus.map(m => {
+                        if (!m.subMenus) {
+                            return <MenuLink label={m.label} to={m.to} exact={m.exact}/>
+                        } else {
+                            return <>
+                                <MenuLink label={m.label} to={m.to} exact={m.exact} isSubMenu={true}>
+                                    <div className="sub-menu">
+                                        <ul className="report-list">
+                                            {m.subMenus.map(s => (
+                                                <SubMenuLink label={s.label} to={s.to} />
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </MenuLink>
+                            </>
+                        }
+
+                    })
+                    :
+                    menus.filter(m => m.isUser).map(m => {
+                        return <MenuLink label={m.label} to={m.to} />
+                    })
+
+                }
+            </ul>
+        </div >
+    );
 }
 
 export default Menu;

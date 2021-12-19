@@ -270,7 +270,7 @@ export default function ListAssignment() {
           && assignment.assignedDate !== moment(new Date()).format('DD/MM/YYYY')) {
           setShowModalError(true)
         } else {
-          history.push('/edit-assignment/' + id)
+          history.push('/assignments/' + id)
         }
       })
       .catch((error) => {
@@ -364,7 +364,7 @@ export default function ListAssignment() {
         </Col>
         <Col>
           <div className="float-end">
-            <Link className="btn" style={{ color: "#FFF", backgroundColor: '#CF2338', borderColor: '#CF2338' }} to="./create-assignment">Create new assignment</Link>
+            <Link className="btn" style={{ color: "#FFF", backgroundColor: '#CF2338', borderColor: '#CF2338' }} to="/assignments/create">Create new assignment</Link>
           </div>
         </Col>
       </Row>

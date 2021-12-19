@@ -8,7 +8,7 @@ import {
   DropdownItem, Input, FormGroup, Label, Row, Col, Button, Modal, ModalHeader, ModalBody
 } from 'reactstrap';
 import { MdNotifications } from "react-icons/md";
-import { Redirect, Route, Switch, useHistory, Link } from 'react-router-dom';
+import { Redirect, Route, Switch, useHistory, Link, useRouteMatch } from 'react-router-dom';
 import { get } from '../../httpHelper';
 import authService from '../../services/auth.service';
 import { EndPointRedirect } from '../../EndPointRedirect';
@@ -62,8 +62,9 @@ function Home() {
   const { showToastNotify, setShowToastNotify, notifications, clickedNotify, setClickedNotify } = React.useContext(AppContext);
 
   useEffect(() => {
-    EndPointRedirect();
-
+    // EndPointRedirect();
+    if (!authService.getCurrentUser())
+      handleLogout()
   }, []);
 
   const handleShowProfile = () => {
@@ -77,67 +78,47 @@ function Home() {
       });
   }
 
-  // const fetchNotifications = () => {
-  //   get('/firebase/notifications')
-  //     .then(res => {
-  //       setNotifications(res.data)
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // }
-
   function handleLogout() {
     authService.logout();
     history.push('/login');
   }
 
-  const tableTab = (index) => {
-    switch (index) {
-      // HOME
-      case 1:
-        return setnavbarName('Home');
-      // Manage User
-      case 2:
-        return setnavbarName('Manage User');
-      //Manage Asset
-      case 3:
-        return setnavbarName('Manage Asset');
-      //Manage Assignment
-      case 4:
-        return setnavbarName('Manage Assignment');
-      //Request for Returning
-      case 5:
-        return setnavbarName('Request for Returning');
-      //Report
-      case 6:
-        return setnavbarName('Report');
-      case 7:
-        return setnavbarName('Request for Assigning');
-      case 8:
-        return setnavbarName('Manage Repair');
-      default:
-        console.error('Some thing wrong!!!');
-    }
-  };
-
   let path
-  if (location.pathname.split('/')[1] === "edit-user")
-    path = navbarName + " > Edit User";
-  else if (location.pathname.split('/')[1] === "edit-asset")
-    path = navbarName + " > Edit Asset"
-  else if (location.pathname.split('/')[1] === "create-asset")
-    path = navbarName + " > Create Asset"
-  else if (location.pathname.split('/')[1] === "create-user")
-    path = navbarName + " > Create User"
-  else if (location.pathname.split('/')[1] === "create-assignment")
-    path = navbarName + " > Create New Assignment"
-  else if (location.pathname.split('/')[1] === "edit-assignment")
-    path = navbarName + " > Edit Assignment"
-  else if (location.pathname.split('/')[1] === "/create-request-assign")
-    path = navbarName + " > Create request for assigning"
-  else path = navbarName;
-
+  if (location.pathname.includes('home')) {
+    path = "Home"
+  } else if (location.pathname.includes('messenger')) {
+    path = "Messenger"
+  } else if (location.pathname.includes('assigns')) {
+    path = "Request for Assigning"
+  } else if (location.pathname.includes('user')) {
+    path = "Manage User"
+    if (location.pathname.includes('users/create'))
+      path += " > Create User";
+    else if (location.pathname.includes('users/SD'))
+      path += " > Edit User";
+  } else if (location.pathname.includes('assets')) {
+    path = "Manage Asset"
+    if (location.pathname.includes('assets/create'))
+      path += " > Create Asset";
+    else if (location.pathname.includes('assets/'))
+      path += " > Edit Asset";
+  } else if (location.pathname.includes('/assignments')) {
+    path = "Manage Assignment"
+    if (location.pathname.includes('assignments/create'))
+      path += " > Create Assignment";
+    else if (location.pathname.includes('assignments/'))
+      path += " > Edit Assignment";
+  } else if (location.pathname.includes('returns')) {
+    path = "Request for Returning"
+  } else if (location.pathname.includes('repairs')) {
+    path = "Manage Repair"
+  } else if (location.pathname.includes('reports')) {
+    path = "Report"
+    if (location.pathname.includes('overview'))
+      path += " > Overview";
+    else if (location.pathname.includes('assigned-assignments'))
+      path += " > Assigned Assignemts";
+  }
 
   const handleSeen = (id) => {
     setClickedNotify(false)
@@ -145,11 +126,6 @@ function Home() {
       "isSeen": true
     })
   }
-
-  // const handleCloseToastNotify = () => {
-  //   setShowToastNotify(false)
-  //   setClickedNotify(null)
-  // }
 
   return (
     <div className="Home">
@@ -172,12 +148,11 @@ function Home() {
                     <ul className="navbar__notify-list">
                       {notifications.map((n) => (
                         <li key={n.id} className={n?.isSeen ? "navbar__notify-item" : "navbar__notify-item navbar__notify-item--unviewed"}>
-                          <Link className="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/request-assign' : '/request-return'} onClick={() => handleSeen(n.id)}>
+                          <Link className="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/request-assign' : n.type === 'ASSIGNMENT' ? '/manage-assignment' : '/request-return'} onClick={() => handleSeen(n.id)}>
                             <img src={n.type === 'REQUEST_ASSIGN' ? ReturnAssignImage
                               : n.type === 'REQUEST_RETURN' ? ReturnImage : AssignmentImage} alt="USB Kingston"
                               className="navbar__notify-img" />
                             <div className="navbar__notify-info">
-                              {/* <span className="navbar__notify-name">{n.type}</span> */}
                               <span className="navbar__notify-description">{n.title}</span>
                               <span className="navbar__notify-time">{moment.utc(n.createdDate.seconds * 1000).local().startOf('seconds').fromNow()}</span>
                             </div>
@@ -186,7 +161,7 @@ function Home() {
                       ))}
                     </ul>
                     <footer className="navbar__notify-footer">
-                      <a href="" className="navbar__notify-footer-btn">View all</a>
+                      <span href="" className="navbar__notify-footer-btn">View all</span>
                     </footer>
                   </div>
                 </NavItem>
@@ -211,78 +186,44 @@ function Home() {
       <div className="grid">
         <Row>
           <Col xs="2">
-            <Menu tableTab={tableTab} />
+            <Menu />
           </Col>
           <Col xs="10">
             <div className="app-content">
               <Switch>
                 <Route path="/messenger/:username" component={ChatMessage} />
-                <Route path='/messenger'>
-                  <ChatMessage />
-                </Route>
-                <Route path='/home'>
-                  <UserAssignment />
-                </Route>
-                <Route path='/manage-user'>
-                  <ListUser />
-                </Route>
-                <Route path="/edit-user/:staffCode" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <EditUser />
-                }}>
-                </Route>
-                <Route path="/manage-asset">
-                  <ManagerAsset />
-                </Route>
-                <Route path="/manage-assignment">
-                  <ManagerAssignment />
-                </Route>
-                <Route path='/create-user'>
-                  <CreateUser />
-                </Route>
-                <Route path='/create-asset'>
-                  <CreateAsset />
-                </Route>
-                <Route path="/edit-asset/:assetCode" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <EditAsset />
-                }} />
-                <Route path="/create-assignment" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <CreateAssignment />
-                }} />
-                {/* <Route path="/edit-assignment/:assignmentId" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <EditAssignment />
-                }} /> */}
-                <Route path="/edit-assignment/:assignmentId" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <EditAssignment />
-                }} />
-                <Route path="/request-return" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <RequestReturn />
-                  else return <Redirect to="/home" />
-                }} />
-                <Route path="/report/overview" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <Overview />
-                  else return <Redirect to="/home" />
-                }} />
-                <Route path="/report/assigned-assignments" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <AssignedAssignments />
-                  else return <Redirect to="/home" />
-                }} />
-                <Route path="/request-assign" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <RequestForAssigning />
-                  else if (user.role === "ROLE_STAFF") return <RequestAssignUser />
-                  else return <Redirect to="/home" />
-                }} />
-                <Route path="/create-request-assign" render={() => {
-                  if (user.role === "ROLE_STAFF") return <CreateRequestAssign />
-                  else return <Redirect to="/home" />
-                }} />
-                <Route path="/edit-request-assign/:requestId" render={() => {
-                  if (user.role === "ROLE_STAFF") return <EditRequestAssign />
-                  else return <Redirect to="/home" />
-                }} />
-                <Route path="/manage-repair" render={() => {
-                  if (user.role === "ROLE_ADMIN") return <ManageRepair />
-                  else return <Redirect to="/home" />
-                }} />
+                <Route path='/messenger' component={ChatMessage} />
+                <Route path='/home' component={UserAssignment} />
+
+
+                {user.role === "ROLE_ADMIN" ?
+                  <>
+                    <Route path="/assigns" component={RequestForAssigning} />
+                    <Route path="/users" component={ListUser} />
+                    <Route path="/users/create" component={CreateUser} />
+                    <Route path="/users/:staffCode"component={EditUser} />
+                    {/* <Route path="/assets" exact={true} component={ManagerAsset} />
+                    <Route path="/assets/create" exact={true} component={CreateAsset} />
+                    <Route path="/assets/:assetCode" exact={true} component={EditAsset} />
+                    <Route path="/assignments" exact={true} component={ManagerAssignment} />
+                    <Route path="/assignments/create" exact={true} component={CreateAssignment} />
+                    <Route path="/assignments/:assignmentId" exact={true} component={EditAssignment} />
+                    <Route path="/returns" exact={true} component={RequestReturn} />
+                    <Route path="/repairs" exact={true} component={ManageRepair} />
+                    <Route path="/reports/overview" exact={true} component={Overview} />
+                    <Route path="/reports/assigned-assignments" exact={true} component={AssignedAssignments} /> */}
+                  </>
+                  :
+                  user.role === "ROLE_STAFF" ?
+                    <>
+                      {console.log(user.role)}
+                      <Route path="/assigns" exact={true} component={RequestAssignUser} />
+                      <Route path="/assigns/create" exact={true} component={CreateRequestAssign} />
+                      <Route path="/assigns/:requestId" exact={true} component={EditRequestAssign} />
+                    </>
+                    :
+                    <Redirect to="/home" />
+                }
               </Switch>
             </div>
           </Col>
@@ -387,7 +328,7 @@ function Home() {
           style={{ fontSize: '1.4rem' }}
           onClose={() => setShowToastNotify(false)}
           show={clickedNotify !== null ? false : showToastNotify}
-          delay={10000}
+          delay={7000}
           autohide
         >
           <Toast.Header>

@@ -81,6 +81,7 @@ function EditUser(props) {
 
     const staffCode = props.match.params.staffCode;
     const fetchUser = () => {
+        console.log(props.match.params.staffCode)
         get(`/user/${staffCode}`)
             .then((res) => {
                 let dOB = res.data.dateOfBirth.split("/").reverse().join("-")
@@ -102,7 +103,7 @@ function EditUser(props) {
             .catch((error) => {
                 console.log(error)
                 history.push({
-                    pathname: '/manage-user',
+                    pathname: '/users',
                 });
             })
     }

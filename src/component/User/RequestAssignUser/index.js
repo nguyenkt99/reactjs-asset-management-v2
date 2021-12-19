@@ -152,7 +152,7 @@ export default function RequestAssignUser() {
             <h3 className="content-title">Request for Assigning List</h3>
             <Row>
                 <Col>
-                    <Link className="btn btn-danger float-end" to="/create-request-assign">
+                    <Link className="btn btn-danger float-end" to="/assigns/create">
                         Create request for assigning
                     </Link>
                 </Col>
@@ -205,14 +205,14 @@ export default function RequestAssignUser() {
                                         <div className="d-flex justify-content-evenly">
                                             {r.state === STATE.WAITING_FOR_ASSIGNING ?
                                                 <>
-                                                    <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-request-assign/' + r.id}>
+                                                    <Link style={{ textDecoration: 'none', color: '#000' }} to={'/assigns/' + r.id}>
                                                         <GrEditCus />
                                                     </Link>
                                                     <FontAwesomeIcon style={{ cursor: "pointer" }} size="lg" icon={faTimes} onClick={() => onClickDeleteRequest(r.id)} />
                                                 </>
                                                 :
                                                 <>
-                                                    <Link style={{ textDecoration: 'none', color: '#ccc' }} to={'/edit-request-assign/' + r.id}>
+                                                    <Link style={{ textDecoration: 'none', color: '#ccc' }} to={'/assigns/' + r.id}>
                                                         <GrEditCus />
                                                     </Link>
                                                     <FontAwesomeIcon color="#ccc" size="lg" icon={faTimes} />

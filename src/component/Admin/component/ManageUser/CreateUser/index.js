@@ -59,6 +59,7 @@ export default function CreateUser() {
     useEffect(() => {
         fetchDepartments();
         fetchRoles();
+        console.log('vao ne')
     }, [])
 
     const fetchRoles = () => {
@@ -216,7 +217,7 @@ export default function CreateUser() {
         post('/user', formData)
             .then((res) => {
                 history.push({
-                    pathname: './manage-user',
+                    pathname: './users',
                     state: {
                         staffCode: res.data.staffCode
                     }
@@ -659,7 +660,7 @@ export default function CreateUser() {
                         <Form.Group as={Row} className="mb-4 float-end">
                             <Col >
                                 {saveButton()}
-                                <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="./manage-user">Cancel</Link>
+                                <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="./users">Cancel</Link>
                             </Col>
                         </Form.Group>
                     </Form>

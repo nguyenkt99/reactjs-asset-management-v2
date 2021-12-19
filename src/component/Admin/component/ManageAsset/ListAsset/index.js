@@ -395,7 +395,7 @@ export default function ListAsset() {
         </Col>
         <Col>
           <div className='float-end'>
-            <Link className='btn' style={{ color: '#FFF', backgroundColor: '#CF2338', borderColor: '#CF2338' }} to='./create-asset'> Create new asset</Link>
+            <Link className='btn' style={{ color: '#FFF', backgroundColor: '#CF2338', borderColor: '#CF2338' }} to='/assets/create'> Create new asset</Link>
           </div>
         </Col>
       </Row>
@@ -448,7 +448,7 @@ export default function ListAsset() {
                         {(a.state !== STATE.Repairing && a.state !== STATE.Assigned) ?
                           <>
                             <GiAutoRepair style={{ fontSize: "130%", cursor: "pointer" }} onClick={() => handleClickRepair(a.assetCode)} />
-                            <Link to={'/edit-asset/' + a.assetCode}>
+                            <Link to={'/assets/' + a.assetCode}>
                               <GrEdit style={editIconStyle} />
                             </Link>
                             <CgCloseO style={deleteIconStyle} onClick={() => handleDeleteClick(a)} />
