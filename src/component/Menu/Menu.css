@@ -48,7 +48,7 @@
     position: absolute;
     width: 180px;
     left: calc(100% + 2px);
-    bottom: 0;
+    top: 0;
     background-color: #eff1f5;
     display: none;
 }
@@ -57,7 +57,7 @@
     content: "";
     display: block;
     position: absolute;
-    bottom: 0;
+    top: 0;
     left: -4px;
     width: 8px;
     height: 40px;

@@ -270,7 +270,7 @@ export default function ListAssignment() {
           && assignment.assignedDate !== moment(new Date()).format('DD/MM/YYYY')) {
           setShowModalError(true)
         } else {
-          history.push('/assignments/' + id)
+          history.push('/assignments/edit/' + id)
         }
       })
       .catch((error) => {
@@ -426,11 +426,13 @@ export default function ListAssignment() {
                     <td>
                       <div className='d-flex justify-content-evenly align-items-center'>
                         {a.state === 'WAITING_FOR_ACCEPTANCE' || a.state === 'ACCEPTED' ? (
-                          // <Link style={{ textDecoration: 'none', color: '#000' }} to={'/edit-assignment/' + a.id}>
+                          // <Link style={{ textDecoration: 'none', color: '#000' }} to={'/assignments/edit/' + a.id}>
+
+                          //   <GrEditCus />
+                          // </Link>
                           <span style={{ cursor: "pointer" }} onClick={() => handleOnClickEditAssignment(a.id)} >
                             <GrEditCus />
                           </span>
-                          // </Link>
                         ) : (
                           <GrEditCus color='#ccc' />
                         )}
@@ -694,11 +696,11 @@ export default function ListAssignment() {
           </Table>
         </Modal.Body>
         <Modal.Footer>
-          <Button style={{width: "60px"}} variant='danger' disabled={isLoading} onClick={handleCreateRequestReturn}>
+          <Button style={{ width: "60px" }} variant='danger' disabled={isLoading} onClick={handleCreateRequestReturn}>
             {isLoading ? <Spinner animation="border" variant="light" /> : ""}
             Yes
           </Button>
-          <Button style={{width: "60px"}} variant='secondary' disabled={isLoading} onClick={() => setShowModalRequest(false)}>
+          <Button style={{ width: "60px" }} variant='secondary' disabled={isLoading} onClick={() => setShowModalRequest(false)}>
             No
           </Button>
         </Modal.Footer>

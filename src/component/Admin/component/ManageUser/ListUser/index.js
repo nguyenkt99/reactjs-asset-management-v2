@@ -390,7 +390,7 @@ export default function User() {
                                     <td onClick={() => handleRowClick(u.staffCode)}>{STATEtoLowCase[u.state]}</td>
                                     <td>
                                         <div className="d-flex justify-content-evenly align-items-center">
-                                            <Link to={"/users/" + u.staffCode} style={{ textDecoration: "none" }}>
+                                            <Link to={"/users/edit/" + u.staffCode} style={{ textDecoration: "none" }}>
                                                 <GrEdit style={editIconStyle} />
                                             </Link>
                                             <CgCloseO style={deleteIconStyle} style={{ fontSize: "130%", color: "red", cursor: "pointer", }} onClick={() => handleDelete(u.staffCode)} id='close-btn' />

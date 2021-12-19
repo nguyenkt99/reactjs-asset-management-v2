@@ -56,7 +56,7 @@ export default function CreateRequestAssign() {
         post('/request-assign', formData)
             .then((res) => {
                 history.push({
-                    pathname: '/request-assign',
+                    pathname: '/assigns',
                     state: {
                         id: res.data.id
                     }

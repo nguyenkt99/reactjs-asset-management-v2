@@ -217,7 +217,7 @@ export default function CreateUser() {
         post('/user', formData)
             .then((res) => {
                 history.push({
-                    pathname: './users',
+                    pathname: '/users',
                     state: {
                         staffCode: res.data.staffCode
                     }
@@ -566,7 +566,7 @@ export default function CreateUser() {
                                     <div className='list_below' style={{ display: display ? 'block' : 'none' }}>
                                         <ul id='list'>
                                             {departments.map((item) => (
-                                                <li className="category_item">
+                                                <li key={item.deptCode} className="category_item">
                                                     <span className="name_area" onClick={() => onChangeSelected(item)}>{item.name}</span>
                                                     <div className="icon_area">
                                                         <FaEdit className='times' onClick={() => handleClickEditDepartment(item)} />
@@ -660,7 +660,7 @@ export default function CreateUser() {
                         <Form.Group as={Row} className="mb-4 float-end">
                             <Col >
                                 {saveButton()}
-                                <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="./users">Cancel</Link>
+                                <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="/users">Cancel</Link>
                             </Col>
                         </Form.Group>
                     </Form>

@@ -7,70 +7,6 @@ import { NavLink } from "react-router-dom";
 
 function Menu() {
     const user = authService.getCurrentUser() ? authService.getCurrentUser() : ''
-
-    // const menus = [
-    //     {
-    //         label: 'Home',
-    //         to: '/home',
-    //         exact: true,
-    //         isUser: true
-    //     },
-    //     {
-    //         label: 'Messenger',
-    //         to: '/messenger',
-    //         exact: false,
-    //         isUser: true
-    //     },
-    //     {
-    //         label: 'Request for Assigning',
-    //         to: '/request-assign',
-    //         exact: false,
-    //         isUser: true
-    //     },
-    //     {
-    //         label: 'Manage User',
-    //         to: '/manage-user',
-    //         exact: false
-    //     },
-    //     {
-    //         label: 'Manage Asset',
-    //         to: '/manage-asset',
-    //         exact: false
-    //     },
-    //     {
-    //         label: 'Manage Assignment',
-    //         to: '/manage-assignment',
-    //         exact: false
-    //     },
-    //     {
-    //         label: 'Request for Returning',
-    //         to: '/request-return',
-    //         exact: false
-    //     },
-    //     {
-    //         label: 'Manage Repair',
-    //         to: '/manage-repair',
-    //         exact: false
-    //     },
-    //     {
-    //         label: 'Report',
-    //         to: '/report/overview',
-    //         exact: false,
-    //         subMenus: [
-    //             {
-    //                 label: 'Overview',
-    //                 to: '/report/overview',
-    //                 exact: false,
-    //             },
-    //             {
-    //                 label: 'Assigned Assignments',
-    //                 to: '/report/assigned-assignments',
-    //                 exact: false,
-    //             }
-    //         ]
-    //     },
-    // ]
-
     const menus = [
         {
             label: 'Home',
@@ -117,18 +53,18 @@ function Menu() {
         },
         {
             label: 'Report',
-            to: '/reports/overview',
+            to: '/reports',
             exact: false,
             subMenus: [
                 {
                     label: 'Overview',
                     to: '/reports/overview',
-                    exact: false,
+                    exact: true,
                 },
                 {
                     label: 'Assigned Assignments',
                     to: '/reports/assigned-assignments',
-                    exact: false,
+                    exact: true,
                 }
             ]
         },
@@ -136,7 +72,7 @@ function Menu() {
 
     const MenuLink = ({ label, to, exact, isSubMenu = false, children }) => {
         return (
-            <li className={isSubMenu ? 'menu-item menu-item-report' : 'menu-item'}>
+            <li key={to} className={isSubMenu ? 'menu-item menu-item-report' : 'menu-item'}>
                 <NavLink to={to} exact={exact}>
                     {label}
                 </NavLink>
@@ -147,7 +83,7 @@ function Menu() {
 
     const SubMenuLink = ({ label, to }) => {
         return <>
-            <li className="menu-item">
+            <li key={to} className="menu-item">
                 <NavLink to={to} className="menu-item__link">
                     {label}
                 </NavLink>

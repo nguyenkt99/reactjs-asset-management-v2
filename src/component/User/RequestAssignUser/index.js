@@ -212,7 +212,7 @@ export default function RequestAssignUser() {
                                                 </>
                                                 :
                                                 <>
-                                                    <Link style={{ textDecoration: 'none', color: '#ccc' }} to={'/assigns/' + r.id}>
+                                                    <Link style={{ textDecoration: 'none', color: '#ccc' }} to={'/assigns/edit/' + r.id}>
                                                         <GrEditCus />
                                                     </Link>
                                                     <FontAwesomeIcon color="#ccc" size="lg" icon={faTimes} />

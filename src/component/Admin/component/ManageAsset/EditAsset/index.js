@@ -130,7 +130,7 @@ function EditAsset(props) {
     put(`/asset/${assetCode}`, inputs)
       .then((res) => {
         history.push({
-          pathname: '/manage-asset',
+          pathname: '/assets',
           state: {
             assetCode: res.data.assetCode,
           },
@@ -284,12 +284,12 @@ function EditAsset(props) {
               <Button variant='danger' type='submit' disabled={!preSave()}>
                 Save
               </Button>
-              <Link
+              <span
                 className='btn btn-outline-secondary'
                 style={{ marginLeft: '40px' }}
-                to='/manage-asset'>
+                onClick={() => history.goBack()}>
                 Cancel
-              </Link>
+              </span>
             </Col>
           </Form.Group>
         </Form>

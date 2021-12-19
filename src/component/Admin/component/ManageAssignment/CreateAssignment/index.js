@@ -68,7 +68,7 @@ export default function CreateAssignment() {
         post('/assignment', formData)
             .then((res) => {
                 history.push({
-                    pathname: './manage-assignment',
+                    pathname: '/assignments',
                     state: {
                         id: res.data.id
                     }
@@ -532,7 +532,11 @@ export default function CreateAssignment() {
                     <Form.Group as={Row} className="float-end mb-3">
                         <Col>
                             {saveButton()}
-                            <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="./manage-assignment">Cancel</Link>
+                            <span
+                                className="btn btn-outline-secondary"
+                                style={{ marginLeft: "40px" }}
+                                onClick={() => history.goBack()}>Cancel
+                            </span>
                         </Col>
                     </Form.Group>
                 </Form>

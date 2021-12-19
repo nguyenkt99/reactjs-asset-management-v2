@@ -448,7 +448,7 @@ export default function ListAsset() {
                         {(a.state !== STATE.Repairing && a.state !== STATE.Assigned) ?
                           <>
                             <GiAutoRepair style={{ fontSize: "130%", cursor: "pointer" }} onClick={() => handleClickRepair(a.assetCode)} />
-                            <Link to={'/assets/' + a.assetCode}>
+                            <Link to={'/assets/edit/' + a.assetCode}>
                               <GrEdit style={editIconStyle} />
                             </Link>
                             <CgCloseO style={deleteIconStyle} onClick={() => handleDeleteClick(a)} />

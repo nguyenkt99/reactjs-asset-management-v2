@@ -45,7 +45,7 @@ function EditAssignment(props) {
     const match = useRouteMatch()
 
     useEffect(() => {
-        const promise = new Promise((resovle) => {
+    const promise = new Promise((resovle) => {
             resovle()
         })
 
@@ -104,7 +104,7 @@ function EditAssignment(props) {
         put(`/assignment/${assignment.id}`, formData)
             .then((res) => {
                 history.push({
-                    pathname: '/manage-assignment',
+                    pathname: '/assignments',
                     state: {
                         id: res.data.id
                     }
@@ -618,7 +618,7 @@ function EditAssignment(props) {
                                 name='note'
                                 as='textarea'
                                 maxLength={100}
-                                defaultValue={assignment && assignment.note}
+                                defaultValue={assignment?.note}
                                 value={note}
                                 onChange={(e) => { setNote(e.target.value) }}
                             />
@@ -627,7 +627,12 @@ function EditAssignment(props) {
                     <Form.Group as={Row} className="float-end mb-3">
                         <Col>
                             {saveButton()}
-                            <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/manage-assignment">Cancel</Link>
+                            <span
+                                className="btn btn-outline-secondary"
+                                style={{ marginLeft: "40px" }}
+                                onClick={() => history.goBack()}>
+                                Cancel
+                            </span>
                         </Col>
                     </Form.Group>
                 </Form>

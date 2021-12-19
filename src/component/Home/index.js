@@ -193,25 +193,24 @@ function Home() {
               <Switch>
                 <Route path="/messenger/:username" component={ChatMessage} />
                 <Route path='/messenger' component={ChatMessage} />
-                <Route path='/home' component={UserAssignment} />
-
-
+                {/* <Route path={['/', '/home']} component={UserAssignment} /> */}
+                <Route path="/home" component={UserAssignment} />
                 {user.role === "ROLE_ADMIN" ?
                   <>
-                    <Route path="/assigns" component={RequestForAssigning} />
-                    <Route path="/users" component={ListUser} />
-                    <Route path="/users/create" component={CreateUser} />
-                    <Route path="/users/:staffCode"component={EditUser} />
-                    {/* <Route path="/assets" exact={true} component={ManagerAsset} />
-                    <Route path="/assets/create" exact={true} component={CreateAsset} />
-                    <Route path="/assets/:assetCode" exact={true} component={EditAsset} />
-                    <Route path="/assignments" exact={true} component={ManagerAssignment} />
-                    <Route path="/assignments/create" exact={true} component={CreateAssignment} />
-                    <Route path="/assignments/:assignmentId" exact={true} component={EditAssignment} />
-                    <Route path="/returns" exact={true} component={RequestReturn} />
-                    <Route path="/repairs" exact={true} component={ManageRepair} />
-                    <Route path="/reports/overview" exact={true} component={Overview} />
-                    <Route path="/reports/assigned-assignments" exact={true} component={AssignedAssignments} /> */}
+                    <Route path="/assigns" exact component={RequestForAssigning} />
+                    <Route path="/users" exact component={ListUser} />
+                    <Route path="/users/create" exact component={CreateUser} />
+                    <Route path="/users/edit/:staffCode" exact component={EditUser} />
+                    <Route path="/assets" exact component={ManagerAsset} />
+                    <Route path="/assets/create" exact component={CreateAsset} />
+                    <Route path="/assets/edit/:assetCode" exact component={EditAsset} />
+                    <Route path="/assignments" exact component={ManagerAssignment} />
+                    <Route path="/assignments/create" exact component={CreateAssignment} />
+                    <Route path="/assignments/edit/:assignmentId" exact component={EditAssignment} />
+                    <Route path="/returns" exact component={RequestReturn} />
+                    <Route path="/repairs" exact component={ManageRepair} />
+                    <Route path="/reports/overview" exact component={Overview} />
+                    <Route path="/reports/assigned-assignments" exact component={AssignedAssignments} />
                   </>
                   :
                   user.role === "ROLE_STAFF" ?

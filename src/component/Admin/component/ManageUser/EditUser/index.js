@@ -43,7 +43,7 @@ function EditUser(props) {
         deptCode: '',
         name: '',
     });
-    const [headerTitle, setHeaderTitle] = useState('');
+    const [selectedDept, setSelectedDept] = useState();
     const [display, setdisplay] = useState(false);
     const [show, setShow] = useState(false);
     const [showModalEditDepartment, setShowModalEditDepartment] = useState(false);
@@ -81,7 +81,6 @@ function EditUser(props) {
 
     const staffCode = props.match.params.staffCode;
     const fetchUser = () => {
-        console.log(props.match.params.staffCode)
         get(`/user/${staffCode}`)
             .then((res) => {
                 let dOB = res.data.dateOfBirth.split("/").reverse().join("-")
@@ -220,7 +219,7 @@ function EditUser(props) {
             .then((res) => {
                 console.log(res.data);
                 history.push({
-                    pathname: '/manage-user',
+                    pathname: '/users',
                     state: {
                         staffCode: res.data.staffCode
                     }
@@ -276,7 +275,7 @@ function EditUser(props) {
     const onChangeSelected = (item) => {
         if (show !== true) {
             setdisplay(!display);
-            setHeaderTitle(item.name);
+            setSelectedDept(item);
             // setCategory(item.name);
 
             setInputs((prevState) => ({
@@ -562,7 +561,7 @@ function EditUser(props) {
                             <Col>
                                 <div className='category_input'>
                                     <div className='boder_search' onClick={handleDisplayDepartments}>
-                                        {headerTitle}
+                                        {selectedDept ? selectedDept?.name : departments.find(d => d.deptCode === inputs?.deptCode)?.name}
                                         <FaAngleDown className='angledown' />
                                     </div>
                                     <div className='list_below' style={{ display: display ? 'block' : 'none' }}>
@@ -661,7 +660,7 @@ function EditUser(props) {
                         <Form.Group as={Row} className="float-end mb-4">
                             <Col>
                                 {saveButton()}
-                                <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/manage-user">Cancel</Link>
+                                <Link className="btn btn-outline-secondary" style={{ marginLeft: "40px" }} to="/users">Cancel</Link>
                             </Col>
                         </Form.Group>
                     </Form>

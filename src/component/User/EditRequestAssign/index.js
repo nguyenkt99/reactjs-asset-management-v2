@@ -87,7 +87,7 @@ export default function EditRequestAssign(props) {
         put(`/request-assign/${requestAssign.id}`, formData)
             .then((res) => {
                 history.push({
-                    pathname: '/request-assign',
+                    pathname: '/assigns',
                     state: {
                         id: res.data.id
                     }
@@ -242,7 +242,7 @@ export default function EditRequestAssign(props) {
                     <Form.Group as={Row} className="mb-4 float-end">
                         <Col >
                             <Button variant="danger" type="submit" disabled={requestAssignDetails.length === 0}>Save</Button>
-                            <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="/request-assign">Cancel</Link>
+                            <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="/assigns">Cancel</Link>
                         </Col>
                     </Form.Group>
                 </Form>
