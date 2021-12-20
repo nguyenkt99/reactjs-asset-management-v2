@@ -278,7 +278,7 @@ function EditAssignment(props) {
         if (key === ASSET_SORT_BY.AssetCode) {
             reverse = assetCodeASC ? -1 : 1;
             setAssetCodeASC(!assetCodeASC);
-            list = availableAssetsData
+            list = availableAssets
                 .slice()
                 .sort((a, b) =>
                     a.assetCode > b.assetCode
@@ -290,7 +290,7 @@ function EditAssignment(props) {
         } else if (key === ASSET_SORT_BY.AssetName) {
             reverse = assetNameASC ? -1 : 1;
             setAssetNameASC(!assetNameASC);
-            list = availableAssetsData
+            list = availableAssets
                 .slice()
                 .sort((a, b) =>
                     a.assetName > b.assetName
@@ -302,7 +302,7 @@ function EditAssignment(props) {
         } else if (key === ASSET_SORT_BY.Category) {
             reverse = categoryASC ? -1 : 1;
             setCategoryASC(!categoryASC);
-            list = availableAssetsData
+            list = availableAssets
                 .slice()
                 .sort((a, b) =>
                     a.categoryName > b.categoryName
@@ -358,7 +358,7 @@ function EditAssignment(props) {
                         <FaSearch className="fa-search" />
                     </div>
                 </div>
-                <Modal.Dialog className="dialog" style={{ display: userDisplay ? 'block' : 'none' }}>
+                <Modal.Dialog className="dialog-select" style={{ display: userDisplay ? 'block' : 'none' }}>
                     <Modal.Body style={{ padding: "0px" }}>
                         <div className="list_select">
                             <Row className="header_select">

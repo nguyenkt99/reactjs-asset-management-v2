@@ -205,7 +205,7 @@ export default function RequestAssignUser() {
                                         <div className="d-flex justify-content-evenly">
                                             {r.state === STATE.WAITING_FOR_ASSIGNING ?
                                                 <>
-                                                    <Link style={{ textDecoration: 'none', color: '#000' }} to={'/assigns/' + r.id}>
+                                                    <Link style={{ textDecoration: 'none', color: '#000' }} to={'/assigns/edit/' + r.id}>
                                                         <GrEditCus />
                                                     </Link>
                                                     <FontAwesomeIcon style={{ cursor: "pointer" }} size="lg" icon={faTimes} onClick={() => onClickDeleteRequest(r.id)} />

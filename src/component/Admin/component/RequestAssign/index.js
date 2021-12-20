@@ -53,6 +53,7 @@ export default function RequestForAssigning() {
     const [assetsData, setAssetsData] = useState([])
     const [assetCodeASC, setAssetCodeASC] = useState(true)
     const [assetNameASC, setAssetNameASC] = useState(false)
+    const [categoryNameASC, setCategoryNameASC] = useState(false)
     const [assetDisplay, setAssetDisplay] = useState(false)
     // const [asset, setAsset] = useState({ assetName: '' })
     const [selectingAssets, setSelectingAssets] = useState([])
@@ -110,16 +111,16 @@ export default function RequestForAssigning() {
     const handleDeclineRequest = (id) => {
         put(`/request-assign/${id}/decline`, note)
             .then((response) => {
-                    let newData = [...data]
-                    const indexInData = data.findIndex(r => r.id === id)
-                    newData[indexInData].state = 'DECLINED'
-                    setData(newData)
+                let newData = [...data]
+                const indexInData = data.findIndex(r => r.id === id)
+                newData[indexInData].state = 'DECLINED'
+                setData(newData)
 
-                    let newRequestAssigns = [...requestAssigns]
-                    const indexInRequests = requestAssigns.findIndex(r => r.id === id)
-                    newData[indexInRequests].state = 'DECLINED'
-                    setRequestAssigns(newRequestAssigns)
-                    setShowModalDeclineRequest(false)
+                let newRequestAssigns = [...requestAssigns]
+                const indexInRequests = requestAssigns.findIndex(r => r.id === id)
+                newData[indexInRequests].state = 'DECLINED'
+                setRequestAssigns(newRequestAssigns)
+                setShowModalDeclineRequest(false)
             })
             .catch((error) => {
                 // setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
@@ -339,6 +340,18 @@ export default function RequestForAssigning() {
                     a.assetName > b.assetName
                         ? 1 * reverse
                         : b.assetName > a.assetName
+                            ? -1 * reverse
+                            : 0
+                );
+        } else if (key === ASSET_SORT_BY.Category) {
+            reverse = categoryNameASC ? -1 : 1;
+            setCategoryNameASC(!categoryNameASC);
+            list = assetsData
+                .slice()
+                .sort((a, b) =>
+                    a.categoryName > b.categoryName
+                        ? 1 * reverse
+                        : b.categoryName > a.categoryName
                             ? -1 * reverse
                             : 0
                 );
@@ -803,5 +816,6 @@ const STATEtoLowcase = { ALL: 'All', WAITING_FOR_ASSIGNING: 'Waiting for assigni
 
 const ASSET_SORT_BY = {
     AssetCode: 'AssetCode',
-    AssetName: 'AssetName'
+    AssetName: 'AssetName',
+    Category: 'Category'
 };

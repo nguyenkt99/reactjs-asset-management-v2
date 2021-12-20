@@ -142,7 +142,7 @@ function Home() {
                     <ul className="navbar__notify-list">
                       {notifications.map((n) => (
                         <li key={n.id} className={n?.isSeen ? "navbar__notify-item" : "navbar__notify-item navbar__notify-item--unviewed"}>
-                          <Link className="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/request-assign' : n.type === 'ASSIGNMENT' ? '/manage-assignment' : '/request-return'} onClick={() => handleSeen(n.id)}>
+                          <Link className="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/assigns' : n.type === 'ASSIGNMENT' ? '/assignments' : '/returns'} onClick={() => handleSeen(n.id)}>
                             <img src={n.type === 'REQUEST_ASSIGN' ? ReturnAssignImage
                               : n.type === 'REQUEST_RETURN' ? ReturnImage : AssignmentImage} alt="USB Kingston"
                               className="navbar__notify-img" />
@@ -212,7 +212,7 @@ function Home() {
                       {console.log(user.role)}
                       <Route path="/assigns" exact={true} component={RequestAssignUser} />
                       <Route path="/assigns/create" exact={true} component={CreateRequestAssign} />
-                      <Route path="/assigns/:requestId" exact={true} component={EditRequestAssign} />
+                      <Route path="/assigns/edit/:requestId" exact={true} component={EditRequestAssign} />
                     </>
                     :
                     <Redirect to="/home" />
