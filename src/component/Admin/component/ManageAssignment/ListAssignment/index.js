@@ -505,6 +505,18 @@ export default function ListAssignment() {
             </Form.Group>
             <Form.Group as={Row}>
               <Form.Label column sm='4' className='pr-0'>
+                Request Id
+              </Form.Label>
+              <Col sm='8'>
+                <Form.Control
+                  plaintext
+                  readOnly
+                  defaultValue={assignmentInformation && assignmentInformation.requestAssignId}
+                />
+              </Col>
+            </Form.Group>
+            <Form.Group as={Row}>
+              <Form.Label column sm='4' className='pr-0'>
                 Assigned To
               </Form.Label>
               <Col sm='8'>

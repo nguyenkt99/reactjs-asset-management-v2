@@ -22,7 +22,7 @@ export default function CreateRequestAssign() {
     const [showModal, setShowModal] = useState(false)
     const [note, setNote] = useState('')
     const [assignedDate, setAssignedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
-    const [returnedDate, setReturnedDate] = useState(moment(new Date()).format('YYYY-MM-DD'))
+    const [returnedDate, setReturnedDate] = useState()
     const [isOpenDatePickerAd, setIsOpenDatePickerAd] = useState(false)
     const [isOpenDatePickerRd, setIsOpenDatePickerRd] = useState(false)
     const [showModalError, setShowModalError] = useState(false)
@@ -163,9 +163,9 @@ export default function CreateRequestAssign() {
                                 <DatePicker className="form-control"
                                     dateFormat="dd/MM/yyyy" showMonthDropdown showYearDropdown scrollableYearDropdown yearDropdownItemNumber={50}
                                     onKeyDown={(e) => e.preventDefault()}
-                                    selected={returnedDate && new Date(returnedDate)}
+                                    selected={returnedDate && moment(returnedDate).isSameOrAfter(assignedDate) && new Date(returnedDate)}
                                     onChange={(date) => setReturnedDate(moment(date).format('YYYY-MM-DD'))}
-                                    minDate={new Date()}
+                                    minDate={assignedDate && new Date(assignedDate)}
                                     onClickOutside={openDatePickerRd}
                                     onSelect={openDatePickerRd}
                                     onFocus={openDatePickerRd}

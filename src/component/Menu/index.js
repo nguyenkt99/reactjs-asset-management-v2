@@ -21,12 +21,6 @@ function Menu() {
             isUser: true
         },
         {
-            label: 'Request for Assigning',
-            to: '/assigns',
-            exact: false,
-            isUser: true
-        },
-        {
             label: 'Manage User',
             to: '/users',
             exact: false
@@ -35,6 +29,12 @@ function Menu() {
             label: 'Manage Asset',
             to: '/assets',
             exact: false
+        },
+        {
+            label: 'Request for Assigning',
+            to: '/assigns',
+            exact: false,
+            isUser: true
         },
         {
             label: 'Manage Assignment',

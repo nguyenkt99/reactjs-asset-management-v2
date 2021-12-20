@@ -27,7 +27,7 @@ export default class Login extends Component {
     const user = AuthService.getCurrentUser();
     if (user) {
       this.props.history.push('/');
-      // window.location.reload();
+      window.location.reload();
     }
     this.handleLogin = this.handleLogin.bind(this);
     this.onChangeUsername = this.onChangeUsername.bind(this);
@@ -63,7 +63,7 @@ export default class Login extends Component {
         .then(() => {
           //Quay tro ve Trang Home
           this.props.history.push("/home");
-          // window.location.reload();
+          window.location.reload();
         })
         .catch((error) => {
           this.setState({ isSaving: false });

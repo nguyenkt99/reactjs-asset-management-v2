@@ -17,6 +17,7 @@ import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
 import '../ManageUser/CreateUser/CreateUser.css'
 import moment from "moment"
+import { normalizeString, removeAccents } from '../../../../utils/StringNormalize'
 
 const elementPerPage = 10
 let requestId
@@ -95,6 +96,14 @@ export default function RequestForAssigning() {
                 toastMessage('Something wrong!')
             }
         }).catch(error => toastMessage("Fail to connect server!"))
+    }
+
+    const formatRequestAssignDetails = (requestAssign) => {
+        let strCategories = '';
+        requestAssign.requestAssignDetails.forEach(rad => {
+            strCategories += `${rad.categoryName} (${rad.quantity}), `
+        })
+        return strCategories.substring(0, strCategories.length - 2)
     }
 
     const fetchAssets = () => {
@@ -258,10 +267,12 @@ export default function RequestForAssigning() {
     }
 
     const filterSort = (data, keySearch) => {
+        const searchInput = removeAccents(normalizeString(keySearch))
         return data.filter((e) => (
             e.id.toString() === keySearch ||
-            e.note.toLowerCase().includes(keySearch.toLowerCase()) ||
-            e.requestedBy.toLowerCase().includes(keySearch.toLowerCase())
+            e.note.toLowerCase().includes(searchInput) ||
+            e.requestedBy.toLowerCase().includes(searchInput) ||
+            e.strCategories.toLowerCase().includes(searchInput)
         ));
     };
 
@@ -273,11 +284,11 @@ export default function RequestForAssigning() {
     }
 
     const handleSearchChangeAsset = (e) => {
-        let keySearch = e.target.value;
+        const searchInput = removeAccents(normalizeString(e.target.value))
         let newData = assets.filter(e => (
-            e.assetCode.toLowerCase().includes(keySearch.toLowerCase())
-            || e.assetName.toLowerCase().includes(keySearch.toLowerCase())
-            || e.categoryName.toLowerCase().includes(keySearch.toLowerCase())
+            e.assetCode.toLowerCase().includes(searchInput)
+            || e.assetName.toLowerCase().includes(searchInput)
+            || e.categoryName.toLowerCase().includes(searchInput)
         ))
         setAssetsData(newData);
     }
@@ -298,17 +309,20 @@ export default function RequestForAssigning() {
     }
 
     const handleCancel = () => {
-        selectedAssets.forEach((a) => {
-            document.getElementById(a.assetCode).checked = true;
-        })
+        // selectedAssets.forEach((a) => {
+        //     document.getElementById(a.assetCode).checked = true;
+        // })
 
-        selectingAssets.forEach((a) => {
-            if (document.getElementById(a.assetCode))
-                document.getElementById(a.assetCode).checked = false;
-        })
+        // selectingAssets.forEach((a) => {
+        //     if (document.getElementById(a.assetCode))
+        //         document.getElementById(a.assetCode).checked = false;
+        // })
 
+        // setAssetDisplay(false)
+        // setSelectingAssets([])
+
+        setSelectingAssets(selectedAssets)
         setAssetDisplay(false)
-        setSelectingAssets([])
     }
 
     const handleCancelCreateAssignment = () => {
@@ -367,6 +381,11 @@ export default function RequestForAssigning() {
     //         return <Button variant="danger" type="submit">Save</Button>
     //     return <Button variant="danger" type="submit" disabled>Save</Button>;
     // }
+
+    const handleRemove = (assetCode) => {
+        setSelectedAssets([...selectedAssets.filter(a => a.assetCode !== assetCode)])
+        setSelectingAssets([...selectedAssets.filter(a => a.assetCode !== assetCode)])
+    }
 
     return (
         <>
@@ -641,6 +660,7 @@ export default function RequestForAssigning() {
                                     onSelect={openDatePickerAd}
                                     onFocus={openDatePickerAd}
                                     open={isOpenDatePickerAd}
+                                    disabled
                                 />
                                 <FaCalendarAlt className="icon-date" onClick={openDatePickerAd} />
                             </div>
@@ -667,9 +687,23 @@ export default function RequestForAssigning() {
                                     onSelect={openDatePickerRd}
                                     onFocus={openDatePickerRd}
                                     open={isOpenDatePickerRd}
+                                    disabled
                                 />
                                 <FaCalendarAlt className="icon-date" onClick={openDatePickerRd} />
                             </div>
+                        </Col>
+                    </Form.Group>
+                    <Form.Group as={Row} className="mb-2">
+                        <Form.Label column sm={3}>
+                            Request List
+                        </Form.Label>
+                        <Col>
+                            <Form.Control
+                                as='textarea'
+                                style={{ fontSize: "1.4rem" }}
+                                readOnly
+                                defaultValue={requestAssignInfo && formatRequestAssignDetails(requestAssignInfo)}
+                            />
                         </Col>
                     </Form.Group>
 
@@ -730,6 +764,7 @@ export default function RequestForAssigning() {
                                                                     value={a.assetCode}
                                                                     style={{ cursor: "pointer" }}
                                                                     onClick={assetChange}
+                                                                    checked={selectingAssets.some(s => s.assetCode === a.assetCode)}
                                                                 // className="radio_custom"
                                                                 ></input>
                                                             </td>
@@ -763,12 +798,14 @@ export default function RequestForAssigning() {
                         <Form.Label column sm={3}>
                         </Form.Label>
                         <Col>
-                            {selectedAssets.map((a) =>
-                                <div className="asset-item" key={a.assetCode}>
-                                    <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
-                                    <CgCloseO className="asset-icon-remove" />
-                                </div>
-                            )}
+                            <div className="selected-asset-list">
+                                {selectedAssets.map((a) =>
+                                    <div className="asset-item" key={a.assetCode}>
+                                        <span key={a.assetCode}>{a.assetName} ({a.assetCode})</span>
+                                        <CgCloseO className="asset-icon-remove" onClick={() => handleRemove(a.assetCode)} />
+                                    </div>
+                                )}
+                            </div>
                         </Col>
                     </Form.Group>
 
