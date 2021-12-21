@@ -44,6 +44,7 @@ export default function RequestForAssigning() {
     const [requestAssignInfo, setRequestAssignInfo] = useState()
     const [note, setNote] = useState('')
     const [showToastError, setShowToastError] = useState(false)
+    const [showFeedbackError, setShowFeedbackError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
     const [assignedDate, setAssignedDate] = useState()
     const [returnedDate, setReturnedDate] = useState()
@@ -109,8 +110,9 @@ export default function RequestForAssigning() {
     const fetchAssets = () => {
         get(`/asset/available?startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
-                setAssets(response.data)
-                setAssetsData(response.data)
+                const assetList = response.data.filter(a => requestAssignInfo?.requestAssignDetails.some(r => r.categoryId === a.categoryPrefix))
+                setAssets(assetList)
+                setAssetsData(assetList)
             } else {
                 alert('Something wrong!')
             }
@@ -167,8 +169,12 @@ export default function RequestForAssigning() {
             })
             .catch((error) => {
                 setIsSaving(false)
-                setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
-                setShowToastError(true);
+                // setErrorMessage(`Error code: ${error.response.status} ${error.response.message}`)
+                // setShowToastError(true);
+                if (error.response.status === 400) {
+                    setShowFeedbackError(true)
+                    setErrorMessage(error.response.data.message)
+                }
             })
     }
 
@@ -209,6 +215,8 @@ export default function RequestForAssigning() {
     }
 
     const onClickAcceptRequest = (id) => {
+        setSelectingAssets([])
+        setSelectedAssets([])
         get(`/request-assign/${id}`)
             .then(response => {
                 let strCategories = ''
@@ -806,6 +814,11 @@ export default function RequestForAssigning() {
                                     </div>
                                 )}
                             </div>
+                            {showFeedbackError &&
+                                < Form.Control.Feedback className="d-block" type="invalid">
+                                    {errorMessage}
+                                </Form.Control.Feedback>
+                            }
                         </Col>
                     </Form.Group>
 

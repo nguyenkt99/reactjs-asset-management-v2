@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import '../ManageUser/CreateUser/CreateUser.css'
 import { FaCalendarAlt } from "react-icons/fa"
 import moment from "moment";
+import { normalizeString, removeAccents } from '../../../../utils/StringNormalize'
 
 const elementPerPage = 10;
 let requestId;
@@ -187,11 +188,12 @@ export default function Request() {
 
 
     const filterSort = (data, keySearch) => {
+        const searchInput = removeAccents(normalizeString(keySearch))
         return data.filter((e) => (
-            e.id.toString() === keySearch ||
-            e.strAssets.toLowerCase().includes(keySearch.toLowerCase()) ||
-            // e.assetName.toLowerCase().includes(keySearch.toLowerCase()) ||
-            e.requestBy.toLowerCase().includes(keySearch.toLowerCase())
+            e.id.toString() === searchInput ||
+            e.strAssets.toLowerCase().includes(searchInput) ||
+            // e.assetName.toLowerCase().includes(searchInput) ||
+            e.requestBy.toLowerCase().includes(searchInput)
         ));
     };
 

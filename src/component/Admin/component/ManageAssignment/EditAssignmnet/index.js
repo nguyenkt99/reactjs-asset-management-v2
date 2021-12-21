@@ -40,12 +40,15 @@ function EditAssignment(props) {
     const [fullAccess, setFullAccess] = useState(true)
     const [errorMessage, setErrorMessage] = useState('')
     const [showModalError, setShowModalError] = useState(false)
+    const [requestAssign, setRequestAssign] = useState()
+    const [showFeedbackError, setShowFeedbackError] = useState(false)
+    const [feedbackMessage, setFeedbackMessage] = useState('')
 
     const history = useHistory()
     const match = useRouteMatch()
 
     useEffect(() => {
-    const promise = new Promise((resovle) => {
+        const promise = new Promise((resovle) => {
             resovle()
         })
 
@@ -84,7 +87,7 @@ function EditAssignment(props) {
             setAssignedDate(assignment.assignedDate.split("/").reverse().join("-"))
             setReturnedDate(assignment.intendedReturnDate.split("/").reverse().join("-"))
 
-            if (assignment.assignmentDetails.some(ad => ad.state === 'ACCEPTED')) {
+            if (assignment.assignmentDetails.some(ad => ad.state === 'ACCEPTED') || !assignment?.requestId) {
                 setFullAccess(false)
             }
         }
@@ -111,9 +114,14 @@ function EditAssignment(props) {
                 });
             })
             .catch((error) => {
-                setIsSaving(false);
-                setErrorMessage(error?.response?.data?.message)
-                setShowModalError(true)
+                setIsSaving(false)
+                if (error.response.status === 400) { // error quantity of category
+                    setFeedbackMessage(error?.response?.data?.message)
+                    setShowFeedbackError(true)
+                } else {
+                    setErrorMessage(error?.response?.data?.message)
+                    setShowModalError(true)
+                }
             })
     }
 
@@ -137,6 +145,12 @@ function EditAssignment(props) {
                 if (res.data.state !== "WAITING_FOR_ACCEPTANCE" && res.data.state !== "ACCEPTED") {
                     history.push('/manage-assignment')
                 }
+
+                get(`/request-assign/${res.data.requestAssignId}`)
+                    .then((resReAs) => {
+                        setRequestAssign(resReAs.data)
+                    })
+                    .catch(error => console.log(error))
                 setAssignment(res.data)
 
             })
@@ -158,8 +172,11 @@ function EditAssignment(props) {
     const fetchAvailableAssets = () => {
         get(`/asset/available?assignmentId=${match.params.assignmentId}&startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
-                setAvailableAssets(response.data)
-                setAvailableAssetsData(response.data)
+                console.log(requestAssign)
+                const assetList = response.data.filter(a =>
+                    requestAssign?.requestAssignDetails.some(r => r.categoryId === a.categoryPrefix))
+                setAvailableAssets(assetList)
+                setAvailableAssetsData(assetList)
             } else {
                 alert('Something wrong!')
             }
@@ -606,6 +623,11 @@ function EditAssignment(props) {
                                     </div>
                                 )}
                             </div>
+                            {showFeedbackError &&
+                                < Form.Control.Feedback className="d-block" type="invalid">
+                                    {feedbackMessage}
+                                </Form.Control.Feedback>
+                            }
                         </Col>
                     </Form.Group>
                     <Form.Group as={Row} className='mb-3'>

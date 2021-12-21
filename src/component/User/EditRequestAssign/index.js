@@ -39,11 +39,11 @@ export default function EditRequestAssign(props) {
             isMounted.current = false
         } else {
             const newCategories = []
-                categories.forEach(c => {
-                    if(!requestAssign.requestAssignDetails.find(r => r.categoryId === c.prefix)) {
-                        newCategories.push(c)
-                    }                    
-                })
+            categories.forEach(c => {
+                if (!requestAssign.requestAssignDetails.find(r => r.categoryId === c.prefix)) {
+                    newCategories.push(c)
+                }
+            })
             setCategories(newCategories)
         }
     }, [requestAssign])
@@ -123,13 +123,21 @@ export default function EditRequestAssign(props) {
         let newRequestAssignDetails = [...requestAssignDetails]
         const quantity = e.target.value
         const index = requestAssignDetails.findIndex(r => r.categoryId === prefix)
-        newRequestAssignDetails[index].quantity = e.target.value
-        setRequestAssignDetails(newRequestAssignDetails)
+        if (quantity > 0 || quantity === '') {
+            newRequestAssignDetails[index].quantity = quantity
+            setRequestAssignDetails(newRequestAssignDetails)
+        }
     }
 
     const handleRemove = (categoryId) => {
         setRequestAssignDetails([...requestAssignDetails.filter(r => r.categoryId !== categoryId)])
         setCategories([...categories, dataCategories.find(c => c.prefix === categoryId)])
+    }
+
+    const handleOnChangeQuantityInSelectCategory = (e) => {
+        const quantity = e.target.value
+        if (quantity > 0 || quantity === '')
+            setQuantity(quantity)
     }
 
     const openDatePickerAd = () => {
@@ -142,7 +150,7 @@ export default function EditRequestAssign(props) {
 
     return (
         <>
-            <h3 className="content-title">Create request for assigning</h3>
+            <h3 className="content-title">Edit request for assigning</h3>
             <Col xs={6}>
                 <Form className="content-form" onSubmit={handleSubmit}>
                     <Form.Group
@@ -271,7 +279,7 @@ export default function EditRequestAssign(props) {
                             Quantity
                         </Form.Label>
                         <Col>
-                            <Form.Control name='quantity' type='number' required onChange={(e) => setQuantity(e.target.value)} />
+                            <Form.Control name='quantity' type='number' required onChange={handleOnChangeQuantityInSelectCategory} />
                         </Col>
                     </Form.Group>
                 </Modal.Body>

@@ -142,7 +142,15 @@ function Home() {
                     <ul className="navbar__notify-list">
                       {notifications.map((n) => (
                         <li key={n.id} className={n?.isSeen ? "navbar__notify-item" : "navbar__notify-item navbar__notify-item--unviewed"}>
-                          <Link className="navbar__notify-link" to={n.type === 'REQUEST_ASSIGN' ? '/assigns' : n.type === 'ASSIGNMENT' ? '/assignments' : '/returns'} onClick={() => handleSeen(n.id)}>
+                          <Link className="navbar__notify-link"
+                            onClick={() => handleSeen(n.id)}
+                            to={n.type === 'REQUEST_ASSIGN' ?
+                              '/assigns' :
+                              (n.type === 'ASSIGNMENT' && user.role === 'ROLE_ADMIN') ? '/assignments' :
+                                n.type === 'ASSIGNMENT' ?
+                                  '/home' :
+                                  '/returns'}
+                          >
                             <img src={n.type === 'REQUEST_ASSIGN' ? ReturnAssignImage
                               : n.type === 'REQUEST_RETURN' ? ReturnImage : AssignmentImage} alt="USB Kingston"
                               className="navbar__notify-img" />
@@ -174,7 +182,7 @@ function Home() {
               </div>
             </Nav>
           </Collapse>
-        </div>
+        </div >
       </Navbar >
 
       <div className="grid">

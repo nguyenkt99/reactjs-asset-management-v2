@@ -11,6 +11,7 @@ import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import ModalDetailedRepair from './ModalDetailedRepair'
 import ModalConfirm from './ModalConfirmDelete'
 import ModalFinishRepair from './ModalFinishRepair'
+import { normalizeString, removeAccents } from '../../../../utils/StringNormalize'
 
 export default function ManageRepair() {
     const repairdIdRef = useRef(null)
@@ -81,11 +82,12 @@ export default function ManageRepair() {
     }
 
     const filterSort = (data, keySearch) => {
+        const searchInput = removeAccents(normalizeString(keySearch))
         return data.filter((d) => (d.id.toString() === keySearch
-            || d.assetCode.toLowerCase().includes(keySearch.toLowerCase())
-            || d.assetName.toLowerCase().includes(keySearch.toLowerCase())
-            || d.categoryName.toLowerCase().includes(keySearch.toLowerCase())
-            || d.createdBy.toLowerCase().includes(keySearch.toLowerCase())
+            || d.assetCode.toLowerCase().includes(searchInput)
+            || d.assetName.toLowerCase().includes(searchInput)
+            || d.categoryName.toLowerCase().includes(searchInput)
+            || d.createdBy.toLowerCase().includes(searchInput)
         ));
     };
 
