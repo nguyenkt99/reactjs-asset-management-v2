@@ -65,6 +65,11 @@ function Menu() {
                     label: 'Assigned Assignments',
                     to: '/reports/assigned-assignments',
                     exact: true,
+                },
+                {
+                    label: 'Inventory of Assets',
+                    to: '/reports/inventory',
+                    exact: true,
                 }
             ]
         },

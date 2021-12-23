@@ -1,0 +1,66 @@
+@media all {
+    .page-break {
+        display: none;
+    }
+}
+  
+@media print {
+    html, body {
+        height: initial !important;
+        overflow: initial !important;
+        -webkit-print-color-adjust: exact;
+    }
+}
+  
+@media print {
+    .page-break {
+        margin-top: 1rem;
+        display: block;
+        page-break-before: auto;
+    }
+}
+  
+@page {
+    size: auto;
+    margin: 20mm;
+}
+
+.report {
+    font-size: 1.4rem;
+    /* padding: 20px; */
+    /* width: 595px; */
+    /* height: 842px; */
+    /* border: 1px solid #ccc; */
+    /* padding: 20px 20px; */
+}
+
+.report-header {
+    /* display: flex; */
+    /* justify-content: space-between; */
+}
+
+.report-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 2.0rem;
+}
+
+.report-time {
+    text-align: center;
+    font-style: italic;
+}
+
+.report-asset-item {
+    margin-top: 16px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+.history-table-name {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+}

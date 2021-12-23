@@ -234,6 +234,10 @@ export default function ListAsset() {
     setErrorMessage(errorMessage)
   }
 
+  const handleExportPdf = () => {
+
+  }
+
   return (
     <>
       <ModalRepair
@@ -396,6 +400,7 @@ export default function ListAsset() {
         <Col>
           <div className='float-end'>
             <Link className='btn' style={{ color: '#FFF', backgroundColor: '#CF2338', borderColor: '#CF2338' }} to='/assets/create'> Create new asset</Link>
+            {/* <span className='btn' style={{ color: '#FFF', backgroundColor: '#CF2338', borderColor: '#CF2338' }} onClick={() => handleExportPdf()}>Export pdf</span> */}
           </div>
         </Col>
       </Row>

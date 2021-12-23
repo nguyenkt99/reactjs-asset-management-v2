@@ -36,6 +36,7 @@ import moment from 'moment';
 import { db } from '../../firebase/config';
 import ManageRepair from '../Admin/component/ManageRepair';
 import ChatMessage from '../ChatMessage';
+import Inventory from '../Admin/component/Report/Inventory';
 
 function Home() {
   const history = useHistory();
@@ -112,6 +113,8 @@ function Home() {
       path += " > Overview";
     else if (location.pathname.includes('assigned-assignments'))
       path += " > Assigned Assignemts";
+    else if (location.pathname.includes('inventory'))
+      path += " > Inventory of Assets";
   }
 
   const handleSeen = (id) => {
@@ -121,7 +124,7 @@ function Home() {
     })
   }
 
-  return (
+  return (<>
     <div className="Home">
       <Navbar expand="md" className="header__navbar">
         <div className="grid">
@@ -213,6 +216,7 @@ function Home() {
                     <Route path="/repairs" exact component={ManageRepair} />
                     <Route path="/reports/overview" exact component={Overview} />
                     <Route path="/reports/assigned-assignments" exact component={AssignedAssignments} />
+                    <Route path="/reports/inventory" exact component={Inventory} />
                   </>
                   :
                   user.role === "ROLE_STAFF" ?
@@ -340,7 +344,7 @@ function Home() {
         </Toast>
       </ToastContainer>
     </div >
-  );
+  </>);
 };
 export default Home;
 

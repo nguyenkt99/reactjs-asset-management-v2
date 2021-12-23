@@ -172,9 +172,13 @@ function EditAssignment(props) {
     const fetchAvailableAssets = () => {
         get(`/asset/available?assignmentId=${match.params.assignmentId}&startDate=${assignedDate}&endDate=${returnedDate}`).then(response => {
             if (response.status === 200) {
-                console.log(requestAssign)
-                const assetList = response.data.filter(a =>
-                    requestAssign?.requestAssignDetails.some(r => r.categoryId === a.categoryPrefix))
+                let assetList = []
+                if (requestAssign) {
+                    assetList = response.data.filter(a =>
+                        requestAssign?.requestAssignDetails.some(r => r.categoryId === a.categoryPrefix))
+                } else {
+                    assetList = response.data
+                }
                 setAvailableAssets(assetList)
                 setAvailableAssetsData(assetList)
             } else {
