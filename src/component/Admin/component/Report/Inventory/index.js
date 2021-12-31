@@ -1,46 +1,50 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Button, Col, Form, Modal, Row, Table } from 'react-bootstrap';
-import { useReactToPrint } from 'react-to-print';
+import { Button, Col, Form, Row, Table } from 'react-bootstrap'
 import { get } from '../../../../../httpHelper';
+import authService from '../../../../../services/auth.service'
 import './Inventory.css'
-import moment from "moment";
-import { jsPDF } from "jspdf"
+import moment from "moment"
 import html2pdf from 'html2pdf.js'
 
 export default function Inventory() {
     const componentRef = useRef()
     const [assets, setAssets] = useState([])
+    const [data, setData] = useState([])
+    const [categories, setCategories] = useState([])
+    const [selectedCategory, setSelectedCategory] = useState()
+
+    useEffect(() => {
+        fetchAssets()
+        fetchCategories()
+    }, [])
+
+    useEffect(() => {
+        setAssets(data.filter(d => d.categoryName === selectedCategory))
+    }, [selectedCategory])
 
     const fetchAssets = () => {
         get('/asset')
             .then((response) => {
                 setAssets(response.data)
+                setData(response.data)
             })
             .catch((error) => console.log('Cannot fetch assets!'))
     }
 
-    useEffect(() => {
-        fetchAssets()
-    }, [])
-
-    // const handlePrint = useReactToPrint({
-    //     content: () => componentRef.current,
-    // })
-
-    // const generatePdf = () => {
-    //     var doc = new jsPDF("p", "pt", "a4")
-    //     doc.html(componentRef.current, {
-    //         margin: [20, 20, 20, 20],
-    //         callback: (pdf) => {
-    //             pdf.save("downloadfile.pdf")
-    //         }
-    //     })
-    // }
+    const fetchCategories = () => {
+        get('/category')
+            .then((res) => {
+                setCategories(res.data)
+            })
+            .catch((error) => {
+                console.log(error)
+            });
+    };
 
     const generatePdf = () => {
         let opt = {
-            margin: 1,
-            filename: 'my-invoice.pdf',
+            margin: 0.5,
+            filename: `inventory-${moment(new Date()).format('DD-MM-YYYY')}`,
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -49,14 +53,39 @@ export default function Inventory() {
         // html2pdf(componentRef.current)
     }
 
+    const handleOnChange = (e) => {
+        setSelectedCategory(e.target.value)
+    }
+
     return (
         <>
-            <Button variant="danger" onClick={() => generatePdf()}>Export to PDF</Button>
+            <Row>
+                <Col xs="3">
+                    <Form.Select name="type" type="text" required as="select" aria-label="Default select example" onChange={handleOnChange}>
+                        <option value="">Select category</option>
+                        {categories.map((cate) =>
+                            <option key={cate.categoryCode}
+                                value={cate.name}
+                            >
+                                {cate.name}
+                            </option>
+                        )}
+                    </Form.Select>
+                </Col>
+                <Col>
+                    <Button variant="danger" onClick={() => generatePdf()}>Export to PDF</Button>
+                </Col>
+            </Row>
 
             <div ref={componentRef} className="report">
                 <div className="report-header">
                     <div className="report-title">ASSET MANAGEMENT</div>
+
                     <div className="report-time">{`(${moment(new Date()).format('lll')})`}</div>
+                </div>
+                <div style={{display: "flex", justifyContent: "space-between"}}>
+                    <span>{!selectedCategory ? 'All categories' : `Category: ${selectedCategory}`}</span>
+                    <span>{`Exporter: ${authService.getCurrentUser().username}`}</span>
                 </div>
                 <div className="report-body">
                     {assets.map(a => (

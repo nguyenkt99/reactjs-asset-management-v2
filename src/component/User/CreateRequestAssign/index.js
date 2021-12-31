@@ -221,7 +221,7 @@ export default function CreateRequestAssign() {
                     </Form.Group>
                     <Form.Group as={Row} className="mb-4 float-end">
                         <Col >
-                            <Button variant="danger" type="submit" disabled={requestAssignDetails.length === 0 || requestAssignDetails.some(r => r.quantity === '')}>Save</Button>
+                            <Button variant="danger" type="submit" disabled={requestAssignDetails.length === 0 || requestAssignDetails.some(r => r.quantity === '') || !returnedDate}>Save</Button>
                             <Link className="btn btn-outline-secondary" disabled style={{ marginLeft: "40px" }} to="/assigns">Cancel</Link>
                         </Col>
                     </Form.Group>

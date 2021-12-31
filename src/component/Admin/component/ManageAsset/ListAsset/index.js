@@ -663,7 +663,7 @@ export default function ListAsset() {
                               <td>{r.startedDate}</td>
                               <td>{r.note}</td>
                               <td>{r.createdBy}</td>
-                              <td>{r.finishedDate ? r.returnedDate : ""}</td>
+                              <td>{r.finishedDate ? r.finishedDate : ""}</td>
                             </tr>
                           ))}
                         </tbody>

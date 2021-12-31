@@ -50,6 +50,9 @@ export default function ListAssignment() {
   const [showModalError, setShowModalError] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  const [returnedDate, setReturnedDate] = useState()
+  const [isOpenDatePickerReturned, setIsOpenDatePickerReturned] = useState(false)
+
   useEffect(() => {
     fetchAssignments()
   }, [])
@@ -57,13 +60,14 @@ export default function ListAssignment() {
   useEffect(() => {
     let result = [...data]
     var datepick = assignedDate ? moment(assignedDate).format('DD/MM/YYYY') : null
+    var returnDatepick = returnedDate ? moment(returnedDate).format('DD/MM/YYYY') : null
 
     result = filterSort(data.filter(d => (stateChecked.includes(d.state) || stateChecked.includes('ALL')) &&
-      (d.assignedDate === datepick || datepick === null)), keySearch)
+      (d.assignedDate === datepick || datepick === null) && (d.intendedReturnDate === returnDatepick || returnDatepick === null)), keySearch)
 
     setAssignments(result)
     setCurrentPage(1)
-  }, [stateChecked, assignedDate, keySearch])
+  }, [stateChecked, assignedDate, returnedDate, keySearch])
 
   const fetchAssignments = () => {
     get('/assignment')
@@ -252,6 +256,10 @@ export default function ListAssignment() {
     setIsOpenDatePicker(!isOpenDatePicker);
   }
 
+  const openDatePickerReturned = () => {
+    setIsOpenDatePickerReturned(!isOpenDatePickerReturned);
+  }
+
   const assetOnChange = (e) => {
     const assetCode = e.target.value;
     if (selectingAssets.includes(assetCode)) {
@@ -326,7 +334,7 @@ export default function ListAssignment() {
             </Dropdown.Menu>
           </Dropdown>
         </Col>
-        <Col>
+        <Col xs="2">
           <FormGroup>
             <div className="datepicker">
               <DatePicker className="form-control date-picker-input"
@@ -344,7 +352,27 @@ export default function ListAssignment() {
             </div>
           </FormGroup>
         </Col>
+              
+        {/* Pick returned date */}
         <Col>
+          <FormGroup>
+            <div className="datepicker">
+              <DatePicker className="form-control date-picker-input"
+                dateFormat="dd/MM/yyyy" showMonthDropdown showYearDropdown scrollableYearDropdown yearDropdownItemNumber={50}
+                onKeyDown={(e) => e.preventDefault()}
+                selected={returnedDate && new Date(returnedDate)}
+                onChange={(date) => setReturnedDate(moment(date).format('YYYY-MM-DD'))}
+                placeholderText="Intended Return Date"
+                onClickOutside={openDatePickerReturned}
+                onSelect={openDatePickerReturned}
+                onFocus={openDatePickerReturned}
+                open={isOpenDatePickerReturned}
+              />
+              <FaCalendarAlt className="icon-date" onClick={openDatePicker} />
+            </div>
+          </FormGroup>
+        </Col>
+        <Col xs="3">
           <div className="float-end">
             <div className="input-group">
               <div className="form-outline">

@@ -73,6 +73,7 @@ export default function ChatMessage() {
         get('/user').then(res => {
             const loggedIn = authService.getCurrentUser()
             const newUsers = res.data.filter(u => u.username !== loggedIn.username && u.type !== loggedIn.role)
+                .sort((a, b) => a.fullName.localeCompare(b.fullName))
             setUsers(newUsers)
             setDataUsers(newUsers)
         }).catch(error => console.log(error))
